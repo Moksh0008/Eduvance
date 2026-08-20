@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
+
+  --color-canvas: #f4f1ea;
+  --color-canvas-2: #ebe6db;
+  --color-surface: #fbf9f4;
+  --color-ink: #141821;
+  --color-ink-2: #3d4450;
+  --color-ink-3: #6b7280;
+  --color-line: #ddd6c8;
+  --color-accent: #4338ca;
+  --color-accent-2: #6366f1;
+  --color-accent-soft: #eef0ff;
+  --color-high: #9a3412;
+  --color-high-bg: #fff1e8;
+  --color-med: #a16207;
+  --color-med-bg: #fff8e8;
+  --color-low: #0f766e;
+  --color-low-bg: #e8f6f3;
+  --color-risk: #b91c1c;
+  --color-risk-bg: #fef2f2;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font-family: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}
