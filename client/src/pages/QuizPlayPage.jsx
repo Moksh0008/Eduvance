@@ -67,15 +67,18 @@ export function QuizPlayPage() {
         <p className="text-sm text-ink-2">
           {config.subject || bank.subject} → {config.topic || bank.topic}
         </p>
-        <p className="tabular text-sm font-semibold" aria-live="polite">
-          {mm}:{ss}
-        </p>
+        <div className="flex items-center gap-2 rounded-lg bg-surface px-3 py-1.5">
+          <div className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+          <p className="tabular text-sm font-semibold text-ink" aria-live="polite">
+            {mm}:{ss}
+          </p>
+        </div>
       </div>
       <p className="text-xs text-ink-3">
         Question {index + 1} / {questions.length}
       </p>
-      <div className="mt-2 h-1 overflow-hidden rounded-full bg-canvas-2">
-        <motion.div className="h-full bg-ink" animate={{ width: `${progress}%` }} />
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-2">
+        <motion.div className="h-full rounded-full bg-accent" animate={{ width: `${progress}%` }} />
       </div>
 
       <AnimatePresence mode="wait">

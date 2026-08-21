@@ -7,7 +7,7 @@ export function TopicCard({ topic }) {
     topic.priority >= 80 ? 'high' : topic.priority >= 55 ? 'medium' : 'low'
 
   return (
-    <article className="grid gap-3 border-t border-line py-4 sm:grid-cols-12 sm:items-center">
+    <article className="card grid gap-3 p-4 sm:grid-cols-12 sm:items-center">
       <div className="sm:col-span-3">
         <h4 className="font-medium text-ink">{topic.name}</h4>
         <Badge tone={tone} className="mt-1">

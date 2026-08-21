@@ -54,9 +54,9 @@ export function InsightsPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.05 }}
-            className="border-t border-line pt-6"
+            className="card border-l-2 border-l-accent p-6"
           >
-            <p className="text-[11px] uppercase tracking-wider text-ink-3">
+            <p className="text-[11px] uppercase tracking-wider text-accent-2">
               {g.subject} · {g.category}
             </p>
             <h2 className="mt-1 font-serif text-3xl text-ink">{g.topic}</h2>
@@ -64,7 +64,7 @@ export function InsightsPage() {
               <ProgressBar value={g.concept} label="Concept understanding" />
               <ProgressBar value={g.problemSolving} label="Problem solving" />
               <ProgressBar value={g.recall} label="Recall" />
-              <ProgressBar value={g.mastery} label="Overall mastery" barClassName="bg-ink" />
+              <ProgressBar value={g.mastery} label="Overall mastery" barClassName="bg-accent" />
             </div>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-ink-2">{g.recommendation}</p>
             <Button as={Link} to="/study-session" size="sm" className="mt-4">

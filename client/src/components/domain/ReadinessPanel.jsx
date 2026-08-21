@@ -7,9 +7,9 @@ export function ReadinessPanel({ items }) {
     <section>
       <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Preparation readiness</h2>
       <p className="mt-1 text-xs text-ink-3">Not a predicted exam score — a composite of coverage, mastery, practice, and revision.</p>
-      <div className="mt-6 grid gap-8 sm:grid-cols-2">
+      <div className="mt-6 grid gap-6 sm:grid-cols-2">
         {items.map((item) => (
-          <article key={item.subjectId} className="border-t border-line pt-4">
+          <article key={item.subjectId} className="card p-5">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h3 className="font-semibold text-ink">{item.name}</h3>

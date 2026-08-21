@@ -5,12 +5,12 @@ import { Button } from '../ui/Button'
 export function SetupShell({ children, step, total, onDemo, editing }) {
   return (
     <div className="min-h-screen bg-canvas">
-      <header className="border-b border-line">
+      <header className="border-b border-line bg-surface/50 backdrop-blur-sm">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
           <Logo to="/" />
           <div className="flex items-center gap-3">
             {editing ? (
-              <Link to="/dashboard" className="text-xs font-medium text-accent hover:underline">
+              <Link to="/dashboard" className="text-xs font-medium text-accent-2 hover:text-accent transition-colors">
                 Back to dashboard
               </Link>
             ) : null}
@@ -21,7 +21,7 @@ export function SetupShell({ children, step, total, onDemo, editing }) {
         </div>
         <div className="flex h-1 w-full" aria-hidden="true">
           {Array.from({ length: total }, (_, i) => (
-            <div key={i} className={`h-full flex-1 ${i < step ? 'bg-ink' : 'bg-line'}`} />
+            <div key={i} className={`h-full flex-1 transition-colors ${i < step ? 'bg-accent' : 'bg-line'}`} />
           ))}
         </div>
       </header>
@@ -29,11 +29,11 @@ export function SetupShell({ children, step, total, onDemo, editing }) {
       <p className="px-4 pb-8 text-center text-xs text-ink-3">
         Uploads are stored locally. The analysis engine is not connected yet.{' '}
         {onDemo ? (
-          <button type="button" onClick={onDemo} className="underline hover:text-ink">
+          <button type="button" onClick={onDemo} className="underline hover:text-accent-2 transition-colors">
             Explore CSE demo data instead
           </button>
         ) : (
-          <Link to="/" className="underline hover:text-ink">
+          <Link to="/" className="underline hover:text-accent-2 transition-colors">
             Back to home
           </Link>
         )}

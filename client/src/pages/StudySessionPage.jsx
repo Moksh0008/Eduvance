@@ -77,7 +77,7 @@ export function StudySessionPage() {
           </>
         }
       >
-        <p className="text-sm text-ink-2">This rating will later adjust mastery and may reallocate tomorrow’s minutes.</p>
+        <p className="text-sm text-ink-2">This rating will later adjust mastery and may reallocate tomorrow's minutes.</p>
         <div className="mt-4 grid gap-2">
           {confidence.map((c) => (
             <button
@@ -85,8 +85,8 @@ export function StudySessionPage() {
               type="button"
               data-cursor="click"
               onClick={() => setPicked(c)}
-              className={`border px-4 py-3 text-left text-sm ${
-                picked === c ? 'border-ink bg-canvas-2' : 'border-line hover:border-ink'
+              className={`rounded-lg border px-4 py-3 text-left text-sm transition-all ${
+                picked === c ? 'border-accent bg-accent/[0.08] text-accent-2' : 'border-line bg-surface hover:border-ink-3/30 text-ink'
               }`}
             >
               {c}

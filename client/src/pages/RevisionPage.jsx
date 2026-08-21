@@ -39,25 +39,25 @@ export function RevisionPage() {
 
       <section>
         <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Today&apos;s revision · {total} min</h2>
-        <ol className="mt-4 border-l border-ink">
-        {todayRevision.length ? (
-          todayRevision.map((item, i) => (
-            <motion.li
-              key={item.id}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.08 }}
-              className="relative py-4 pl-6"
-            >
-              <span className="absolute -left-[5px] top-6 h-2.5 w-2.5 rounded-full bg-ink" />
-              <p className="text-xs text-ink-3">{item.subject}</p>
-              <p className="text-lg font-semibold">{item.topic}</p>
-              <p className="tabular text-sm text-ink-2">{item.minutes} min</p>
-            </motion.li>
-          ))
-        ) : (
-          <li className="relative py-4 pl-6 text-sm text-ink-2">No revision blocks yet. Complete setup and a quiz to allocate minutes.</li>
-        )}
+        <ol className="mt-4 border-l border-accent/30">
+          {todayRevision.length ? (
+            todayRevision.map((item, i) => (
+              <motion.li
+                key={item.id}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.08 }}
+                className="relative py-4 pl-6"
+              >
+                <span className="absolute -left-[5px] top-6 h-2.5 w-2.5 rounded-full bg-accent" />
+                <p className="text-xs text-ink-3">{item.subject}</p>
+                <p className="text-lg font-semibold text-ink">{item.topic}</p>
+                <p className="tabular text-sm text-ink-2">{item.minutes} min</p>
+              </motion.li>
+            ))
+          ) : (
+            <li className="relative py-4 pl-6 text-sm text-ink-2">No revision blocks yet. Complete setup and a quiz to allocate minutes.</li>
+          )}
         </ol>
         <Button as={Link} to="/study-session" className="mt-4">
           Start revision session
@@ -68,8 +68,8 @@ export function RevisionPage() {
         <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Upcoming revision</h2>
         <ul className="mt-3">
           {upcomingRevision.map((d) => (
-            <li key={d.day} className="flex justify-between gap-4 border-t border-line py-3 text-sm">
-              <span className="font-medium">{d.day}</span>
+            <li key={d.day} className="card mb-2 flex justify-between gap-4 p-4 text-sm">
+              <span className="font-medium text-ink">{d.day}</span>
               <span className="text-ink-2">{d.items.join(' · ')}</span>
             </li>
           ))}
@@ -80,8 +80,8 @@ export function RevisionPage() {
         <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Due for final revision</h2>
         <ul className="mt-3">
           {finalRevisionDue.map((t) => (
-            <li key={t.topic} className="flex justify-between border-t border-line py-3 text-sm">
-              <span>
+            <li key={t.topic} className="card mb-2 flex justify-between p-4 text-sm">
+              <span className="text-ink">
                 {t.subject} → {t.topic}
               </span>
               <span className="tabular text-ink-3">{t.when}</span>

@@ -17,8 +17,8 @@ export function FileDrop({ label, hint = 'PDF / image / document', accept = '.pd
     <div
       data-cursor="click"
       className={cn(
-        'relative border border-dashed px-6 py-10 text-center transition-colors',
-        over ? 'border-accent bg-accent-soft' : 'border-line bg-surface',
+        'relative rounded-lg border border-dashed px-6 py-10 text-center transition-colors',
+        over ? 'border-accent bg-accent/[0.06]' : 'border-line-2 bg-surface',
         disabled && 'pointer-events-none opacity-60',
       )}
       onDragOver={(e) => {
@@ -44,7 +44,7 @@ export function FileDrop({ label, hint = 'PDF / image / document', accept = '.pd
       <p className="mt-3 text-sm font-medium text-ink">{label}</p>
       <p className="mt-1 text-xs text-ink-3">{hint}</p>
       {name ? (
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3 text-xs font-medium text-accent">
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3 text-xs font-medium text-accent-2">
           {name}
         </motion.p>
       ) : null}

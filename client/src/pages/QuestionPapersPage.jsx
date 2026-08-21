@@ -52,8 +52,8 @@ export function QuestionPapersPage() {
         <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Uploaded papers</h2>
         <ul className="mt-3">
           {(extra ? [extra, ...(data.isDemo ? papers : [])] : data.isDemo ? papers : extra ? [extra] : []).map((p) => (
-            <li key={p.id || p.file} className="flex items-center justify-between border-t border-line py-3 text-sm">
-              <span className="font-medium">{p.file}</span>
+            <li key={p.id || p.file} className="card mb-2 flex items-center justify-between p-4 text-sm">
+              <span className="font-medium text-ink">{p.file}</span>
               <span className="text-ink-3">
                 {p.pages} pages · {p.status}
               </span>
@@ -63,31 +63,31 @@ export function QuestionPapersPage() {
       </section>
 
       {data.isDemo ? (
-      <section className="mt-12">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Topic importance (DBMS sample)</h2>
-        <div className="mt-2 hidden grid-cols-12 border-b border-line pb-2 text-[10px] uppercase tracking-wider text-ink-3 sm:grid">
-          <span className="col-span-4">Topic</span>
-          <span className="col-span-3">Appeared</span>
-          <span className="col-span-2">Avg marks</span>
-          <span className="col-span-3">Importance</span>
-        </div>
-        {paperInsights.map((row) => (
-          <article key={row.topic} className="grid gap-1 border-t border-line py-4 sm:grid-cols-12 sm:items-center">
-            <p className="font-medium sm:col-span-4">{row.topic}</p>
-            <p className="text-sm text-ink-2 sm:col-span-3">{row.appeared}</p>
-            <p className="tabular text-sm sm:col-span-2">{row.avgMarks}</p>
-            <div className="sm:col-span-3">
-              <Badge tone={importanceTone[row.importance]}>{row.importance}</Badge>
-            </div>
-          </article>
-        ))}
-      </section>
+        <section className="mt-12">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Topic importance (DBMS sample)</h2>
+          <div className="mt-2 hidden grid-cols-12 border-b border-line pb-2 text-[10px] uppercase tracking-wider text-ink-3 sm:grid">
+            <span className="col-span-4">Topic</span>
+            <span className="col-span-3">Appeared</span>
+            <span className="col-span-2">Avg marks</span>
+            <span className="col-span-3">Importance</span>
+          </div>
+          {paperInsights.map((row) => (
+            <article key={row.topic} className="grid gap-1 border-t border-line py-4 sm:grid-cols-12 sm:items-center">
+              <p className="font-medium text-ink sm:col-span-4">{row.topic}</p>
+              <p className="text-sm text-ink-2 sm:col-span-3">{row.appeared}</p>
+              <p className="tabular text-sm text-ink-2 sm:col-span-2">{row.avgMarks}</p>
+              <div className="sm:col-span-3">
+                <Badge tone={importanceTone[row.importance]}>{row.importance}</Badge>
+              </div>
+            </article>
+          ))}
+        </section>
       ) : null}
 
       <div className="mt-10">
         <EmptyState
           title="Parser not connected"
-          body="Analysis will be performed by Eduvance’s analysis engine. The DBMS frequency table is demo-only."
+          body="Analysis will be performed by Eduvance's analysis engine. The DBMS frequency table is demo-only."
         />
       </div>
     </div>

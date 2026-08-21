@@ -8,8 +8,8 @@ export function ScheduleCard({ item, onToggle, onMove, index, total }) {
   return (
     <article
       className={cn(
-        'grid gap-3 border-l-2 py-4 pl-4 sm:grid-cols-[7rem_1fr_auto] sm:items-center',
-        item.changed ? 'border-l-accent bg-accent-soft/40' : 'border-l-ink',
+        'card mb-2 grid gap-3 border-l-2 py-4 pl-4 sm:grid-cols-[7rem_1fr_auto] sm:items-center',
+        item.changed ? 'border-l-accent bg-accent/[0.06]' : 'border-l-ink-3/20',
         item.done && 'opacity-50',
       )}
     >
@@ -22,7 +22,7 @@ export function ScheduleCard({ item, onToggle, onMove, index, total }) {
         <div className="mt-1 flex flex-wrap items-center gap-2">
           <Badge tone={kindTone}>{item.kind}</Badge>
           <PriorityIndicator score={item.priority} />
-          {item.changed ? <span className="text-xs font-medium text-accent">Replanned</span> : null}
+          {item.changed ? <span className="text-xs font-medium text-accent-2">Replanned</span> : null}
         </div>
       </div>
       <div className="flex items-center gap-2">
@@ -30,7 +30,7 @@ export function ScheduleCard({ item, onToggle, onMove, index, total }) {
           <>
             <button
               type="button"
-              className="h-8 px-2 text-xs text-ink-3 hover:text-ink"
+              className="h-8 px-2 text-xs text-ink-3 hover:text-ink transition-colors"
               aria-label="Move earlier"
               disabled={index === 0}
               onClick={() => onMove(index, -1)}
@@ -39,7 +39,7 @@ export function ScheduleCard({ item, onToggle, onMove, index, total }) {
             </button>
             <button
               type="button"
-              className="h-8 px-2 text-xs text-ink-3 hover:text-ink"
+              className="h-8 px-2 text-xs text-ink-3 hover:text-ink transition-colors"
               aria-label="Move later"
               disabled={index === total - 1}
               onClick={() => onMove(index, 1)}
@@ -51,7 +51,7 @@ export function ScheduleCard({ item, onToggle, onMove, index, total }) {
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
-            className="h-4 w-4 accent-accent"
+            className="h-4 w-4 rounded accent-accent"
             checked={item.done}
             onChange={() => onToggle?.(item.id)}
           />

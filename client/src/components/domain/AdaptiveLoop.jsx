@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { cn } from '../../utils/cn'
 
 const STEPS = ['Analyze', 'Prioritize', 'Plan', 'Study', 'Quiz', 'Evaluate', 'Replan']
 
@@ -11,10 +12,12 @@ export function AdaptiveLoop({ compact = false }) {
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.06, type: 'spring', stiffness: 220, damping: 24 }}
-          className={compact ? 'flex items-center gap-2 text-ink-2' : 'relative border-l border-ink py-2 pl-5'}
+          className={compact ? 'flex items-center gap-2 text-ink-2' : 'relative border-l border-accent/30 py-2 pl-5'}
         >
-          {!compact ? <span className="absolute -left-[5px] top-3 h-2.5 w-2.5 rounded-full bg-ink" /> : null}
-          <span className={compact ? '' : 'text-sm font-medium'}>{step}</span>
+          {!compact ? (
+            <span className="absolute -left-[5px] top-3 h-2.5 w-2.5 rounded-full bg-accent" />
+          ) : null}
+          <span className={compact ? '' : 'text-sm font-medium text-ink'}>{step}</span>
           {i < STEPS.length - 1 ? <span className="text-ink-3">{compact ? '→' : ''}</span> : null}
         </motion.li>
       ))}

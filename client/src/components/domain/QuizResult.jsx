@@ -17,13 +17,14 @@ export function QuizResult({ result, onAddToPlan, added }) {
         variants={reveal}
         initial={reduce ? false : 'hidden'}
         animate="show"
-        className="border border-ink bg-ink px-8 py-10 text-canvas"
+        className="relative overflow-hidden rounded-xl border border-accent/20 bg-gradient-to-br from-accent/[0.12] via-surface to-surface px-8 py-10"
       >
-        <p className="text-[11px] uppercase tracking-wider text-canvas/50">Score</p>
-        <p className="mt-2 font-serif tabular text-7xl">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-60 w-60 rounded-full bg-accent/[0.08] blur-[80px]" />
+        <p className="relative text-[11px] uppercase tracking-wider text-accent-2">Score</p>
+        <p className="relative mt-2 font-serif tabular text-7xl gradient-text">
           <CountUp to={result.score} suffix="%" duration={1100} />
         </p>
-        <p className="mt-2 text-canvas/70">
+        <p className="relative mt-2 text-ink-2">
           {result.correct} / {result.total} {result.kind === 'check' ? 'confident answers' : 'correct'}
         </p>
       </motion.div>
@@ -44,10 +45,10 @@ export function QuizResult({ result, onAddToPlan, added }) {
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Weak areas</h2>
           <ul className="mt-3 space-y-2 text-sm">
             {(weak.length ? weak : ['None flagged this attempt']).map((s) => (
-              <li key={s}>⚠ {s}</li>
+              <li key={s} className="text-high">⚠ {s}</li>
             ))}
           </ul>
-          {strong.length ? <p className="mt-4 text-sm text-ink-2">Held: {strong.join(', ')}</p> : null}
+          {strong.length ? <p className="mt-4 text-sm text-success">Held: {strong.join(', ')}</p> : null}
         </section>
       </motion.div>
 
@@ -66,7 +67,7 @@ export function QuizResult({ result, onAddToPlan, added }) {
             type="button"
             onClick={onAddToPlan}
             disabled={added}
-            className="mt-5 inline-flex h-10 items-center bg-accent px-4 text-sm font-medium text-white disabled:opacity-50"
+            className="mt-5 inline-flex h-10 items-center rounded-lg bg-accent px-4 text-sm font-medium text-white transition-all hover:bg-accent-2 disabled:opacity-50"
             data-cursor="click"
           >
             {added ? 'Fed into planner' : 'Open updated planner'}

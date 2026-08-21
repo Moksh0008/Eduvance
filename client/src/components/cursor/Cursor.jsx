@@ -53,7 +53,6 @@ export function Cursor() {
   if (mode === 'form') return null
 
   const expand = mode === 'click' || mode === 'card' || down
-  const pen = mode === 'pen' || mode === 'topic'
 
   return (
     <>
@@ -63,10 +62,10 @@ export function Cursor() {
         style={{ x: tx, y: ty, translateX: '-50%', translateY: '-50%' }}
       >
         <div
-          className="rounded-full border border-ink/25 bg-accent/10"
+          className="rounded-full border border-accent/30 bg-accent/[0.08]"
           style={{
-            width: expand ? 36 : 22,
-            height: expand ? 36 : 22,
+            width: expand ? 40 : 24,
+            height: expand ? 40 : 24,
             transition: 'width 160ms ease, height 160ms ease',
           }}
         />
@@ -77,14 +76,9 @@ export function Cursor() {
         style={{ x, y, translateX: '-50%', translateY: '-50%' }}
       >
         <div
-          className="h-1.5 w-1.5 rounded-full bg-ink"
-          style={{ transform: down ? 'scale(0.7)' : 'scale(1)' }}
+          className="h-1.5 w-1.5 rounded-full bg-accent-2"
+          style={{ transform: down ? 'scale(0.6)' : 'scale(1)', transition: 'transform 100ms ease' }}
         />
-        {pen ? (
-          <svg className="-mt-1 ml-1.5 h-3.5 w-3.5 text-ink/70" viewBox="0 0 16 16" fill="none">
-            <path d="M3 13l.8-2.4L11.2 3.2a1.2 1.2 0 0 1 1.7 1.7L5.4 12.2 3 13z" stroke="currentColor" strokeWidth="1.2" />
-          </svg>
-        ) : null}
       </motion.div>
     </>
   )

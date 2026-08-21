@@ -10,25 +10,29 @@ export function Comparison() {
         </Reveal>
         <div className="mt-12 grid gap-12 md:grid-cols-2">
           <Reveal>
-            <p className="text-xs uppercase tracking-wider text-ink-3">Traditional planner</p>
-            <ol className="mt-4 space-y-2 text-sm text-ink-2">
-              <li>Student creates a timetable</li>
-              <li>Student follows the timetable</li>
-              <li>Performance changes</li>
-              <li>Timetable becomes outdated</li>
-            </ol>
+            <div className="card p-6">
+              <p className="text-xs uppercase tracking-wider text-ink-3">Traditional planner</p>
+              <ol className="mt-4 space-y-2 text-sm text-ink-2">
+                <li>Student creates a timetable</li>
+                <li>Student follows the timetable</li>
+                <li>Performance changes</li>
+                <li>Timetable becomes outdated</li>
+              </ol>
+            </div>
           </Reveal>
           <Reveal>
-            <p className="text-xs uppercase tracking-wider text-ink-3">Eduvance</p>
-            <ol className="mt-4 space-y-2 text-sm text-ink">
-              <li>Student provides constraints</li>
-              <li>Eduvance analyzes workload</li>
-              <li>Strategy + quizzes + schedule</li>
-              <li>Performance is evidence</li>
-              <li>Weakness is detected</li>
-              <li>Priorities recalculate</li>
-              <li>Remaining preparation is replanned</li>
-            </ol>
+            <div className="card border-accent/20 bg-accent/[0.04] p-6">
+              <p className="text-xs uppercase tracking-wider text-accent-2">Eduvance</p>
+              <ol className="mt-4 space-y-2 text-sm text-ink">
+                <li>Student provides constraints</li>
+                <li>Eduvance analyzes workload</li>
+                <li>Strategy + quizzes + schedule</li>
+                <li>Performance is evidence</li>
+                <li>Weakness is detected</li>
+                <li>Priorities recalculate</li>
+                <li>Remaining preparation is replanned</li>
+              </ol>
+            </div>
           </Reveal>
         </div>
       </div>

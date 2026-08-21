@@ -5,8 +5,13 @@ import { Reveal } from './Reveal'
 
 export function FinalCta() {
   return (
-    <section className="py-24">
-      <div className="mx-auto max-w-6xl px-4 text-center sm:px-6">
+    <section className="relative overflow-hidden py-24">
+      {/* Ambient glow */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[600px] rounded-full bg-accent/[0.04] blur-[150px]" />
+      </div>
+
+      <div className="relative mx-auto max-w-6xl px-4 text-center sm:px-6">
         <Reveal>
           <h2 className="font-serif text-4xl text-ink sm:text-5xl">Stop planning your studies. Start optimizing them.</h2>
           <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-ink-2">

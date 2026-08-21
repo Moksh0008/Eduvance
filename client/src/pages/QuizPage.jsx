@@ -88,12 +88,12 @@ export function QuizPage() {
       </div>
 
       {data.isDemo ? (
-        <div className="mb-10 border border-ink bg-ink px-6 py-6 text-canvas">
-          <p className="text-[11px] uppercase tracking-wider text-canvas/50">Demo quiz</p>
-          <h2 className="mt-2 font-serif text-3xl">
+        <div className="mb-10 rounded-xl border border-accent/20 bg-gradient-to-br from-accent/[0.12] via-surface to-surface px-6 py-6">
+          <p className="text-[11px] uppercase tracking-wider text-accent-2">Demo quiz</p>
+          <h2 className="mt-2 font-serif text-3xl text-ink">
             {bank.subject} → {bank.topic}
           </h2>
-          <p className="mt-2 text-sm text-canvas/70">10 questions · sample item bank — separate from your workspace.</p>
+          <p className="mt-2 text-sm text-ink-2">10 questions · sample item bank — separate from your workspace.</p>
           <Button variant="accent" className="mt-5" onClick={startDemo}>
             Start demo quiz
           </Button>
@@ -103,7 +103,7 @@ export function QuizPage() {
       {!data.isDemo && !data.wantsQuiz ? (
         <AdaptiveInsight>
           You asked for a study plan only. You can still run a self-check on your topics, or{' '}
-          <Link to="/setup" className="font-medium text-accent hover:underline">
+          <Link to="/setup" className="font-medium text-accent-2 hover:text-accent transition-colors">
             edit preparation
           </Link>{' '}
           to include quizzes.
@@ -124,7 +124,7 @@ export function QuizPage() {
 
       {!data.isDemo && subjects.length && topics.length ? (
         <div className="mt-8 max-w-xl space-y-4">
-          <h2 className="font-medium">Quiz from your preparation</h2>
+          <h2 className="font-medium text-ink">Quiz from your preparation</h2>
           <p className="text-sm text-ink-2">No timetable upload. Subjects and topics come from setup.</p>
           <SubjectSelector
             subjects={subjects}

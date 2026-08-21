@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { Badge } from '../ui/Badge'
 import { ProgressBar } from '../ui/ProgressBar'
 import { daysUntil, formatDate } from '../../utils/format'
@@ -8,7 +9,13 @@ const toneMap = { high: 'high', medium: 'medium', low: 'low' }
 export function SubjectCard({ subject, included = true }) {
   const days = daysUntil(subject.examDate)
   return (
-    <article className="border-t border-line py-5" data-cursor="card">
+    <motion.article
+      className="card card-hover mb-3 p-5"
+      data-cursor="card"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs text-ink-3">{subject.code}</p>
@@ -21,7 +28,7 @@ export function SubjectCard({ subject, included = true }) {
         <ProgressBar value={subject.progress} label="Readiness" />
         <div>
           <p className="text-xs text-ink-3">Exam</p>
-          <p className="mt-1 tabular text-sm font-medium">
+          <p className="mt-1 tabular text-sm font-medium text-ink">
             {formatDate(subject.examDate)} · {days} days
           </p>
         </div>
@@ -32,10 +39,10 @@ export function SubjectCard({ subject, included = true }) {
       </div>
       <Link
         to="/syllabus"
-        className="mt-4 inline-block text-sm font-medium text-accent hover:underline"
+        className="mt-4 inline-block text-sm font-medium text-accent-2 hover:text-accent transition-colors"
       >
         Open syllabus →
       </Link>
-    </article>
+    </motion.article>
   )
 }

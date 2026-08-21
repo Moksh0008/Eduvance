@@ -19,13 +19,15 @@ export function ProfilePage() {
         title={user?.name || student.name}
         description="Signed in with a JWT session. Preparation is stored per account in MongoDB."
       />
-      <dl className="max-w-lg text-sm">
-        <Row label="Email" value={user?.email || student.email} />
-        <Row label="Daily study window" value={`${(data.preferences?.dailyHours || 3)} hours`} />
-        <Row label="Mode" value={data.isDemo ? 'Demo sample data' : 'Your workspace'} />
-      </dl>
+      <div className="card max-w-lg p-6">
+        <dl className="text-sm">
+          <Row label="Email" value={user?.email || student.email} />
+          <Row label="Daily study window" value={`${(data.preferences?.dailyHours || 3)} hours`} />
+          <Row label="Mode" value={data.isDemo ? 'Demo sample data' : 'Your workspace'} />
+        </dl>
+      </div>
       <div className="mt-8 flex flex-wrap gap-2">
-          <Button as={Link} to="/setup" variant="secondary">
+        <Button as={Link} to="/setup" variant="secondary">
           Edit preparation
         </Button>
         <Button as={Link} to="/settings" variant="ghost">

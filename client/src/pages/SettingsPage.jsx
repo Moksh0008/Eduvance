@@ -15,15 +15,15 @@ export function SettingsPage() {
         title="Settings"
         description="Demo mode reads a sample CSE catalog. Your preparation stays in a separate store and is not overwritten."
       />
-      <ul className="max-w-lg divide-y divide-line border-t border-line text-sm">
+      <div className="card max-w-lg divide-y divide-line">
         <li className="flex items-center justify-between py-4">
-          <span>Academic setup</span>
+          <span className="text-ink">Academic setup</span>
           <Button as={Link} to="/setup" size="sm" variant="secondary">
             Edit preparation
           </Button>
         </li>
         <li className="flex items-center justify-between gap-4 py-4">
-          <span>Demo catalog (does not overwrite My preparation)</span>
+          <span className="text-ink">Demo catalog (does not overwrite My preparation)</span>
           {demoMode ? (
             <Button size="sm" variant="secondary" onClick={disableDemo}>
               My preparation
@@ -35,12 +35,12 @@ export function SettingsPage() {
           )}
         </li>
         <li className="flex items-center justify-between py-4">
-          <span>Log out of this account</span>
+          <span className="text-ink">Log out of this account</span>
           <Button as={Link} to="/" size="sm" variant="ghost" onClick={() => logout()}>
             Log out
           </Button>
         </li>
-      </ul>
+      </div>
     </div>
   )
 }

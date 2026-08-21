@@ -17,7 +17,7 @@ export function StageList({ stages, current, complete }) {
           >
             <span
               className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] ${
-                done ? 'bg-ink text-canvas' : active ? 'border border-accent' : 'border border-line'
+                done ? 'bg-accent text-white' : active ? 'border border-accent' : 'border border-line-2'
               }`}
             >
               {done ? <Check size={12} /> : active ? <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" /> : null}

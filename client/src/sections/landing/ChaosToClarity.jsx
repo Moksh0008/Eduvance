@@ -15,7 +15,7 @@ export function ChaosToClarity() {
     <section id="clarity" className="border-b border-line py-20">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Reveal>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">From chaos to clarity</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent-2">From chaos to clarity</p>
           <h2 className="mt-3 max-w-2xl font-serif text-4xl text-ink">
             Give Eduvance your academic constraints. We&apos;ll figure out what deserves your time.
           </h2>
@@ -25,7 +25,7 @@ export function ChaosToClarity() {
             <p className="text-xs uppercase tracking-wider text-ink-3">Chaotic inputs</p>
             <ul className="mt-3 space-y-2">
               {inputs.map((x) => (
-                <li key={x} className="border-t border-line py-2 font-medium">
+                <li key={x} className="card py-3 px-4 font-medium text-ink-2">
                   {x}
                 </li>
               ))}
@@ -33,7 +33,7 @@ export function ChaosToClarity() {
           </Reveal>
           <Reveal className="text-center">
             <p className="text-xs text-ink-3">↓</p>
-            <p className="mt-2 inline-block border border-ink bg-ink px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-canvas">
+            <p className="mt-2 inline-block rounded-xl bg-accent px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-white shadow-[0_0_30px_rgba(99,102,241,0.2)]">
               Eduvance
             </p>
             <p className="mt-2 text-xs text-ink-3">↓</p>
@@ -42,7 +42,7 @@ export function ChaosToClarity() {
             <p className="text-xs uppercase tracking-wider text-ink-3">Optimized strategy</p>
             <ul className="mt-3 space-y-2">
               {outputs.map((x) => (
-                <li key={x} className="border-t border-line py-2 font-medium">
+                <li key={x} className="card border-accent/10 bg-accent/[0.03] py-3 px-4 font-medium text-ink">
                   {x}
                 </li>
               ))}

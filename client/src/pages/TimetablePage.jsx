@@ -2,6 +2,7 @@ import { PageHeader } from '../components/ui/PageHeader'
 import { DemoBanner } from '../components/domain/ModeBanners'
 import { daysUntil, formatDate } from '../utils/format'
 import { useAppData } from '../hooks/useAppData'
+import { cn } from '../utils/cn'
 
 export function TimetablePage() {
   const data = useAppData()
@@ -31,18 +32,23 @@ export function TimetablePage() {
             </tr>
           </thead>
           <tbody>
-            {(data.allExams || data.exams).map((exam) => (
-              <tr key={exam.id} className="border-b border-line">
-                <td className="py-4 font-medium">
-                  {exam.name}
-                  {exam.included === false ? <span className="ml-2 text-xs text-ink-3">not in optimizer</span> : null}
-                </td>
-                <td className="py-4 tabular">{formatDate(exam.date)}</td>
-                <td className="py-4 tabular">{exam.time}</td>
-                <td className="py-4 tabular">{exam.marks}</td>
-                <td className="py-4 tabular font-semibold">{daysUntil(exam.date)} days</td>
-              </tr>
-            ))}
+            {(data.allExams || data.exams).map((exam) => {
+              const days = daysUntil(exam.date)
+              return (
+                <tr key={exam.id} className="border-b border-line">
+                  <td className="py-4 font-medium text-ink">
+                    {exam.name}
+                    {exam.included === false ? <span className="ml-2 text-xs text-ink-3">not in optimizer</span> : null}
+                  </td>
+                  <td className="py-4 tabular text-ink-2">{formatDate(exam.date)}</td>
+                  <td className="py-4 tabular text-ink-2">{exam.time}</td>
+                  <td className="py-4 tabular text-ink-2">{exam.marks}</td>
+                  <td className={cn('py-4 tabular font-semibold', days <= 7 ? 'text-high' : days <= 14 ? 'text-med' : 'text-ink')}>
+                    {days} days
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

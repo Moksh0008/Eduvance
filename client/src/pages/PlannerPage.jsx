@@ -68,9 +68,9 @@ export function PlannerPage() {
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-6 border border-accent bg-accent-soft px-4 py-3 text-sm"
+            className="mb-6 rounded-lg border border-accent/20 bg-accent/[0.06] px-4 py-3 text-sm"
           >
-            <p className="font-semibold">Plan updated</p>
+            <p className="font-semibold text-accent-2">Plan updated</p>
             <p className="mt-1 text-ink-2">
               {(injected || latest).topic} {(injected || latest).minutesDelta > 0 ? '+' : ''}
               {(injected || latest).minutesDelta || 45} minutes.{' '}
@@ -82,9 +82,9 @@ export function PlannerPage() {
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-8 border border-accent bg-accent-soft px-4 py-3 text-sm text-ink"
+            className="mb-8 rounded-lg border border-accent/20 bg-accent/[0.06] px-4 py-3 text-sm"
           >
-            <p className="font-semibold">Demo replan</p>
+            <p className="font-semibold text-accent-2">Demo replan</p>
             <p className="mt-1 text-ink-2">
               DBMS Normalization +45 min. Java Collections −20 min. This sample change is demo data, not your upload.
             </p>
@@ -130,7 +130,7 @@ export function PlannerPage() {
                 />
               ))
             ) : (
-              <p className="text-sm text-ink-2">Add subjects in setup to allocate today’s hours.</p>
+              <p className="text-sm text-ink-2">Add subjects in setup to allocate today's hours.</p>
             )}
           </div>
         </section>
@@ -138,7 +138,7 @@ export function PlannerPage() {
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Exam horizon</h2>
           <ul className="mt-4">
             {data.exams.map((exam) => (
-              <li key={exam.id} className="flex justify-between gap-3 border-t border-line py-3 text-sm">
+              <li key={exam.id} className="card mb-2 flex justify-between gap-3 p-4 text-sm">
                 <div>
                   <p className="font-medium text-ink">{exam.name}</p>
                   <p className="text-ink-2">{exam.date || 'Date TBD'}</p>

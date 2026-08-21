@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
+import { motion } from 'framer-motion'
 import { PageHeader } from '../components/ui/PageHeader'
 import { TopicCard } from '../components/domain/TopicCard'
 import { DemoBanner } from '../components/domain/ModeBanners'
 import { getUnits } from '../services/catalog'
 import { useAppData } from '../hooks/useAppData'
 import { daysUntil } from '../utils/format'
+import { cn } from '../utils/cn'
 
 export function SyllabusPage() {
   const data = useAppData()
@@ -38,19 +40,24 @@ export function SyllabusPage() {
                 role="tab"
                 aria-selected={active === s.id}
                 onClick={() => setActive(s.id)}
-                className={`shrink-0 border-b-2 px-3 py-2 text-sm ${
-                  active === s.id ? 'border-ink font-medium text-ink' : 'border-transparent text-ink-3 hover:text-ink'
-                }`}
+                className={cn(
+                  'shrink-0 rounded-lg px-4 py-2 text-sm transition-all',
+                  active === s.id
+                    ? 'bg-accent-soft font-medium text-accent-2'
+                    : 'text-ink-3 hover:bg-surface-2 hover:text-ink',
+                )}
               >
                 {s.name}
               </button>
             ))}
           </div>
 
-          <p className="mt-6 text-sm text-ink-2">
-            {current?.fullName || current?.name} · exam in {current?.examDate ? daysUntil(current.examDate) : '—'} days
-            {current?.syllabusFile ? ` · file: ${current.syllabusFile.name}` : ''}
-          </p>
+          <div className="mt-6">
+            <p className="text-sm text-ink-2">
+              {current?.fullName || current?.name} · exam in {current?.examDate ? daysUntil(current.examDate) : '—'} days
+              {current?.syllabusFile ? ` · file: ${current.syllabusFile.name}` : ''}
+            </p>
+          </div>
 
           {data.isDemo ? (
             <div className="mt-8">
@@ -75,7 +82,7 @@ export function SyllabusPage() {
                     <h2 className="font-serif text-2xl text-ink">{unit.name || 'Untitled unit'}</h2>
                     <ul className="mt-2">
                       {(unit.topics || []).map((topic) => (
-                        <li key={topic.id} className="border-t border-line py-2 text-sm">
+                        <li key={topic.id} className="card mb-1 p-3 text-sm">
                           {topic.name || 'Untitled topic'}
                         </li>
                       ))}
