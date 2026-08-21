@@ -2,8 +2,10 @@
   "name": "eduvance",
   "private": true,
   "type": "module",
-  "workspaces": ["client", "server"],
+  "workspaces": ["client", "client/server"],
   "scripts": {
-    "build": "npm run build -w eduvance-client"
+    "build": "npm run build -w eduvance-client",
+    "dev:client": "npm run dev -w eduvance-client",
+    "dev:server": "npm run dev -w eduvance-server"
   }
 }

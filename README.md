@@ -5,14 +5,14 @@ Adaptive exam-preparation optimizer.
 ## Apps
 
 - `client/` — React (Vite) frontend
-- `server/` — Express + MongoDB API (JWT auth, per-user preparation)
+- `client/server/` — Express + MongoDB API (JWT auth, per-user preparation)
 
 ## Run locally
 
-Terminal 1 — API (requires MongoDB Atlas URI in `server/.env`):
+Terminal 1 — API (requires MongoDB Atlas URI in `client/server/.env`):
 
 ```bash
-cd server
+cd client/server
 cp .env.example .env
 # set MONGODB_URI and JWT_SECRET
 npm install

@@ -1,13 +1,5 @@
 function resolveBase() {
-  const env = String(import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '')
-  if (typeof window === 'undefined') return env || '/api'
-
-  const host = window.location.hostname
-  const isLoopback = host === 'localhost' || host === '127.0.0.1'
-  const envPointsAtLoopback = /localhost|127\.0\.0\.1/.test(env)
-
-  if (!isLoopback && envPointsAtLoopback) return '/api'
-  return env || '/api'
+  return '/api'
 }
 
 function token() {

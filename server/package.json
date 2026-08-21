@@ -1,19 +1,9 @@
 {
-  "name": "eduvance-server",
+  "name": "eduvance-server-alias",
   "private": true,
-  "version": "0.1.0",
-  "type": "module",
   "scripts": {
-    "dev": "node --watch server.js",
-    "start": "node server.js",
-    "test:isolation": "node scripts/isolation-test.js"
-  },
-  "dependencies": {
-    "bcryptjs": "^3.0.2",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.1",
-    "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.18.0"
+    "dev": "npm run dev --prefix ../client/server",
+    "start": "npm run start --prefix ../client/server",
+    "test:isolation": "npm run test:isolation --prefix ../client/server"
   }
 }
