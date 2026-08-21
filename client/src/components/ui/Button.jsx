@@ -53,10 +53,10 @@ export function Button({
         type={type || 'button'}
         className={classes}
         style={style}
-        whileHover={fine && !reduce ? { y: -1, scale: 1.02, boxShadow: isFilled ? '0 4px 24px var(--color-accent-glow)' : undefined } : undefined}
-        whileTap={reduce ? undefined : { scale: 0.97, y: 0 }}
+        whileHover={fine && !reduce ? { y: -2, scale: 1.04, boxShadow: isFilled ? '0 6px 30px var(--color-accent-glow)' : '0 4px 16px rgba(0,0,0,0.08)' } : undefined}
+        whileTap={reduce ? undefined : { scale: 0.93, y: 0 }}
         data-cursor="click"
-        transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 20 }}
         {...props}
       >
         {isFilled && !reduce && <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-500 group-hover:translate-x-full hover:translate-x-full" style={{ pointerEvents: 'none' }} />}

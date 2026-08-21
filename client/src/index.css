@@ -220,3 +220,47 @@ a.bg-success {
   background-size: 200% 100%;
   animation: shimmer 2s ease-in-out infinite;
 }
+
+/* Bouncy button hover */
+@keyframes bounce-in {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.bounce-hover {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.bounce-hover:hover {
+  transform: scale(1.04);
+}
+.bounce-hover:active {
+  transform: scale(0.97);
+}
+
+/* Emoji float animation */
+.emoji-float {
+  animation: float-gentle 3s ease-in-out infinite;
+}
+
+/* Edge scrollbar track */
+.edge-scroll-track {
+  position: fixed;
+  right: 0;
+  top: 0;
+  width: 6px;
+  height: 100vh;
+  z-index: 50;
+  pointer-events: none;
+}

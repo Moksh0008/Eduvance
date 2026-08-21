@@ -12,6 +12,7 @@ import { AdaptiveLoop } from '../components/domain/AdaptiveLoop'
 import { DemoBanner } from '../components/domain/ModeBanners'
 import { StudyRecommendation } from '../components/domain/StudyRecommendation'
 import { ScrollReveal, StaggerChildren, StaggerItem } from '../components/ui/ScrollReveal'
+import { StudyMascot } from '../components/ui/StudyMascot'
 import { useAppData } from '../hooks/useAppData'
 import { useAppState } from '../context/AppState'
 
@@ -49,7 +50,7 @@ export function DashboardPage() {
       <DemoBanner />
 
       {/* ═══════════════════════════════════════
-          INTELLIGENCE HERO — Editorial layout, no card
+          INTELLIGENCE HERO — Editorial layout with mascot
       ═══════════════════════════════════════ */}
       <ScrollReveal preset="blurIn" duration={0.6}>
         <div className="relative">
@@ -57,8 +58,13 @@ export function DashboardPage() {
           <div className="pointer-events-none absolute -left-32 top-1/2 h-96 w-96 -translate-y-1/2 rounded-full blur-[160px]"
             style={{ background: 'var(--color-accent-glow)' }} />
 
+          {/* Mascot greeting */}
+          <div className="mb-6">
+            <StudyMascot context="welcome" compact />
+          </div>
+
           <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-accent-2">
-            Adaptive preparation engine
+            ⚡ Adaptive preparation engine
           </p>
 
           <h1 className="mt-4 max-w-3xl font-serif text-4xl leading-[1.1] text-ink sm:text-5xl lg:text-6xl">
@@ -193,16 +199,16 @@ export function DashboardPage() {
         </ScrollReveal>
       </div>
 
-      {/* ═══ KEY METRICS — no card borders, depth through shadow ═══ */}
+      {/* ═══ KEY METRICS ═══ */}
       <StaggerChildren className="grid gap-5 sm:grid-cols-3" staggerDelay={0.08}>
         <StaggerItem>
-          <MetricCard icon={Clock} label="Study hours" value={`${progress.hoursThisWeek}`} unit="h" hint={`target ${progress.hoursTarget}h`} />
+          <MetricCard emoji="⏱" label="Study hours" value={`${progress.hoursThisWeek}`} unit="h" hint={`target ${progress.hoursTarget}h`} />
         </StaggerItem>
         <StaggerItem>
-          <MetricCard icon={BookOpen} label="Topics captured" value={`${progress.topicsCompleted}/${progress.topicsTotal}`} hint="from syllabus" />
+          <MetricCard emoji="📚" label="Topics captured" value={`${progress.topicsCompleted}/${progress.topicsTotal}`} hint="from syllabus" />
         </StaggerItem>
         <StaggerItem>
-          <MetricCard icon={Target} label="Quiz average" value={`${progress.quizAverage}`} unit="%" hint="across all quizzes" />
+          <MetricCard emoji="🎯" label="Quiz average" value={`${progress.quizAverage}`} unit="%" hint="across all quizzes" />
         </StaggerItem>
       </StaggerChildren>
 
@@ -256,13 +262,18 @@ export function DashboardPage() {
   )
 }
 
-function MetricCard({ icon: Icon, label, value, unit = '', hint }) {
+function MetricCard({ emoji, label, value, unit = '', hint }) {
   return (
-    <div className="group relative overflow-hidden rounded-2xl p-5 transition-all duration-300 hover:-translate-y-0.5" style={{
-      background: 'var(--color-card)',
-      backdropFilter: 'blur(16px)',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03), 0 0 40px var(--color-glow)',
-    }}>
+    <motion.div
+      whileHover={{ y: -3, scale: 1.01 }}
+      whileTap={{ scale: 0.98 }}
+      className="group relative overflow-hidden rounded-2xl p-5"
+      style={{
+        background: 'var(--color-card)',
+        backdropFilter: 'blur(16px)',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03), 0 0 40px var(--color-glow)',
+      }}
+    >
       <div className="flex items-start justify-between">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-3">{label}</p>
@@ -271,12 +282,14 @@ function MetricCard({ icon: Icon, label, value, unit = '', hint }) {
           </p>
           {hint && <p className="mt-1 text-xs text-ink-3">{hint}</p>}
         </div>
-        <div className="rounded-xl p-2.5 transition-transform duration-200 group-hover:scale-110" style={{ background: 'var(--color-accent-soft)' }}>
-          <Icon size={18} className="text-accent-2" />
-        </div>
+        <motion.span
+          className="text-2xl"
+          whileHover={{ scale: 1.3, rotate: [0, -10, 10, 0] }}
+          transition={{ type: 'spring', stiffness: 400 }}
+        >
+          {emoji}
+        </motion.span>
       </div>
-      {/* Accent sweep line */}
-      <div className="absolute bottom-0 left-0 h-[2px] w-0 transition-all duration-700 group-hover:w-full" style={{ background: 'linear-gradient(90deg, var(--color-accent), var(--color-accent-2))' }} />
-    </div>
+    </motion.div>
   )
 }
