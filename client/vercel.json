@@ -1,4 +1,6 @@
 {
+  "installCommand": "npm install --include=optional",
+  "buildCommand": "npm install --no-save @rolldown/binding-linux-x64-gnu@1.2.5 && npx vite build",
   "rewrites": [
     { "source": "/api/:path*", "destination": "/api" }
   ]
