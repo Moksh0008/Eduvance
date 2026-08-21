@@ -192,7 +192,7 @@ export function ProductDemo() {
   }
 
   return (
-    <section className="relative py-24 overflow-hidden">
+    <section id="demo" className="relative py-24 overflow-hidden">
       {/* Background atmosphere */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/2 top-0 -translate-x-1/2 h-[500px] w-[700px] rounded-full bg-accent/[0.03] blur-[150px]" />
