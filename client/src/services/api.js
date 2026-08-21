@@ -1,4 +1,4 @@
-const BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '')
+const BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, '')
 
 function token() {
   try {
@@ -37,7 +37,11 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
 
   const json = await res.json().catch(() => ({}))
   if (!res.ok || json.success === false) {
-    throw new ApiError(json.message || `Request failed (${res.status})`, res.status, json)
+    const fallback =
+      res.status === 404
+        ? 'API route not found. Keep the server running (`cd server && npm run dev`) and restart the client.'
+        : `Request failed (${res.status})`
+    throw new ApiError(json.message || fallback, res.status, json)
   }
   return json.data
 }
