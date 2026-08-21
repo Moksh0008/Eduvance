@@ -166,7 +166,7 @@ export function Sidebar({ onNavigate }) {
               <SidebarItem key={item.to} {...item} onNavigate={onNavigate} />
             ))}
           </ul>
-          {gi < groups.length - 1 && <div className="mx-3 mt-3 border-t border-line" />}
+          {gi < groups.length - 1 && <div className="mx-3 mt-4" />}
         </div>
       ))}
     </nav>
