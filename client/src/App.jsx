@@ -14,6 +14,12 @@ import { QuestionPapersPage } from './pages/QuestionPapersPage'
 import { StudySessionPage } from './pages/StudySessionPage'
 import { SetupPage } from './pages/SetupPage'
 import { ProfilePage } from './pages/ProfilePage'
+import { SettingsPage } from './pages/SettingsPage'
+import { QuizPage } from './pages/QuizPage'
+import { QuizPlayPage } from './pages/QuizPlayPage'
+import { QuizResultPage } from './pages/QuizResultPage'
+import { InsightsPage } from './pages/InsightsPage'
+import { RevisionPage } from './pages/RevisionPage'
 import { pageFade } from './animations/variants'
 
 function AnimatedPage({ children }) {
@@ -26,6 +32,7 @@ export default function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/setup" element={<SetupPage />} />
       <Route element={<AppShell />}>
         <Route path="/dashboard" element={<AnimatedPage><DashboardPage /></AnimatedPage>} />
         <Route path="/planner" element={<AnimatedPage><PlannerPage /></AnimatedPage>} />
@@ -36,8 +43,13 @@ export default function App() {
         <Route path="/timetable" element={<AnimatedPage><TimetablePage /></AnimatedPage>} />
         <Route path="/question-papers" element={<AnimatedPage><QuestionPapersPage /></AnimatedPage>} />
         <Route path="/study-session" element={<AnimatedPage><StudySessionPage /></AnimatedPage>} />
-        <Route path="/setup" element={<AnimatedPage><SetupPage /></AnimatedPage>} />
+        <Route path="/quiz" element={<AnimatedPage><QuizPage /></AnimatedPage>} />
+        <Route path="/quiz/play" element={<AnimatedPage><QuizPlayPage /></AnimatedPage>} />
+        <Route path="/quiz/result" element={<AnimatedPage><QuizResultPage /></AnimatedPage>} />
+        <Route path="/insights" element={<AnimatedPage><InsightsPage /></AnimatedPage>} />
+        <Route path="/revision" element={<AnimatedPage><RevisionPage /></AnimatedPage>} />
         <Route path="/profile" element={<AnimatedPage><ProfilePage /></AnimatedPage>} />
+        <Route path="/settings" element={<AnimatedPage><SettingsPage /></AnimatedPage>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

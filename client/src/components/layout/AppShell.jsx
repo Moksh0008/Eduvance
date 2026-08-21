@@ -17,7 +17,7 @@ export function AppShell() {
         Skip to content
       </a>
       <div className="flex min-h-screen">
-        <aside className="sticky top-0 hidden h-screen w-56 shrink-0 border-r border-line bg-surface lg:block">
+        <aside className="sticky top-0 hidden h-screen w-[15.5rem] shrink-0 border-r border-line bg-surface lg:block">
           <div className="flex h-14 items-center border-b border-line px-4">
             <Logo to="/dashboard" />
           </div>

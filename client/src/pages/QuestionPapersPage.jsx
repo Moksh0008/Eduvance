@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Badge } from '../components/ui/Badge'
-import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
+import { FileDrop } from '../components/ui/FileDrop'
+import { StageList } from '../components/ui/StageList'
 import { getPapers } from '../services/catalog'
+import { runStages } from '../services/simulate'
 
 const importanceTone = {
   'VERY HIGH': 'high',
@@ -13,21 +16,39 @@ const importanceTone = {
 
 export function QuestionPapersPage() {
   const { papers, paperInsights } = getPapers()
+  const [extra, setExtra] = useState(null)
+  const [stage, setStage] = useState(0)
+  const [done, setDone] = useState(false)
+
+  async function onFile(file) {
+    setDone(false)
+    await runStages(['Reading paper…', 'Counting topic frequency…', 'Updating importance…'], (i) => setStage(i), 600)
+    setDone(true)
+    setExtra({ file: file.name, pages: '—', status: 'Queued (simulated)' })
+  }
 
   return (
     <div>
       <PageHeader
         eyebrow="Question papers"
         title="Frequency is a signal. Treat it as one."
-        description="Upload UI only. Analysis below is sample output so the product story is visible without a parser."
-        actions={<Button variant="secondary">Upload PDF</Button>}
+        description="Upload is simulated. The table below is sample analysis so the product story is visible without a parser."
       />
+
+      <FileDrop label="Upload previous paper" onFile={onFile} />
+      {extra || done ? (
+        <StageList
+          stages={['Reading paper…', 'Counting topic frequency…', 'Updating importance…']}
+          current={stage}
+          complete={done}
+        />
+      ) : null}
 
       <section>
         <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Uploaded papers</h2>
         <ul className="mt-3">
-          {papers.map((p) => (
-            <li key={p.id} className="flex items-center justify-between border-t border-line py-3 text-sm">
+          {(extra ? [extra, ...papers] : papers).map((p) => (
+            <li key={p.id || p.file} className="flex items-center justify-between border-t border-line py-3 text-sm">
               <span className="font-medium">{p.file}</span>
               <span className="text-ink-3">
                 {p.pages} pages · {p.status}

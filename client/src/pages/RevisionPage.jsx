@@ -1,0 +1,69 @@
+import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { PageHeader } from '../components/ui/PageHeader'
+import { Button } from '../components/ui/Button'
+import { getRevision } from '../services/catalog'
+
+export function RevisionPage() {
+  const { todayRevision, upcomingRevision, finalRevisionDue } = getRevision()
+  const total = todayRevision.reduce((n, x) => n + x.minutes, 0)
+
+  return (
+    <div>
+      <PageHeader
+        eyebrow="Prepare"
+        title="Revision is scheduled, not leftover time."
+        description="Spaced return to high-weight topics. Completing a block later informs the next replan."
+      />
+
+      <section>
+        <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Today&apos;s revision · {total} min</h2>
+        <ol className="mt-4 border-l border-ink">
+          {todayRevision.map((item, i) => (
+            <motion.li
+              key={item.id}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.08 }}
+              className="relative py-4 pl-6"
+            >
+              <span className="absolute -left-[5px] top-6 h-2.5 w-2.5 rounded-full bg-ink" />
+              <p className="text-xs text-ink-3">{item.subject}</p>
+              <p className="text-lg font-semibold">{item.topic}</p>
+              <p className="tabular text-sm text-ink-2">{item.minutes} min</p>
+            </motion.li>
+          ))}
+        </ol>
+        <Button as={Link} to="/study-session" className="mt-4">
+          Start revision session
+        </Button>
+      </section>
+
+      <section className="mt-14">
+        <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Upcoming revision</h2>
+        <ul className="mt-3">
+          {upcomingRevision.map((d) => (
+            <li key={d.day} className="flex justify-between gap-4 border-t border-line py-3 text-sm">
+              <span className="font-medium">{d.day}</span>
+              <span className="text-ink-2">{d.items.join(' · ')}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="mt-14">
+        <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Due for final revision</h2>
+        <ul className="mt-3">
+          {finalRevisionDue.map((t) => (
+            <li key={t.topic} className="flex justify-between border-t border-line py-3 text-sm">
+              <span>
+                {t.subject} → {t.topic}
+              </span>
+              <span className="tabular text-ink-3">{t.when}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
+  )
+}

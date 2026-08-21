@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { PageHeader } from '../components/ui/PageHeader'
 import { SubjectCard } from '../components/domain/SubjectCard'
 import { Button } from '../components/ui/Button'
@@ -11,7 +12,16 @@ export function SubjectsPage() {
         eyebrow="Subjects"
         title="Four papers. Unequal urgency."
         description="Readiness, exam date, and weak topics on one scan. Add more subjects when the backend lands — this view is local sample data."
-        actions={<Button variant="secondary">Add subject</Button>}
+        actions={
+          <>
+            <Button as={Link} to="/timetable" variant="secondary">
+              Exam timetable
+            </Button>
+            <Button as={Link} to="/setup" variant="secondary">
+              Add subject
+            </Button>
+          </>
+        }
       />
       <div>
         {subjects.map((s) => (

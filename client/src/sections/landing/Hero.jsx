@@ -23,14 +23,14 @@ export function Hero() {
             Optimize Your Preparation.
           </motion.h1>
           <motion.p variants={fadeUp} className="mt-6 max-w-xl text-base leading-relaxed text-ink-2 sm:text-lg">
-            Eduvance analyzes your syllabus, exam schedule, topic difficulty, marks weightage and progress
-            to build a preparation strategy that continuously adapts to you.
+            Give Eduvance your academic constraints. We&apos;ll figure out what deserves your time — then keep
+            replanning as performance, hours, and deadlines change.
           </motion.p>
           <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-3">
-            <Button as={Link} to="/register" size="lg">
+            <Button as={Link} to="/setup" size="lg">
               Start Preparing
             </Button>
-            <Button as="a" href="#how" variant="secondary" size="lg">
+            <Button as="a" href="#clarity" variant="secondary" size="lg">
               See How It Works
             </Button>
           </motion.div>

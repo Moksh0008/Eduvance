@@ -7,6 +7,12 @@ import { progressSummary, weakTopics, strongTopics, activity, risks } from '../d
 import { masteryTrend, studyHours, predictedReadiness } from '../data/analytics'
 import { papers, paperInsights } from '../data/questionPapers'
 import { insights } from '../data/insights'
+import { planDelta, monitorRisks } from '../data/planDelta'
+import { readiness } from '../data/readiness'
+import { knowledgeGaps } from '../data/gaps'
+import { todayRevision, upcomingRevision, finalRevisionDue } from '../data/revision'
+import { quizBank, quizResultTemplate } from '../data/quiz'
+import { quizAccuracy, topicPerformance, improvementRate } from '../data/analyticsExtra'
 
 /** Local catalog — swap these functions for REST later. */
 
@@ -48,7 +54,7 @@ export function getProgress() {
 }
 
 export function getAnalytics() {
-  return { masteryTrend, studyHours, predictedReadiness }
+  return { masteryTrend, studyHours, predictedReadiness, quizAccuracy, topicPerformance, improvementRate }
 }
 
 export function getPapers() {
@@ -57,4 +63,32 @@ export function getPapers() {
 
 export function getInsights() {
   return insights
+}
+
+export function getPlanDelta() {
+  return planDelta
+}
+
+export function getMonitorRisks() {
+  return monitorRisks
+}
+
+export function getReadiness() {
+  return readiness
+}
+
+export function getGaps() {
+  return knowledgeGaps
+}
+
+export function getRevision() {
+  return { todayRevision, upcomingRevision, finalRevisionDue }
+}
+
+export function getQuizBank() {
+  return quizBank
+}
+
+export function getQuizResultTemplate() {
+  return quizResultTemplate
 }

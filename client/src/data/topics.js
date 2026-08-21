@@ -118,10 +118,11 @@ export const nowStudy = {
   estimatedLabel: '2h 15m',
   estimatedMin: 135,
   reasons: [
-    'High marks weightage',
-    'Exam approaching',
+    'Exam in 4 days',
+    '20% marks weightage',
     'Frequently asked',
-    'Low current mastery',
+    'High difficulty',
+    'Your current mastery is only 35%',
   ],
 }
 

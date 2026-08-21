@@ -9,6 +9,9 @@ export function MarketingNav() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Logo />
         <nav className="hidden items-center gap-6 text-sm text-ink-2 md:flex" aria-label="Marketing">
+          <a href="#clarity" className="hover:text-ink">
+            The loop
+          </a>
           <a href="#problem" className="hover:text-ink">
             Problem
           </a>
@@ -23,7 +26,7 @@ export function MarketingNav() {
           <Button as={Link} to="/login" variant="ghost" size="sm">
             Log in
           </Button>
-          <Button as={Link} to="/register" size="sm">
+          <Button as={Link} to="/setup" size="sm">
             Start Preparing
           </Button>
         </div>

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Button } from '../components/ui/Button'
 import { getStudent } from '../services/catalog'
@@ -18,9 +19,13 @@ export function ProfilePage() {
         <Row label="Semester" value={String(student.semester)} />
         <Row label="Daily study window" value={`${student.dailyMinutes / 60} hours`} />
       </dl>
-      <div className="mt-8 flex gap-2">
-        <Button variant="secondary">Edit hours</Button>
-        <Button variant="ghost">Sign out (UI)</Button>
+      <div className="mt-8 flex flex-wrap gap-2">
+        <Button as={Link} to="/setup" variant="secondary">
+          Reconfigure setup
+        </Button>
+        <Button as={Link} to="/settings" variant="ghost">
+          Settings
+        </Button>
       </div>
     </div>
   )

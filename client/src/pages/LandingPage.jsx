@@ -1,6 +1,8 @@
 import { MarketingNav } from '../components/layout/MarketingNav'
 import { Hero } from '../sections/landing/Hero'
 import { Problem } from '../sections/landing/Problem'
+import { ChaosToClarity } from '../sections/landing/ChaosToClarity'
+import { Comparison } from '../sections/landing/Comparison'
 import { HowItWorks } from '../sections/landing/HowItWorks'
 import { Prioritization } from '../sections/landing/Prioritization'
 import { AdaptivePlanning } from '../sections/landing/AdaptivePlanning'
@@ -14,6 +16,8 @@ export function LandingPage() {
       <MarketingNav />
       <main>
         <Hero />
+        <ChaosToClarity />
+        <Comparison />
         <Problem />
         <HowItWorks />
         <Prioritization />
