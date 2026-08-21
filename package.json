@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=20.19.0"
-  },
+  "node": "20.x"
+},
   "workspaces": ["client", "client/server"],
   "scripts": {
     "build": "npm run build -w eduvance-client",
