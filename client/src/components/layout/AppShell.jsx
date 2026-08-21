@@ -4,16 +4,28 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Logo } from '../brand/Logo'
 import { Sidebar } from './Sidebar'
 import { Navbar } from './Navbar'
+import { ParticleBackground } from '../ui/ParticleBackground'
+import { useTheme } from '../../context/ThemeContext'
 
 export function AppShell() {
   const [open, setOpen] = useState(false)
+  const { isDark } = useTheme()
 
   return (
     <div className="min-h-screen bg-canvas">
-      {/* Ambient background glow */}
+      {/* Particle background */}
+      <ParticleBackground />
+
+      {/* Ambient background glow orbs */}
       <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-accent/[0.03] blur-[120px]" />
-        <div className="absolute -bottom-40 -right-40 h-96 w-96 rounded-full bg-low/[0.02] blur-[120px]" />
+        <div
+          className="absolute -top-40 -left-40 h-96 w-96 rounded-full blur-[120px]"
+          style={{ background: isDark ? 'rgba(99, 102, 241, 0.03)' : 'rgba(85, 88, 230, 0.04)' }}
+        />
+        <div
+          className="absolute -bottom-40 -right-40 h-96 w-96 rounded-full blur-[120px]"
+          style={{ background: isDark ? 'rgba(34, 211, 238, 0.02)' : 'rgba(8, 145, 178, 0.03)' }}
+        />
       </div>
 
       <a

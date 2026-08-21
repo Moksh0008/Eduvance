@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Logo } from '../brand/Logo'
 import { Button } from '../ui/Button'
+import { BulbToggle } from '../ui/BulbToggle'
 
 export function SetupShell({ children, step, total, onDemo, editing }) {
   return (
@@ -17,6 +18,7 @@ export function SetupShell({ children, step, total, onDemo, editing }) {
             <p className="text-xs text-ink-3">
               {editing ? 'Edit preparation' : 'Setup'} {step} / {total}
             </p>
+            <BulbToggle />
           </div>
         </div>
         <div className="flex h-1 w-full" aria-hidden="true">

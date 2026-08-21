@@ -1,7 +1,7 @@
 import { Link, NavLink } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { Logo } from '../brand/Logo'
 import { Button } from '../ui/Button'
+import { BulbToggle } from '../ui/BulbToggle'
 import { StartPreparingButton } from '../auth/StartPreparingButton'
 import { cn } from '../../utils/cn'
 import { useAppState } from '../../context/AppState'
@@ -29,7 +29,8 @@ export function MarketingNav() {
             </a>
           ))}
         </nav>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <BulbToggle />
           {isLoggedIn ? (
             <>
               <Button as={Link} to={onboardingComplete ? '/dashboard' : '/setup'} variant="ghost" size="sm">
@@ -56,9 +57,12 @@ export function AuthNav() {
     <header className="border-b border-line bg-canvas/80 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
         <Logo />
-        <NavLink to="/" className={({ isActive }) => cn('text-sm text-ink-2 hover:text-accent-2 transition-colors', isActive && 'text-ink')}>
-          Back to home
-        </NavLink>
+        <div className="flex items-center gap-3">
+          <BulbToggle />
+          <NavLink to="/" className={({ isActive }) => cn('text-sm text-ink-2 hover:text-accent-2 transition-colors', isActive && 'text-ink')}>
+            Back to home
+          </NavLink>
+        </div>
       </div>
     </header>
   )

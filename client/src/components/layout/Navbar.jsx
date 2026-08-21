@@ -1,9 +1,9 @@
 import { Menu } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { Logo } from '../brand/Logo'
 import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
+import { BulbToggle } from '../ui/BulbToggle'
 import { useAppState } from '../../context/AppState'
 import { useAppData } from '../../hooks/useAppData'
 
@@ -38,6 +38,7 @@ export function Navbar({ onMenu }) {
           <span className="tabular text-ink-3">{hours}h</span>
           <span className="text-ink-3">/ day</span>
         </div>
+        <BulbToggle />
       </div>
     </header>
   )

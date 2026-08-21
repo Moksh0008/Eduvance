@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { motion, useMotionValue, useSpring } from 'framer-motion'
 import { useFinePointer, useReducedMotion } from '../../hooks/useReducedMotion'
+import { useTheme } from '../../context/ThemeContext'
 
 export function Cursor() {
   const fine = useFinePointer()
   const reduced = useReducedMotion()
+  const { isDark } = useTheme()
   const enabled = fine && !reduced
   const x = useMotionValue(-100)
   const y = useMotionValue(-100)
@@ -31,12 +33,8 @@ export function Cursor() {
       const t = e.target?.closest?.('[data-cursor]')
       setMode(t?.getAttribute('data-cursor') || (e.target?.closest?.('a,button') ? 'click' : 'default'))
     }
-    function onDown() {
-      setDown(true)
-    }
-    function onUp() {
-      setDown(false)
-    }
+    function onDown() { setDown(true) }
+    function onUp() { setDown(false) }
 
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mousedown', onDown)
@@ -53,6 +51,8 @@ export function Cursor() {
   if (mode === 'form') return null
 
   const expand = mode === 'click' || mode === 'card' || down
+  const dotColor = isDark ? 'bg-accent-2' : 'bg-accent'
+  const ringBorder = isDark ? 'border-accent/30 bg-accent/[0.08]' : 'border-accent/20 bg-accent/[0.06]'
 
   return (
     <>
@@ -62,11 +62,11 @@ export function Cursor() {
         style={{ x: tx, y: ty, translateX: '-50%', translateY: '-50%' }}
       >
         <div
-          className="rounded-full border border-accent/30 bg-accent/[0.08]"
+          className={`rounded-full border ${ringBorder}`}
           style={{
             width: expand ? 40 : 24,
             height: expand ? 40 : 24,
-            transition: 'width 160ms ease, height 160ms ease',
+            transition: 'width 160ms ease, height 160ms ease, background-color 0.5s ease, border-color 0.5s ease',
           }}
         />
       </motion.div>
@@ -76,8 +76,8 @@ export function Cursor() {
         style={{ x, y, translateX: '-50%', translateY: '-50%' }}
       >
         <div
-          className="h-1.5 w-1.5 rounded-full bg-accent-2"
-          style={{ transform: down ? 'scale(0.6)' : 'scale(1)', transition: 'transform 100ms ease' }}
+          className={`h-1.5 w-1.5 rounded-full ${dotColor}`}
+          style={{ transform: down ? 'scale(0.6)' : 'scale(1)', transition: 'transform 100ms ease, background-color 0.5s ease' }}
         />
       </motion.div>
     </>
