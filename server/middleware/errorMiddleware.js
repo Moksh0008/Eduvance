@@ -16,7 +16,8 @@ export function errorHandler(err, req, res, next) {
   }
 
   const status = err.statusCode || err.status || 500
-  const message = status === 500 ? 'Server error' : err.message || 'Request failed'
+  const message =
+    status === 500 ? 'Server error' : err.message || 'Request failed'
   if (status === 500) console.error(err)
   return res.status(status).json({ success: false, message })
 }

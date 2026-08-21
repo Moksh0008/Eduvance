@@ -1,0 +1,9 @@
+{
+  "name": "eduvance",
+  "private": true,
+  "type": "module",
+  "workspaces": ["client", "server"],
+  "scripts": {
+    "build": "npm run build -w eduvance-client"
+  }
+}

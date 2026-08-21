@@ -20,17 +20,20 @@ export function createApp() {
   )
   app.use(express.json({ limit: '2mb' }))
 
-  app.use(async (_req, _res, next) => {
+  app.get('/api/health', (_req, res) => {
+    res.json({ success: true, data: { ok: true } })
+  })
+
+  app.use(async (req, _res, next) => {
+    if (req.path === '/api/health') return next()
     try {
       await ensureDb()
       next()
     } catch (err) {
+      err.statusCode = 503
+      err.message = 'Database is not configured on the server.'
       next(err)
     }
-  })
-
-  app.get('/api/health', (_req, res) => {
-    res.json({ success: true, data: { ok: true } })
   })
 
   app.use('/api/auth', authRoutes)
