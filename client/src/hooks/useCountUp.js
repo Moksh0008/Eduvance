@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react'
 
 export function useCountUp(target, { duration = 900, enabled = true } = {}) {
   const [value, setValue] = useState(0)
+  const reduce =
+    typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   useEffect(() => {
-    if (!enabled) {
+    if (!enabled || reduce) {
       setValue(target)
       return undefined
     }
@@ -18,7 +20,7 @@ export function useCountUp(target, { duration = 900, enabled = true } = {}) {
     }
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
-  }, [target, duration, enabled])
+  }, [target, duration, enabled, reduce])
 
   return value
 }

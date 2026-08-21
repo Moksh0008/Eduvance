@@ -1,11 +1,32 @@
 # Eduvance
 
-Adaptive Examination Preparation & Study Optimization System.
+Adaptive exam-preparation optimizer.
 
-Frontend lives in `client/`. Phase 1 has no backend.
+## Apps
+
+- `client/` — React (Vite) frontend
+- `server/` — Express + MongoDB API (JWT auth, per-user preparation)
+
+## Run locally
+
+Terminal 1 — API (requires MongoDB Atlas URI in `server/.env`):
 
 ```bash
-cd client
+cd server
+cp .env.example .env
+# set MONGODB_URI and JWT_SECRET
 npm install
 npm run dev
 ```
+
+Terminal 2 — UI:
+
+```bash
+cd client
+cp .env.example .env
+npm install
+npm run dev
+```
+
+Frontend: http://localhost:5173  
+API: http://localhost:5000/api/health

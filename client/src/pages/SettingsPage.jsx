@@ -1,37 +1,44 @@
 import { Link } from 'react-router-dom'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Button } from '../components/ui/Button'
+import { useAppState } from '../context/AppState'
+import { DemoBanner } from '../components/domain/ModeBanners'
 
 export function SettingsPage() {
+  const { demoMode, enableDemo, disableDemo, logout } = useAppState()
+
   return (
     <div>
+      <DemoBanner />
       <PageHeader
         eyebrow="Account"
         title="Settings"
-        description="Optimizer preferences. Persistence ships with the backend."
+        description="Demo mode reads a sample CSE catalog. Your preparation stays in a separate store and is not overwritten."
       />
       <ul className="max-w-lg divide-y divide-line border-t border-line text-sm">
         <li className="flex items-center justify-between py-4">
-          <span>Re-run academic setup</span>
+          <span>Academic setup</span>
           <Button as={Link} to="/setup" size="sm" variant="secondary">
-            Open setup
+            Edit preparation
           </Button>
         </li>
-        <li className="flex items-center justify-between py-4">
-          <span>Exam timetable</span>
-          <Button as={Link} to="/timetable" size="sm" variant="ghost">
-            View
-          </Button>
+        <li className="flex items-center justify-between gap-4 py-4">
+          <span>Demo catalog (does not overwrite My preparation)</span>
+          {demoMode ? (
+            <Button size="sm" variant="secondary" onClick={disableDemo}>
+              My preparation
+            </Button>
+          ) : (
+            <Button size="sm" variant="secondary" onClick={enableDemo}>
+              Load demo data
+            </Button>
+          )}
         </li>
         <li className="flex items-center justify-between py-4">
-          <span>Study session timer</span>
-          <Button as={Link} to="/study-session" size="sm" variant="ghost">
-            Open
+          <span>Log out of this account</span>
+          <Button as={Link} to="/" size="sm" variant="ghost" onClick={() => logout()}>
+            Log out
           </Button>
-        </li>
-        <li className="flex items-center justify-between py-4">
-          <span>Notifications</span>
-          <span className="text-ink-3">Frontend only</span>
         </li>
       </ul>
     </div>

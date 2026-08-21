@@ -1,18 +1,24 @@
 import { PageHeader } from '../components/ui/PageHeader'
+import { DemoBanner } from '../components/domain/ModeBanners'
 import { daysUntil, formatDate } from '../utils/format'
-import { getExams, getSubjects } from '../services/catalog'
+import { useAppData } from '../hooks/useAppData'
 
 export function TimetablePage() {
-  const exams = getExams()
-  const subjects = getSubjects()
+  const data = useAppData()
 
   return (
     <div>
+      <DemoBanner />
       <PageHeader
         eyebrow="Exam timetable"
         title="The calendar the optimizer respects."
-        description="Days remaining drive priority. A date change later will force a replan — UI only for now."
+        description={data.isDemo ? 'Demo dates.' : 'Your entered dates. Uploaded files are listed as stored, not parsed.'}
       />
+      {data.timetableFile ? (
+        <p className="mb-4 text-sm text-ink-2">
+          File: <span className="font-medium text-ink">{data.timetableFile.name}</span> · Uploaded
+        </p>
+      ) : null}
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead>
@@ -20,25 +26,23 @@ export function TimetablePage() {
               <th className="py-3 font-medium">Subject</th>
               <th className="py-3 font-medium">Date</th>
               <th className="py-3 font-medium">Time</th>
-              <th className="py-3 font-medium">Venue</th>
               <th className="py-3 font-medium">Marks</th>
               <th className="py-3 font-medium">Remaining</th>
             </tr>
           </thead>
           <tbody>
-            {exams.map((exam) => {
-              const subject = subjects.find((s) => s.id === exam.subjectId)
-              return (
-                <tr key={exam.id} className="border-b border-line">
-                  <td className="py-4 font-medium">{subject?.fullName}</td>
-                  <td className="py-4 tabular">{formatDate(exam.date)}</td>
-                  <td className="py-4 tabular">{exam.time}</td>
-                  <td className="py-4">{exam.venue}</td>
-                  <td className="py-4 tabular">{exam.marks}</td>
-                  <td className="py-4 tabular font-semibold">{daysUntil(exam.date)} days</td>
-                </tr>
-              )
-            })}
+            {(data.allExams || data.exams).map((exam) => (
+              <tr key={exam.id} className="border-b border-line">
+                <td className="py-4 font-medium">
+                  {exam.name}
+                  {exam.included === false ? <span className="ml-2 text-xs text-ink-3">not in optimizer</span> : null}
+                </td>
+                <td className="py-4 tabular">{formatDate(exam.date)}</td>
+                <td className="py-4 tabular">{exam.time}</td>
+                <td className="py-4 tabular">{exam.marks}</td>
+                <td className="py-4 tabular font-semibold">{daysUntil(exam.date)} days</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

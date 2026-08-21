@@ -2,14 +2,35 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Button } from '../components/ui/Button'
+import { DemoBanner } from '../components/domain/ModeBanners'
 import { getRevision } from '../services/catalog'
+import { useAppData } from '../hooks/useAppData'
 
 export function RevisionPage() {
-  const { todayRevision, upcomingRevision, finalRevisionDue } = getRevision()
+  const data = useAppData()
+  const derived = {
+    todayRevision: (data.schedule || []).map((b) => ({
+      id: b.id,
+      subject: b.subject,
+      topic: b.topic,
+      minutes: b.minutes,
+    })),
+    upcomingRevision: (data.exams || []).map((e) => ({
+      day: e.date || 'TBD',
+      items: [e.name],
+    })),
+    finalRevisionDue: (data.progress?.weakTopics || []).map((t) => ({
+      topic: t.name,
+      subject: t.subject,
+      when: 'After next quiz',
+    })),
+  }
+  const { todayRevision, upcomingRevision, finalRevisionDue } = data.isDemo ? getRevision() : derived
   const total = todayRevision.reduce((n, x) => n + x.minutes, 0)
 
   return (
     <div>
+      <DemoBanner />
       <PageHeader
         eyebrow="Prepare"
         title="Revision is scheduled, not leftover time."
@@ -19,7 +40,8 @@ export function RevisionPage() {
       <section>
         <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Today&apos;s revision · {total} min</h2>
         <ol className="mt-4 border-l border-ink">
-          {todayRevision.map((item, i) => (
+        {todayRevision.length ? (
+          todayRevision.map((item, i) => (
             <motion.li
               key={item.id}
               initial={{ opacity: 0, x: -8 }}
@@ -32,7 +54,10 @@ export function RevisionPage() {
               <p className="text-lg font-semibold">{item.topic}</p>
               <p className="tabular text-sm text-ink-2">{item.minutes} min</p>
             </motion.li>
-          ))}
+          ))
+        ) : (
+          <li className="relative py-4 pl-6 text-sm text-ink-2">No revision blocks yet. Complete setup and a quiz to allocate minutes.</li>
+        )}
         </ol>
         <Button as={Link} to="/study-session" className="mt-4">
           Start revision session

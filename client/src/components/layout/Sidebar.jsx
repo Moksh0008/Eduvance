@@ -12,6 +12,7 @@ import {
   ScanSearch,
   UserRound,
   SlidersHorizontal,
+  PencilLine,
 } from 'lucide-react'
 import { cn } from '../../utils/cn'
 
@@ -48,6 +49,7 @@ const groups = [
     label: 'Account',
     items: [
       { to: '/profile', label: 'Profile', icon: UserRound },
+      { to: '/setup', label: 'Edit preparation', icon: PencilLine },
       { to: '/settings', label: 'Settings', icon: SlidersHorizontal },
     ],
   },

@@ -1,16 +1,14 @@
 import { cn } from '../../utils/cn'
-import { priorityLabel } from '../../utils/format'
 
-export function PriorityIndicator({ score, className }) {
-  const label = priorityLabel(score)
+export function PriorityIndicator({ level, score }) {
+  const derived =
+    level || (score >= 85 ? 'HIGH' : score >= 70 ? 'MEDIUM' : score != null ? 'LOW' : 'MEDIUM')
   const tone =
-    label === 'High' ? 'bg-high' : label === 'Medium' ? 'bg-med' : 'bg-low'
-
+    derived === 'HIGH' ? 'bg-high-bg text-high' : derived === 'LOW' ? 'bg-low-bg text-low' : 'bg-med-bg text-med'
   return (
-    <div className={cn('flex items-center gap-2', className)}>
-      <span className={cn('h-1.5 w-1.5 rounded-full', tone)} aria-hidden="true" />
-      <span className="tabular text-sm font-medium text-ink">{score}</span>
-      <span className="text-xs text-ink-3">{label}</span>
-    </div>
+    <span className={cn('inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wider', tone)}>
+      <span className={cn('h-1.5 w-1.5 rounded-full', derived === 'HIGH' ? 'animate-pulse bg-high' : 'bg-current')} />
+      {score != null ? <span className="tabular">{score}</span> : derived}
+    </span>
   )
 }

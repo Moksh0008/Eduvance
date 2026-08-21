@@ -5,14 +5,15 @@ import { daysUntil, formatDate } from '../../utils/format'
 
 const toneMap = { high: 'high', medium: 'medium', low: 'low' }
 
-export function SubjectCard({ subject }) {
+export function SubjectCard({ subject, included = true }) {
   const days = daysUntil(subject.examDate)
   return (
-    <article className="border-t border-line py-5">
+    <article className="border-t border-line py-5" data-cursor="card">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs text-ink-3">{subject.code}</p>
           <h3 className="mt-0.5 text-lg font-semibold text-ink">{subject.fullName}</h3>
+          {!included ? <p className="mt-1 text-xs text-ink-3">Entered, but not selected for the optimizer</p> : null}
         </div>
         <Badge tone={toneMap[subject.priority]}>{subject.priority} priority</Badge>
       </div>
@@ -26,7 +27,7 @@ export function SubjectCard({ subject }) {
         </div>
         <div>
           <p className="text-xs text-ink-3">Weak topics</p>
-          <p className="mt-1 text-sm text-ink-2">{subject.weakTopics.join(', ')}</p>
+          <p className="mt-1 text-sm text-ink-2">{(subject.weakTopics || []).join(', ') || '—'}</p>
         </div>
       </div>
       <Link

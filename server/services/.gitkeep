@@ -1,0 +1,2 @@
+# Keep this file empty of secrets. Copy to `.env` locally.
+# See server/.env.example

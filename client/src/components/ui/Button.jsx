@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { cn } from '../../utils/cn'
+import { useFinePointer, useReducedMotion } from '../../hooks/useReducedMotion'
 
 const variants = {
   primary: 'bg-ink text-canvas hover:bg-ink/90 disabled:opacity-50',
@@ -24,6 +25,8 @@ export function Button({
   type,
   ...props
 }) {
+  const fine = useFinePointer()
+  const reduce = useReducedMotion()
   const classes = cn(
     'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors duration-150',
     variants[variant],
@@ -36,8 +39,9 @@ export function Button({
       <motion.button
         type={type || 'button'}
         className={classes}
-        whileHover={{ y: -1 }}
-        whileTap={{ scale: 0.98 }}
+        whileHover={fine && !reduce ? { y: -1, scale: 1.01 } : undefined}
+        whileTap={reduce ? undefined : { scale: 0.98 }}
+        data-cursor="click"
         transition={{ type: 'spring', stiffness: 420, damping: 28 }}
         {...props}
       >

@@ -3,18 +3,50 @@ import { motion } from 'framer-motion'
 import { PageHeader } from '../components/ui/PageHeader'
 import { ProgressBar } from '../components/ui/ProgressBar'
 import { Button } from '../components/ui/Button'
+import { DemoBanner } from '../components/domain/ModeBanners'
+import { EmptyState } from '../components/ui/EmptyState'
 import { getGaps } from '../services/catalog'
+import { useAppData } from '../hooks/useAppData'
 
 export function InsightsPage() {
-  const gaps = getGaps()
+  const data = useAppData()
+  const gaps = data.isDemo
+    ? getGaps()
+    : (data.progress?.weakTopics || []).map((t, i) => ({
+        id: `gap-${i}`,
+        subject: t.subject,
+        topic: t.name,
+        category: 'Quiz evidence',
+        concept: t.mastery,
+        problemSolving: Math.max(0, t.mastery - 8),
+        recall: Math.max(0, t.mastery - 4),
+        mastery: t.mastery,
+        recommendation: `${t.topic || t.name} scored ${t.mastery}%. Return here before the next paper.`,
+      }))
   return (
     <div>
+      <DemoBanner />
       <PageHeader
         eyebrow="Understand"
         title="Where are you losing marks?"
         description="Gaps are not overall percentages. They split concept, problem-solving, and recall so the next 35 minutes have a job."
       />
       <div className="space-y-10">
+        {!data.isDemo && !(data.quizResults || []).length ? (
+          <EmptyState
+            title="Complete your first quiz to unlock performance insights."
+            body="Gap cards are derived from quiz evidence in your workspace — not a sample DBMS pack."
+          />
+        ) : null}
+        {!data.isDemo && (data.quizResults || []).length && gaps.length === 0 ? (
+          <p className="text-sm text-ink-2">No weak topics flagged from recent quizzes. Analytics still has the full history.</p>
+        ) : null}
+        {data.isDemo && gaps.length === 0 ? (
+          <EmptyState
+            title="Complete your first quiz to unlock performance insights."
+            body="Gap cards are derived from quiz evidence in your workspace — not a sample DBMS pack."
+          />
+        ) : null}
         {gaps.map((g, i) => (
           <motion.article
             key={g.id}

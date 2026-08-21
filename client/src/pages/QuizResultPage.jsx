@@ -1,19 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Button } from '../components/ui/Button'
-import { ProgressBar } from '../components/ui/ProgressBar'
-import { CountUp } from '../components/ui/CountUp'
-import { getQuizResultTemplate } from '../services/catalog'
-
-const missMap = {
-  q4: 'Lossless Decomposition',
-  q6: 'Dependency Preservation',
-}
+import { QuizResult } from '../components/domain/QuizResult'
+import { useAppState } from '../context/AppState'
 
 export function QuizResultPage() {
-  const template = getQuizResultTemplate()
+  const { recordQuiz, demoMode } = useAppState()
   const result = useMemo(() => {
     try {
       return JSON.parse(sessionStorage.getItem('eduvance.quiz.result') || 'null')
@@ -23,6 +16,14 @@ export function QuizResultPage() {
   }, [])
   const navigate = useNavigate()
   const [added, setAdded] = useState(false)
+
+  useEffect(() => {
+    if (!result || demoMode) return
+    const key = `${result.subject}|${result.topic}|${result.score}|${result.correct}|${result.total}`
+    if (sessionStorage.getItem('eduvance.quiz.persisted') === key) return
+    recordQuiz(result)
+    sessionStorage.setItem('eduvance.quiz.persisted', key)
+  }, [result, demoMode, recordQuiz])
 
   if (!result) {
     return (
@@ -35,66 +36,28 @@ export function QuizResultPage() {
     )
   }
 
-  const weakFromMiss = [...new Set((result.missed || []).map((id) => missMap[id]).filter(Boolean))]
-  const weak = weakFromMiss.length ? weakFromMiss : template.weak
-  const speed = Math.min(100, 55 + Math.round((result.leftover / 900) * 40))
-
   function addToPlan() {
-    sessionStorage.setItem('eduvance.plan.inject', JSON.stringify({ topic: result.topic, from: 'quiz' }))
+    sessionStorage.setItem(
+      'eduvance.plan.inject',
+      JSON.stringify({
+        topic: result.topic,
+        minutesDelta: result.score < 70 ? 45 : -15,
+        reason: `Score ${result.score}%`,
+      }),
+    )
     setAdded(true)
-    setTimeout(() => navigate('/planner'), 700)
+    setTimeout(() => navigate('/planner'), 500)
   }
 
   return (
     <div>
       <PageHeader eyebrow="Quiz performance" title={`${result.subject} → ${result.topic}`} />
-      <div className="border border-ink bg-ink px-8 py-10 text-canvas">
-        <p className="text-[11px] uppercase tracking-wider text-canvas/50">Score</p>
-        <p className="mt-2 font-serif tabular text-7xl">
-          <CountUp to={result.score} suffix="%" duration={1100} />
-        </p>
-        <p className="mt-2 text-canvas/70">
-          {result.correct} / {result.total} correct
-        </p>
-      </div>
-
-      <div className="mt-10 grid gap-5 sm:grid-cols-2">
-        <ProgressBar value={template.concept} label="Concept mastery" />
-        <ProgressBar value={speed} label="Speed" />
-        <ProgressBar value={result.score} label="Accuracy" />
-        <ProgressBar value={template.confidence} label="Confidence" />
-      </div>
-
-      <div className="mt-12 grid gap-10 md:grid-cols-2">
-        <section>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Strong areas</h2>
-          <ul className="mt-3 space-y-2 text-sm">
-            {template.strong.map((s) => (
-              <li key={s}>✓ {s}</li>
-            ))}
-          </ul>
-        </section>
-        <section>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Weak areas</h2>
-          <ul className="mt-3 space-y-2 text-sm">
-            {weak.map((s) => (
-              <li key={s}>⚠ {s}</li>
-            ))}
-          </ul>
-        </section>
-      </div>
-
-      <motion.section
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mt-12 border-l-2 border-l-accent pl-4"
-      >
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-3">Eduvance recommendation</p>
-        <p className="mt-2 max-w-2xl text-base leading-relaxed text-ink">{template.recommendation}</p>
-        <Button className="mt-5" variant="accent" onClick={addToPlan} disabled={added}>
-          {added ? 'Added to study plan' : 'Add to study plan'}
-        </Button>
-      </motion.section>
+      {result.kind === 'demo' ? (
+        <p className="mb-4 text-sm text-ink-3">Demo item bank — not produced from an uploaded syllabus.</p>
+      ) : (
+        <p className="mb-4 text-sm text-ink-3">This result is already in your central preparation state.</p>
+      )}
+      <QuizResult result={result} onAddToPlan={addToPlan} added={added} />
     </div>
   )
 }

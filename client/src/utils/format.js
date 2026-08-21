@@ -12,13 +12,19 @@ export function formatTime(isoOrHm) {
 }
 
 export function daysUntil(dateStr) {
-  const today = new Date('2026-08-20T00:00:00')
+  if (!dateStr) return 99
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
   const exam = new Date(`${dateStr}T00:00:00`)
+  if (Number.isNaN(exam.getTime())) return 99
   return Math.round((exam - today) / 86400000)
 }
 
 export function formatDate(dateStr) {
-  return new Date(`${dateStr}T00:00:00`).toLocaleDateString('en-IN', {
+  if (!dateStr) return 'Date TBD'
+  const d = new Date(`${dateStr}T00:00:00`)
+  if (Number.isNaN(d.getTime())) return 'Date TBD'
+  return d.toLocaleDateString('en-IN', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',

@@ -1,42 +1,103 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { SetupShell } from '../components/layout/SetupShell'
 import { Button } from '../components/ui/Button'
 import { FileDrop } from '../components/ui/FileDrop'
 import { StageList } from '../components/ui/StageList'
+import { AdaptiveLoop } from '../components/domain/AdaptiveLoop'
 import { runStages } from '../services/simulate'
-import {
-  analysisPipeline,
-  analysisStages,
-  optimizationGoals,
-  syllabusOverview,
-  syllabusParseStages,
-  timetableParseStages,
-} from '../data/setup'
-import { exams as seedExams } from '../data/exams'
-import { subjects } from '../data/subjects'
+import { fileMeta, HOUR_PRESETS } from '../services/workspace'
+import { useAppState } from '../context/AppState'
 
-const TOTAL = 5
+const TOTAL = 4
+const UPLOAD_STAGES = [
+  'Receiving file metadata…',
+  'Storing upload locally…',
+  'Waiting for analysis engine…',
+]
 
 export function SetupPage() {
+  const { completeOnboarding, enableDemo, workspace, setupCompleted } = useAppState()
   const [step, setStep] = useState(1)
-  const [rows, setRows] = useState(
-    seedExams.map((e) => {
-      const s = subjects.find((x) => x.id === e.subjectId)
-      return { id: e.id, name: s?.name ?? e.subjectId, date: e.date, time: e.time, marks: e.marks }
-    }),
-  )
-  const [goals, setGoals] = useState(() => Object.fromEntries(optimizationGoals.map((g) => [g.id, true])))
-  const [daily, setDaily] = useState(5.5)
-  const [committed, setCommitted] = useState(2)
-  const [weekend, setWeekend] = useState(true)
-  const [target, setTarget] = useState(80)
-  const [windowPref, setWindowPref] = useState('Evening')
+  const [timetableFile, setTimetableFile] = useState(workspace.timetableFile || null)
+  const [exams, setExams] = useState(() => (workspace.exams?.length ? workspace.exams : [blankExam()]))
+  const [subjects, setSubjects] = useState(() => workspace.subjects || [])
+  const [prefs, setPrefs] = useState(() => ({
+    generate: workspace.preferences?.generate || 'both',
+    include: workspace.preferences?.include || 'all',
+    selectedIds: workspace.preferences?.selectedIds || [],
+    hoursPreset: workspace.preferences?.hoursPreset || '3',
+    dailyHours: workspace.preferences?.dailyHours || 3,
+  }))
   const navigate = useNavigate()
 
+  function syncSubjectsFromExams(nextExams) {
+    setSubjects((prev) =>
+      nextExams
+        .filter((e) => e.name.trim())
+        .map((e) => {
+          const existing = prev.find((s) => s.id === e.id)
+          return (
+            existing || {
+              id: e.id,
+              name: e.name.trim(),
+              examDate: e.date,
+              examTime: e.time,
+              marks: e.marks,
+              syllabusFile: null,
+              units: [],
+            }
+          )
+        })
+        .map((s) => {
+          const exam = nextExams.find((e) => e.id === s.id)
+          return exam
+            ? { ...s, name: exam.name.trim(), examDate: exam.date, examTime: exam.time, marks: exam.marks }
+            : s
+        }),
+    )
+  }
+
+  async function finish() {
+    const named = exams.filter((e) => e.name.trim())
+    await completeOnboarding({
+      timetableFile,
+      exams: named,
+      subjects: subjects.length
+        ? subjects
+        : named.map((e) => ({
+            id: e.id,
+            name: e.name.trim(),
+            examDate: e.date,
+            examTime: e.time,
+            marks: e.marks,
+            syllabusFile: null,
+            units: [],
+          })),
+      preferences: {
+        ...prefs,
+        selectedIds: prefs.include === 'all' ? named.map((e) => e.id) : prefs.selectedIds,
+        selectedSubjects: (prefs.include === 'all' ? named : named.filter((e) => prefs.selectedIds.includes(e.id))).map(
+          (e) => e.name.trim(),
+        ),
+        generateStudyPlan: prefs.generate === 'both' || prefs.generate === 'timetable',
+        generateQuizzes: prefs.generate === 'both' || prefs.generate === 'quizzes',
+      },
+    })
+    navigate('/dashboard')
+  }
+
   return (
-    <SetupShell step={step} total={TOTAL}>
+    <SetupShell
+      step={step}
+      total={TOTAL}
+      onDemo={() => {
+        enableDemo()
+        navigate('/dashboard')
+      }}
+      editing={setupCompleted}
+    >
       <AnimatePresence mode="wait">
         <motion.div
           key={step}
@@ -45,96 +106,116 @@ export function SetupPage() {
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
         >
-          {step === 1 && <StepTimetable rows={rows} setRows={setRows} />}
-          {step === 2 && <StepSyllabus />}
-          {step === 3 && <StepOptimize goals={goals} setGoals={setGoals} />}
-          {step === 4 && (
-            <StepConstraints
-              daily={daily}
-              setDaily={setDaily}
-              committed={committed}
-              setCommitted={setCommitted}
-              weekend={weekend}
-              setWeekend={setWeekend}
-              target={target}
-              setTarget={setTarget}
-              windowPref={windowPref}
-              setWindowPref={setWindowPref}
+          {step === 1 && (
+            <StepTimetable
+              exams={exams}
+              setExams={(next) => {
+                setExams(next)
+                syncSubjectsFromExams(next)
+              }}
+              timetableFile={timetableFile}
+              setTimetableFile={setTimetableFile}
             />
           )}
-          {step === 5 && <StepAnalysis onDone={() => navigate('/dashboard')} />}
+          {step === 2 && <StepSyllabus subjects={subjects} setSubjects={setSubjects} />}
+          {step === 3 && (
+            <StepPreferences exams={exams} prefs={prefs} setPrefs={setPrefs} />
+          )}
+          {step === 4 && (
+            <StepConfirm
+              timetableFile={timetableFile}
+              exams={exams}
+              subjects={subjects}
+              prefs={prefs}
+              onDone={finish}
+            />
+          )}
         </motion.div>
       </AnimatePresence>
 
-      {step < 5 ? (
+      {step < 4 ? (
         <div className="mt-10 flex gap-2">
           <Button variant="secondary" onClick={() => setStep((s) => Math.max(1, s - 1))} disabled={step === 1}>
             Back
           </Button>
-          <Button onClick={() => setStep((s) => s + 1)}>{step === 4 ? 'Build strategy' : 'Continue'}</Button>
+          <Button
+            onClick={() => {
+              if (step === 1) syncSubjectsFromExams(exams)
+              setStep((s) => s + 1)
+            }}
+            disabled={step === 1 && !exams.some((e) => e.name.trim())}
+          >
+            Continue
+          </Button>
         </div>
       ) : null}
     </SetupShell>
   )
 }
 
-function StepTimetable({ rows, setRows }) {
-  const [phase, setPhase] = useState('idle')
-  const [current, setCurrent] = useState(0)
-  const [done, setDone] = useState(false)
+function blankExam() {
+  return { id: `sub_${Date.now()}`, name: '', date: '', time: '10:00', marks: 100 }
+}
 
-  async function onFile() {
+function StepTimetable({ exams, setExams, timetableFile, setTimetableFile }) {
+  const [phase, setPhase] = useState(timetableFile ? 'stored' : 'idle')
+  const [current, setCurrent] = useState(0)
+  const [done, setDone] = useState(Boolean(timetableFile))
+
+  async function onFile(file) {
     setPhase('run')
     setDone(false)
     setCurrent(0)
-    await runStages(timetableParseStages, (i) => setCurrent(i), 780)
+    await runStages(UPLOAD_STAGES, (i) => setCurrent(i), 520)
+    setTimetableFile(fileMeta(file))
     setDone(true)
-    setPhase('review')
+    setPhase('stored')
   }
 
-  function addRow() {
-    setRows((r) => [...r, { id: `e-${Date.now()}`, name: '', date: '2026-09-05', time: '10:00', marks: 100 }])
+  function remove(id) {
+    setExams(exams.filter((e) => e.id !== id))
   }
 
   return (
     <div>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">Student input</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">Step 1 · Timetable</p>
       <h1 className="mt-2 font-serif text-4xl text-ink">When do your exams begin?</h1>
       <p className="mt-3 text-sm leading-relaxed text-ink-2">
-        Give Eduvance the calendar it must respect. Upload a timetable, or enter papers by hand.
+        Upload a timetable (PDF, image, or document) or enter papers by hand. Extraction is not running yet — the file is stored for the analysis engine.
       </p>
 
       <div className="mt-8">
-        <FileDrop label="Upload timetable" onFile={onFile} disabled={phase === 'run'} />
-        {phase !== 'idle' ? (
-          <StageList stages={timetableParseStages} current={current} complete={done} />
-        ) : null}
-        {phase === 'review' ? (
-          <p className="mt-4 text-sm text-accent">Extracted exams — review and edit below.</p>
+        <FileDrop label="Upload timetable" hint="PDF / image / document" onFile={onFile} disabled={phase === 'run'} />
+        {phase !== 'idle' ? <StageList stages={UPLOAD_STAGES} current={current} complete={done} /> : null}
+        {phase === 'stored' && timetableFile ? (
+          <p className="mt-4 text-sm text-ink-2">
+            <span className="font-medium text-ink">{timetableFile.name}</span> · Uploaded. Analysis will be performed by
+            Eduvance’s analysis engine. Add or edit subjects below — nothing is inferred from the filename.
+          </p>
         ) : null}
       </div>
 
       <div className="mt-8 overflow-x-auto">
-        <table className="w-full min-w-[560px] text-left text-sm">
+        <table className="w-full min-w-[640px] text-left text-sm">
           <thead>
             <tr className="text-[11px] uppercase tracking-wider text-ink-3">
               <th className="pb-2 font-medium">Subject</th>
               <th className="pb-2 font-medium">Date</th>
               <th className="pb-2 font-medium">Time</th>
               <th className="pb-2 font-medium">Marks</th>
+              <th className="pb-2 font-medium"> </th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, idx) => (
+            {exams.map((row, idx) => (
               <tr key={row.id} className="border-t border-line">
                 <td className="py-2 pr-2">
                   <input
                     className="h-9 w-full border border-line bg-surface px-2"
+                    placeholder="e.g. Operating Systems"
                     value={row.name}
                     aria-label="Subject"
-                    onChange={(e) =>
-                      setRows((all) => all.map((x, i) => (i === idx ? { ...x, name: e.target.value } : x)))
-                    }
+                    onChange={(e) => setExams(exams.map((x, i) => (i === idx ? { ...x, name: e.target.value } : x)))}
                   />
                 </td>
                 <td className="py-2 pr-2">
@@ -143,9 +224,7 @@ function StepTimetable({ rows, setRows }) {
                     className="h-9 w-full border border-line bg-surface px-2"
                     value={row.date}
                     aria-label="Exam date"
-                    onChange={(e) =>
-                      setRows((all) => all.map((x, i) => (i === idx ? { ...x, date: e.target.value } : x)))
-                    }
+                    onChange={(e) => setExams(exams.map((x, i) => (i === idx ? { ...x, date: e.target.value } : x)))}
                   />
                 </td>
                 <td className="py-2 pr-2">
@@ -154,284 +233,345 @@ function StepTimetable({ rows, setRows }) {
                     className="h-9 w-full border border-line bg-surface px-2"
                     value={row.time}
                     aria-label="Exam time"
-                    onChange={(e) =>
-                      setRows((all) => all.map((x, i) => (i === idx ? { ...x, time: e.target.value } : x)))
-                    }
+                    onChange={(e) => setExams(exams.map((x, i) => (i === idx ? { ...x, time: e.target.value } : x)))}
                   />
                 </td>
-                <td className="py-2">
+                <td className="py-2 pr-2">
                   <input
                     type="number"
                     className="h-9 w-20 border border-line bg-surface px-2"
                     value={row.marks}
                     aria-label="Marks"
                     onChange={(e) =>
-                      setRows((all) => all.map((x, i) => (i === idx ? { ...x, marks: Number(e.target.value) } : x)))
+                      setExams(exams.map((x, i) => (i === idx ? { ...x, marks: Number(e.target.value) } : x)))
                     }
                   />
+                </td>
+                <td className="py-2">
+                  <Button variant="ghost" size="sm" onClick={() => remove(row.id)} disabled={exams.length === 1}>
+                    Remove
+                  </Button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <Button variant="ghost" size="sm" className="mt-3" onClick={addRow}>
+      <Button variant="ghost" size="sm" className="mt-3" onClick={() => setExams([...exams, blankExam()])}>
         Add subject
       </Button>
     </div>
   )
 }
 
-function StepSyllabus() {
-  const [mode, setMode] = useState('upload')
-  const [current, setCurrent] = useState(0)
-  const [done, setDone] = useState(false)
-  const [running, setRunning] = useState(false)
-  const [showMap, setShowMap] = useState(false)
-
-  async function onFile() {
-    setRunning(true)
-    setDone(false)
-    await runStages(syllabusParseStages, (i) => setCurrent(i), 700)
-    setDone(true)
-    setRunning(false)
-    setShowMap(true)
-  }
-
-  return (
-    <div>
-      <h1 className="font-serif text-4xl text-ink">What do you need to prepare?</h1>
-      <p className="mt-3 text-sm text-ink-2">Upload a syllabus, or confirm the extracted knowledge map by hand.</p>
-      <div className="mt-6 flex gap-2">
-        <Button size="sm" variant={mode === 'upload' ? 'primary' : 'secondary'} onClick={() => setMode('upload')}>
-          Upload syllabus
-        </Button>
-        <Button
-          size="sm"
-          variant={mode === 'manual' ? 'primary' : 'secondary'}
-          onClick={() => {
-            setMode('manual')
-            setShowMap(true)
-          }}
-        >
-          Enter manually
-        </Button>
+function StepSyllabus({ subjects, setSubjects }) {
+  if (!subjects.length) {
+    return (
+      <div>
+        <h1 className="font-serif text-4xl text-ink">What do you need to prepare?</h1>
+        <p className="mt-3 text-sm text-ink-2">Add named subjects in the timetable step first.</p>
       </div>
-      {mode === 'upload' ? (
-        <div className="mt-6">
-          <FileDrop label="Upload syllabus" onFile={onFile} disabled={running} />
-          {running || done ? <StageList stages={syllabusParseStages} current={current} complete={done} /> : null}
-        </div>
-      ) : (
-        <p className="mt-6 text-sm text-ink-2">Confirm units and topics below. Editing a live syllabus tree ships with the backend.</p>
-      )}
-      {showMap ? (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-8 grid gap-4 sm:grid-cols-2">
-          {syllabusOverview.map((s, i) => (
-            <motion.article
-              key={s.id}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.08 }}
-              className="border-t border-line pt-4"
-            >
-              <h3 className="text-lg font-semibold">{s.name}</h3>
-              <p className="mt-1 text-sm text-ink-2">
-                {s.units} units · {s.topics} topics
-              </p>
-            </motion.article>
-          ))}
-        </motion.div>
-      ) : null}
-    </div>
-  )
-}
-
-function StepOptimize({ goals, setGoals }) {
-  function toggle(id) {
-    setGoals((g) => ({ ...g, [id]: !g[id] }))
-  }
-  function everything() {
-    setGoals(Object.fromEntries(optimizationGoals.map((g) => [g.id, true])))
+    )
   }
 
   return (
     <div>
-      <h1 className="font-serif text-4xl text-ink">What do you want Eduvance to optimize?</h1>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">Step 2 · Syllabus</p>
+      <h1 className="mt-2 font-serif text-4xl text-ink">What do you need to prepare?</h1>
       <p className="mt-3 text-sm text-ink-2">
-        You are not locked into one workflow. Choose the decision layers you want running.
+        Attach a syllabus/notes PDF per subject, or enter units and topics yourself. Uploads are stored as files — they
+        do not invent a topic tree.
       </p>
-      <Button variant="accent" size="sm" className="mt-6" onClick={everything}>
-        Optimize everything
-      </Button>
-      <ul className="mt-6 space-y-1">
-        {optimizationGoals.map((g) => (
-          <li key={g.id} className="border-t border-line">
-            <label className="flex cursor-pointer items-center gap-3 py-3 text-sm">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-accent"
-                checked={!!goals[g.id]}
-                onChange={() => toggle(g.id)}
-              />
-              {g.label}
-            </label>
-          </li>
+      <div className="mt-8 space-y-10">
+        {subjects.map((subject) => (
+          <SubjectSyllabus
+            key={subject.id}
+            subject={subject}
+            onChange={(next) => setSubjects(subjects.map((s) => (s.id === next.id ? next : s)))}
+          />
         ))}
-      </ul>
+      </div>
     </div>
   )
 }
 
-function StepConstraints({ daily, setDaily, committed, setCommitted, weekend, setWeekend, target, setTarget, windowPref, setWindowPref }) {
-  const available = Math.max(0, daily - committed)
+function SubjectSyllabus({ subject, onChange }) {
+  const [phase, setPhase] = useState(subject.syllabusFile ? 'stored' : 'idle')
+  const [current, setCurrent] = useState(0)
+  const [done, setDone] = useState(Boolean(subject.syllabusFile))
+
+  async function onFile(file) {
+    setPhase('run')
+    setDone(false)
+    await runStages(UPLOAD_STAGES, (i) => setCurrent(i), 480)
+    onChange({ ...subject, syllabusFile: fileMeta(file) })
+    setDone(true)
+    setPhase('stored')
+  }
+
+  function addTopic() {
+    const units = subject.units?.length
+      ? subject.units
+      : [{ id: `u_${Date.now()}`, name: 'Syllabus', topics: [] }]
+    const core = units[0]
+    const nextUnits = subject.units?.length ? units : units
+    onChange({
+      ...subject,
+      units: nextUnits.map((u, i) =>
+        i === 0
+          ? { ...core, topics: [...(core.topics || []), { id: `t_${Date.now()}`, name: '' }] }
+          : u,
+      ),
+    })
+  }
+
+  function addUnit() {
+    onChange({
+      ...subject,
+      units: [...(subject.units || []), { id: `u_${Date.now()}`, name: '', topics: [] }],
+    })
+  }
+
+  function patchUnit(unitId, patch) {
+    onChange({
+      ...subject,
+      units: subject.units.map((u) => (u.id === unitId ? { ...u, ...patch } : u)),
+    })
+  }
+
+  return (
+    <article className="border-t border-line pt-6">
+      <h2 className="text-xl font-semibold">{subject.name}</h2>
+      <p className="text-xs text-ink-3">
+        {subject.examDate || 'Date TBD'} · {subject.marks} marks
+      </p>
+      <div className="mt-4">
+        <FileDrop label={`Upload syllabus for ${subject.name}`} hint="PDF / notes / document" onFile={onFile} disabled={phase === 'run'} />
+        {phase !== 'idle' ? <StageList stages={UPLOAD_STAGES} current={current} complete={done} /> : null}
+        {subject.syllabusFile ? (
+          <p className="mt-3 text-sm text-ink-2">
+            <span className="font-medium text-ink">{subject.syllabusFile.name}</span> · Uploaded. Topic extraction waits
+            for the analysis engine.
+          </p>
+        ) : null}
+      </div>
+      <div className="mt-5">
+        <p className="text-xs font-semibold uppercase tracking-wider text-ink-3">Topics (used by Quiz and Planner)</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <Button variant="secondary" size="sm" onClick={addTopic}>
+            Add topic
+          </Button>
+          <Button variant="ghost" size="sm" onClick={addUnit}>
+            Add unit
+          </Button>
+        </div>
+        {(subject.units || []).map((unit) => (
+          <div key={unit.id} className="mt-3 border-l border-line pl-4">
+            <input
+              className="h-9 w-full max-w-md border border-line bg-surface px-2 text-sm"
+              placeholder="Unit name — e.g. CPU Scheduling"
+              value={unit.name}
+              onChange={(e) => patchUnit(unit.id, { name: e.target.value })}
+            />
+            <div className="mt-2 space-y-2">
+              {(unit.topics || []).map((topic) => (
+                <input
+                  key={topic.id}
+                  className="h-9 w-full max-w-md border border-line bg-surface px-2 text-sm"
+                  placeholder="Topic"
+                  value={topic.name}
+                  onChange={(e) =>
+                    patchUnit(unit.id, {
+                      topics: unit.topics.map((t) => (t.id === topic.id ? { ...t, name: e.target.value } : t)),
+                    })
+                  }
+                />
+              ))}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mt-2"
+              onClick={() =>
+                patchUnit(unit.id, {
+                  topics: [...(unit.topics || []), { id: `t_${Date.now()}`, name: '' }],
+                })
+              }
+            >
+              Add topic
+            </Button>
+          </div>
+        ))}
+      </div>
+    </article>
+  )
+}
+
+function StepPreferences({ exams, prefs, setPrefs }) {
+  const named = exams.filter((e) => e.name.trim())
+  const preset = HOUR_PRESETS.find((p) => p.id === prefs.hoursPreset) || HOUR_PRESETS[2]
+
+  function setHours(id) {
+    const p = HOUR_PRESETS.find((x) => x.id === id)
+    setPrefs({ ...prefs, hoursPreset: id, dailyHours: id === 'custom' ? prefs.dailyHours : p.hours })
+  }
+
   return (
     <div>
-      <h1 className="font-serif text-4xl text-ink">How much time do you actually have?</h1>
-      <p className="mt-3 text-sm text-ink-2">The planner cannot invent hours. It can only allocate what remains.</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">Step 3 · Preferences</p>
+      <h1 className="mt-2 font-serif text-4xl text-ink">What should Eduvance optimize for you?</h1>
 
-      <div className="mt-8 space-y-6">
-        <Range label="Daily study hours" value={daily} min={2} max={10} step={0.5} onChange={setDaily} suffix="h" />
-        <label className="block text-sm">
-          Preferred study time
-          <select
-            className="mt-2 h-10 w-full border border-line bg-surface px-2"
-            value={windowPref}
-            onChange={(e) => setWindowPref(e.target.value)}
-          >
-            <option>Morning</option>
-            <option>Afternoon</option>
-            <option>Evening</option>
-            <option>Night</option>
-          </select>
-        </label>
-        <Range label="Already committed today" value={committed} min={0} max={daily} step={0.5} onChange={setCommitted} suffix="h" />
-        <Range label="Target marks (orientation)" value={target} min={50} max={100} step={1} onChange={setTarget} suffix="%" />
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" className="accent-accent" checked={weekend} onChange={(e) => setWeekend(e.target.checked)} />
-          Weekend availability
-        </label>
-      </div>
+      <fieldset className="mt-8">
+        <legend className="text-xs font-semibold uppercase tracking-wider text-ink-3">Generate</legend>
+        <div className="mt-3 space-y-2 text-sm">
+          {[
+            { id: 'timetable', label: 'Complete study timetable' },
+            { id: 'quizzes', label: 'Topic-wise quizzes' },
+            { id: 'both', label: 'Both study timetable + quizzes' },
+          ].map((o) => (
+            <label key={o.id} className="flex items-center gap-2 border-t border-line py-3">
+              <input
+                type="radio"
+                name="generate"
+                checked={prefs.generate === o.id}
+                onChange={() => setPrefs({ ...prefs, generate: o.id })}
+                className="accent-accent"
+              />
+              {o.label}
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
-      <div className="mt-10 border border-ink bg-ink p-6 text-canvas">
-        <p className="text-[11px] uppercase tracking-wider text-canvas/50">Time allocation</p>
-        <Metric label="Available today" value={fmtH(daily)} />
-        <Metric label="Already committed" value={fmtH(committed)} />
-        <Metric label="Available for Eduvance" value={fmtH(available)} strong />
-        <div className="mt-4 h-2 overflow-hidden rounded-full bg-canvas/15">
-          <motion.div
-            className="h-full bg-accent-2"
-            initial={{ width: 0 }}
-            animate={{ width: `${(available / daily) * 100}%` }}
-            transition={{ duration: 0.6 }}
-          />
+      <fieldset className="mt-8">
+        <legend className="text-xs font-semibold uppercase tracking-wider text-ink-3">Which subjects should Eduvance include?</legend>
+        <div className="mt-3 space-y-2 text-sm">
+          <label className="flex items-center gap-2 py-2">
+            <input
+              type="radio"
+              name="include"
+              checked={prefs.include === 'all'}
+              onChange={() => setPrefs({ ...prefs, include: 'all', selectedIds: named.map((e) => e.id) })}
+              className="accent-accent"
+            />
+            All subjects
+          </label>
+          <label className="flex items-center gap-2 py-2">
+            <input
+              type="radio"
+              name="include"
+              checked={prefs.include === 'selected'}
+              onChange={() => setPrefs({ ...prefs, include: 'selected' })}
+              className="accent-accent"
+            />
+            Select specific subjects
+          </label>
+        </div>
+        {prefs.include === 'selected' ? (
+          <ul className="mt-2">
+            {named.map((e) => (
+              <li key={e.id}>
+                <label className="flex items-center gap-2 border-t border-line py-2 text-sm">
+                  <input
+                    type="checkbox"
+                    className="accent-accent"
+                    checked={prefs.selectedIds.includes(e.id)}
+                    onChange={() => {
+                      const has = prefs.selectedIds.includes(e.id)
+                      setPrefs({
+                        ...prefs,
+                        selectedIds: has ? prefs.selectedIds.filter((id) => id !== e.id) : [...prefs.selectedIds, e.id],
+                      })
+                    }}
+                  />
+                  {e.name}
+                </label>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </fieldset>
+
+      <fieldset className="mt-8">
+        <legend className="text-xs font-semibold uppercase tracking-wider text-ink-3">How much time can you study?</legend>
+        <div className="mt-3 space-y-2 text-sm">
+          {HOUR_PRESETS.filter((p) => p.id !== 'custom').map((p) => (
+            <label key={p.id} className="flex items-center gap-2 border-t border-line py-3">
+              <input
+                type="radio"
+                name="hours"
+                checked={prefs.hoursPreset === p.id}
+                onChange={() => setHours(p.id)}
+                className="accent-accent"
+              />
+              {p.label}
+            </label>
+          ))}
+          <label className="flex items-center gap-2 border-t border-line py-3">
+            <input
+              type="radio"
+              name="hours"
+              checked={prefs.hoursPreset === 'custom'}
+              onChange={() => setHours('custom')}
+              className="accent-accent"
+            />
+            Custom daily hours
+          </label>
+        </div>
+        {prefs.hoursPreset === 'custom' ? (
+          <label className="mt-3 block text-sm">
+            Hours / day
+            <input
+              type="number"
+              min={0.5}
+              max={12}
+              step={0.5}
+              className="input mt-1"
+              value={prefs.dailyHours}
+              onChange={(e) => setPrefs({ ...prefs, dailyHours: Number(e.target.value) })}
+            />
+          </label>
+        ) : (
+          <p className="mt-3 tabular text-sm text-ink-2">{preset.hours}h / day (used for allocation once the engine runs)</p>
+        )}
+      </fieldset>
+    </div>
+  )
+}
+
+function StepConfirm({ timetableFile, exams, subjects, prefs, onDone }) {
+  const named = exams.filter((e) => e.name.trim())
+  return (
+    <div>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">Step 4 · Confirm</p>
+      <h1 className="mt-2 font-serif text-4xl text-ink">Your workspace is ready to analyze</h1>
+      <p className="mt-3 text-sm text-ink-2">
+        Eduvance has your constraints. It has not invented a DBMS or SE strategy from an unrelated PDF.
+      </p>
+      <ul className="mt-6 space-y-2 text-sm">
+        <li>Timetable file: {timetableFile?.name || 'None — subjects entered manually'}</li>
+        <li>Subjects: {named.map((e) => e.name).join(', ') || '—'}</li>
+        <li>
+          Syllabus files:{' '}
+          {subjects.filter((s) => s.syllabusFile).map((s) => `${s.name} (${s.syllabusFile.name})`).join(', ') || 'None'}
+        </li>
+        <li>Manual topics: {subjects.reduce((n, s) => n + (s.units || []).reduce((m, u) => m + (u.topics || []).length, 0), 0)}</li>
+        <li>
+          Generate:{' '}
+          {prefs.generate === 'both' ? 'Timetable + quizzes' : prefs.generate === 'quizzes' ? 'Quizzes' : 'Timetable'}
+        </li>
+        <li>Study window: {prefs.dailyHours}h / day</li>
+      </ul>
+      <div className="mt-8">
+        <p className="text-xs uppercase tracking-wider text-ink-3">The loop that will run</p>
+        <div className="mt-3">
+          <AdaptiveLoop />
         </div>
       </div>
+      <p className="mt-6 text-sm font-medium text-ink">Analysis will be performed by Eduvance’s analysis engine.</p>
+      <Button variant="accent" size="lg" className="mt-6" onClick={onDone}>
+        Open my workspace
+      </Button>
     </div>
   )
-}
-
-function Range({ label, value, min, max, step, onChange, suffix }) {
-  return (
-    <label className="block">
-      <span className="flex justify-between text-sm">
-        {label}
-        <span className="tabular font-medium">
-          {value}
-          {suffix}
-        </span>
-      </span>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="mt-2 w-full accent-accent"
-      />
-    </label>
-  )
-}
-
-function Metric({ label, value, strong }) {
-  return (
-    <div className="mt-3 flex justify-between text-sm">
-      <span className="text-canvas/60">{label}</span>
-      <span className={strong ? 'text-lg font-semibold' : 'tabular'}>{value}</span>
-    </div>
-  )
-}
-
-function fmtH(n) {
-  const h = Math.floor(n)
-  const m = Math.round((n - h) * 60)
-  if (m === 0) return `${h}h`
-  return `${h}h ${m}m`
-}
-
-function StepAnalysis({ onDone }) {
-  const [pipe, setPipe] = useState(0)
-  const [checks, setChecks] = useState(-1)
-  const [ready, setReady] = useState(false)
-
-  useRunAnalysis(setPipe, setChecks, setReady)
-
-  return (
-    <div>
-      <h1 className="font-serif text-4xl text-ink">Building your preparation strategy</h1>
-      <p className="mt-3 text-sm text-ink-2">A simulated pipeline. Later this will be deterministic engines plus explained recommendations.</p>
-
-      <ol className="mt-8">
-        {analysisPipeline.map((name, i) => (
-          <li key={name} className="relative border-l border-line py-2 pl-5">
-            <span
-              className={`absolute -left-[5px] top-3 h-2.5 w-2.5 rounded-full ${i <= pipe ? 'bg-ink' : 'bg-line'}`}
-            />
-            <span className={`text-sm font-medium ${i <= pipe ? 'text-ink' : 'text-ink-3'}`}>{name}</span>
-          </li>
-        ))}
-      </ol>
-
-      <ul className="mt-8 space-y-2">
-        {analysisStages.map((s, i) => (
-          <li key={s.id} className="flex items-center gap-2 text-sm">
-            <span className={i <= checks ? 'text-ink' : 'text-ink-3'}>{i <= checks ? '✓' : '·'}</span>
-            <span className={i <= checks ? 'text-ink' : 'text-ink-3'}>{s.label}</span>
-          </li>
-        ))}
-      </ul>
-
-      {ready ? (
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-10">
-          <p className="font-serif text-2xl text-ink">Your preparation strategy is ready.</p>
-          <Button variant="accent" size="lg" className="mt-5" onClick={onDone}>
-            View my strategy
-          </Button>
-        </motion.div>
-      ) : null}
-    </div>
-  )
-}
-
-function useRunAnalysis(setPipe, setChecks, setReady) {
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      for (let i = 0; i < analysisPipeline.length; i += 1) {
-        if (cancelled) return
-        setPipe(i)
-        await new Promise((r) => setTimeout(r, 420))
-      }
-      for (let i = 0; i < analysisStages.length; i += 1) {
-        if (cancelled) return
-        setChecks(i)
-        await new Promise((r) => setTimeout(r, 380))
-      }
-      if (!cancelled) setReady(true)
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [setPipe, setChecks, setReady])
 }

@@ -23,10 +23,17 @@ export function PriorityCard({ item }) {
       <div className="mt-8 grid gap-8 sm:grid-cols-[auto_1fr] sm:items-end">
         <div>
           <p className="text-[11px] uppercase tracking-wider text-canvas/50">Priority</p>
-          <p className="mt-1 tabular text-6xl font-semibold leading-none">
-            <CountUp to={item.priorityScore} duration={1100} />
-          </p>
-          <p className="mt-1 text-sm text-canvas/50">/ 100</p>
+          <p className="mt-1 text-sm font-semibold tracking-wide">{item.priorityLabel || 'PRIORITY'}</p>
+          {item.pending ? (
+            <p className="mt-2 text-sm text-canvas/60">Awaiting topic extraction</p>
+          ) : (
+            <>
+              <p className="mt-1 tabular text-6xl font-semibold leading-none">
+                <CountUp to={item.priorityScore} duration={1100} />
+              </p>
+              <p className="mt-1 text-sm text-canvas/50">/ 100{item.provisional ? ' · provisional' : ''}</p>
+            </>
+          )}
         </div>
         <div>
           <p className="text-[11px] uppercase tracking-wider text-canvas/50">Why now?</p>

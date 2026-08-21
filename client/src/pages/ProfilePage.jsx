@@ -1,30 +1,44 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Button } from '../components/ui/Button'
-import { getStudent } from '../services/catalog'
+import { useAuth } from '../context/AppState'
+import { useAppData } from '../hooks/useAppData'
+import { DemoBanner } from '../components/domain/ModeBanners'
 
 export function ProfilePage() {
-  const student = getStudent()
+  const { user, logout } = useAuth()
+  const data = useAppData()
+  const navigate = useNavigate()
+  const student = data.student
 
   return (
     <div>
+      <DemoBanner />
       <PageHeader
         eyebrow="Profile"
-        title={student.name}
-        description="Preferences for the optimizer. Saved locally in the UI for this phase."
+        title={user?.name || student.name}
+        description="Signed in with a JWT session. Preparation is stored per account in MongoDB."
       />
-      <dl className="max-w-lg space-y-4 text-sm">
-        <Row label="Email" value={student.email} />
-        <Row label="Program" value={student.program} />
-        <Row label="Semester" value={String(student.semester)} />
-        <Row label="Daily study window" value={`${student.dailyMinutes / 60} hours`} />
+      <dl className="max-w-lg text-sm">
+        <Row label="Email" value={user?.email || student.email} />
+        <Row label="Daily study window" value={`${(data.preferences?.dailyHours || 3)} hours`} />
+        <Row label="Mode" value={data.isDemo ? 'Demo sample data' : 'Your workspace'} />
       </dl>
       <div className="mt-8 flex flex-wrap gap-2">
-        <Button as={Link} to="/setup" variant="secondary">
-          Reconfigure setup
+          <Button as={Link} to="/setup" variant="secondary">
+          Edit preparation
         </Button>
         <Button as={Link} to="/settings" variant="ghost">
           Settings
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            logout()
+            navigate('/')
+          }}
+        >
+          Log out
         </Button>
       </div>
     </div>

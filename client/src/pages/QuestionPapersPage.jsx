@@ -6,6 +6,8 @@ import { FileDrop } from '../components/ui/FileDrop'
 import { StageList } from '../components/ui/StageList'
 import { getPapers } from '../services/catalog'
 import { runStages } from '../services/simulate'
+import { DemoBanner } from '../components/domain/ModeBanners'
+import { useAppData } from '../hooks/useAppData'
 
 const importanceTone = {
   'VERY HIGH': 'high',
@@ -15,6 +17,7 @@ const importanceTone = {
 }
 
 export function QuestionPapersPage() {
+  const data = useAppData()
   const { papers, paperInsights } = getPapers()
   const [extra, setExtra] = useState(null)
   const [stage, setStage] = useState(0)
@@ -22,23 +25,24 @@ export function QuestionPapersPage() {
 
   async function onFile(file) {
     setDone(false)
-    await runStages(['Reading paper…', 'Counting topic frequency…', 'Updating importance…'], (i) => setStage(i), 600)
+    await runStages(['Storing file metadata…', 'Queued for analysis engine…', 'Waiting for extraction…'], (i) => setStage(i), 500)
     setDone(true)
-    setExtra({ file: file.name, pages: '—', status: 'Queued (simulated)' })
+    setExtra({ file: file.name, pages: '—', status: 'Uploaded' })
   }
 
   return (
     <div>
+      <DemoBanner />
       <PageHeader
         eyebrow="Question papers"
         title="Frequency is a signal. Treat it as one."
-        description="Upload is simulated. The table below is sample analysis so the product story is visible without a parser."
+        description="Uploads are stored as files. Sample frequency tables are demo data, not the result of your PDF."
       />
 
       <FileDrop label="Upload previous paper" onFile={onFile} />
       {extra || done ? (
         <StageList
-          stages={['Reading paper…', 'Counting topic frequency…', 'Updating importance…']}
+          stages={['Storing file metadata…', 'Queued for analysis engine…', 'Waiting for extraction…']}
           current={stage}
           complete={done}
         />
@@ -47,7 +51,7 @@ export function QuestionPapersPage() {
       <section>
         <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Uploaded papers</h2>
         <ul className="mt-3">
-          {(extra ? [extra, ...papers] : papers).map((p) => (
+          {(extra ? [extra, ...(data.isDemo ? papers : [])] : data.isDemo ? papers : extra ? [extra] : []).map((p) => (
             <li key={p.id || p.file} className="flex items-center justify-between border-t border-line py-3 text-sm">
               <span className="font-medium">{p.file}</span>
               <span className="text-ink-3">
@@ -58,6 +62,7 @@ export function QuestionPapersPage() {
         </ul>
       </section>
 
+      {data.isDemo ? (
       <section className="mt-12">
         <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Topic importance (DBMS sample)</h2>
         <div className="mt-2 hidden grid-cols-12 border-b border-line pb-2 text-[10px] uppercase tracking-wider text-ink-3 sm:grid">
@@ -77,11 +82,12 @@ export function QuestionPapersPage() {
           </article>
         ))}
       </section>
+      ) : null}
 
       <div className="mt-10">
         <EmptyState
           title="Parser not connected"
-          body="When the backend is added, PDFs will extract marks and recurrence automatically. Until then, this table is realistic sample analysis."
+          body="Analysis will be performed by Eduvance’s analysis engine. The DBMS frequency table is demo-only."
         />
       </div>
     </div>

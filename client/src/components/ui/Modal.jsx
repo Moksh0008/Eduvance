@@ -30,7 +30,7 @@ export function Modal({ open, onClose, title, children, footer }) {
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
-            className="relative w-full max-w-lg rounded-lg border border-line bg-surface p-5 shadow-xl"
+            className="relative max-h-[min(90vh,40rem)] w-full max-w-lg overflow-y-auto rounded-lg border border-line bg-surface p-5 shadow-xl"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 8 }}

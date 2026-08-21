@@ -1,5 +1,4 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import { AppShell } from './components/layout/AppShell'
 import { LandingPage } from './pages/LandingPage'
 import { LoginPage, RegisterPage } from './pages/AuthPages'
@@ -20,10 +19,27 @@ import { QuizPlayPage } from './pages/QuizPlayPage'
 import { QuizResultPage } from './pages/QuizResultPage'
 import { InsightsPage } from './pages/InsightsPage'
 import { RevisionPage } from './pages/RevisionPage'
-import { pageFade } from './animations/variants'
+import { PageTransition } from './components/ui/PageTransition'
+import { RequireAuth } from './components/auth/RequireAuth'
 
 function AnimatedPage({ children }) {
-  return <motion.div {...pageFade}>{children}</motion.div>
+  return <PageTransition>{children}</PageTransition>
+}
+
+function ProtectedShell() {
+  return (
+    <RequireAuth>
+      <AppShell />
+    </RequireAuth>
+  )
+}
+
+function ProtectedSetup() {
+  return (
+    <RequireAuth>
+      <SetupPage />
+    </RequireAuth>
+  )
 }
 
 export default function App() {
@@ -32,8 +48,8 @@ export default function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/setup" element={<SetupPage />} />
-      <Route element={<AppShell />}>
+      <Route path="/setup" element={<ProtectedSetup />} />
+      <Route element={<ProtectedShell />}>
         <Route path="/dashboard" element={<AnimatedPage><DashboardPage /></AnimatedPage>} />
         <Route path="/planner" element={<AnimatedPage><PlannerPage /></AnimatedPage>} />
         <Route path="/syllabus" element={<AnimatedPage><SyllabusPage /></AnimatedPage>} />

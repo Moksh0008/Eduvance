@@ -1,9 +1,10 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { cn } from '../../utils/cn'
 import { CountUp } from './CountUp'
 
 export function ProgressBar({ value, className, barClassName, label, animateValue = true }) {
-  const clamped = Math.max(0, Math.min(100, value))
+  const reduce = useReducedMotion()
+  const clamped = Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0))
   return (
     <div className={cn('w-full', className)}>
       {label ? (
@@ -23,9 +24,9 @@ export function ProgressBar({ value, className, barClassName, label, animateValu
       >
         <motion.div
           className={cn('h-full rounded-full bg-accent', barClassName)}
-          initial={{ width: 0 }}
+          initial={reduce ? false : { width: 0 }}
           animate={{ width: `${clamped}%` }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          transition={reduce ? { duration: 0 } : { duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         />
       </div>
     </div>

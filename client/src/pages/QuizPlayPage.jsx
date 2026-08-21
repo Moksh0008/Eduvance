@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Button } from '../components/ui/Button'
-import { getQuizBank } from '../services/catalog'
+import { QuizQuestion } from '../components/domain/QuizQuestion'
+import { getQuizBank, buildTopicQuiz } from '../services/quiz'
+import { quizSlide } from '../animations/variants'
 
 export function QuizPlayPage() {
   const bank = getQuizBank()
+  const reduce = useReducedMotion()
   const config = useMemo(() => {
     try {
       return JSON.parse(sessionStorage.getItem('eduvance.quiz.config') || '{}')
@@ -13,15 +16,16 @@ export function QuizPlayPage() {
       return {}
     }
   }, [])
-  const questions = bank.questions.slice(0, config.count || 10)
+  const checkQuestions = buildTopicQuiz(config.topic, config.count || 10)
+  const questions = config.kind === 'check' ? checkQuestions : bank.questions.slice(0, config.count || 10)
   const limit = (config.minutes || 15) * 60
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState(() => Array(questions.length).fill(null))
   const [left, setLeft] = useState(limit)
+  const q = questions[index]
+  const progress = questions.length ? ((index + 1) / questions.length) * 100 : 0
   const submitted = useRef(false)
   const navigate = useNavigate()
-  const q = questions[index]
-  const progress = ((index + 1) / questions.length) * 100
 
   useEffect(() => {
     const id = setInterval(() => setLeft((s) => Math.max(0, s - 1)), 1000)
@@ -36,17 +40,19 @@ export function QuizPlayPage() {
     if (submitted.current) return
     submitted.current = true
     const correct = questions.reduce((n, item, i) => n + (answers[i] === item.answer ? 1 : 0), 0)
-    const missed = questions.filter((item, i) => answers[i] !== item.answer).map((item) => item.id)
     sessionStorage.setItem(
       'eduvance.quiz.result',
       JSON.stringify({
         correct,
         total: questions.length,
         score: Math.round((correct / questions.length) * 100),
+        kind: config.kind || 'demo',
         leftover: left,
-        missed,
+        missed: questions.filter((item, i) => answers[i] !== item.answer).map((item) => item.id),
         topic: config.topic || bank.topic,
+        topicId: config.topicId || null,
         subject: config.subject || bank.subject,
+        subjectId: config.subjectId || null,
       }),
     )
     navigate('/quiz/result')
@@ -73,31 +79,19 @@ export function QuizPlayPage() {
       </div>
 
       <AnimatePresence mode="wait">
-        <motion.div
-          key={q.id}
-          initial={{ opacity: 0, x: 16 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -12 }}
-          transition={{ duration: 0.22 }}
-          className="mt-8"
-        >
-          <h1 className="font-serif text-3xl text-ink">{q.prompt}</h1>
-          <ul className="mt-6 space-y-2">
-            {q.options.map((opt, i) => (
-              <li key={opt}>
-                <button
-                  type="button"
-                  onClick={() => setAnswers((a) => a.map((x, idx) => (idx === index ? i : x)))}
-                  className={`w-full border px-4 py-3 text-left text-sm ${
-                    answers[index] === i ? 'border-ink bg-canvas-2' : 'border-line hover:border-ink'
-                  }`}
-                >
-                  {opt}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </motion.div>
+        {q ? (
+          <motion.div
+            key={q.id}
+            {...(reduce ? { initial: false } : quizSlide)}
+            className="mt-8"
+          >
+            <QuizQuestion
+              question={q}
+              selected={answers[index]}
+              onSelect={(i) => setAnswers((a) => a.map((x, idx) => (idx === index ? i : x)))}
+            />
+          </motion.div>
+        ) : null}
       </AnimatePresence>
 
       <div className="mt-8 flex flex-wrap gap-2">

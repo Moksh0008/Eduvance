@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Button } from '../../components/ui/Button'
+import { StartPreparingButton } from '../../components/auth/StartPreparingButton'
 import { fadeUp, stagger } from '../../animations/variants'
 
 const steps = ['Syllabus', 'Analyze', 'Prioritize', 'Plan', 'Track', 'Adapt']
@@ -16,7 +16,7 @@ export function Hero() {
           </motion.p>
           <motion.h1
             variants={fadeUp}
-            className="mt-4 font-serif text-5xl leading-[1.05] text-ink sm:text-6xl lg:text-[4.4rem]"
+            className="mt-4 font-serif text-4xl leading-[1.08] text-ink sm:text-6xl lg:text-[4.4rem]"
           >
             Don&apos;t Just Study.
             <br />
@@ -27,9 +27,7 @@ export function Hero() {
             replanning as performance, hours, and deadlines change.
           </motion.p>
           <motion.div variants={fadeUp} className="mt-8 flex flex-wrap gap-3">
-            <Button as={Link} to="/setup" size="lg">
-              Start Preparing
-            </Button>
+            <StartPreparingButton size="lg" continueLabel="Continue Preparing" />
             <Button as="a" href="#clarity" variant="secondary" size="lg">
               See How It Works
             </Button>

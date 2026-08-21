@@ -4,13 +4,26 @@ import { PageHeader } from '../components/ui/PageHeader'
 import { Button } from '../components/ui/Button'
 import { ScheduleCard } from '../components/domain/ScheduleCard'
 import { PlanCompare } from '../components/domain/PlanCompare'
-import { getSchedule, getWeekPlan, getPlanDelta } from '../services/catalog'
+import { AdaptiveLoop } from '../components/domain/AdaptiveLoop'
+import { DemoBanner } from '../components/domain/ModeBanners'
+import { AdaptiveInsight } from '../components/domain/AdaptiveInsight'
+import { getSchedule } from '../services/catalog'
+import { useAppData } from '../hooks/useAppData'
+import { useAppState } from '../context/AppState'
 
 export function PlannerPage() {
+  const data = useAppData()
+  const { workspace } = useAppState()
   const [replanned, setReplanned] = useState(false)
   const [injected, setInjected] = useState(null)
-  const [items, setItems] = useState(() => getSchedule(false).map((x) => ({ ...x })))
-  const week = getWeekPlan()
+  const [items, setItems] = useState([])
+
+  const scheduleKey = (data.schedule || []).map((s) => `${s.id}:${s.minutes}:${s.topic}`).join('|')
+
+  useEffect(() => {
+    if (data.isDemo) setItems(getSchedule(false).map((x) => ({ ...x })))
+    else setItems((data.schedule || []).map((x) => ({ ...x })))
+  }, [data.isDemo, scheduleKey])
 
   useEffect(() => {
     const raw = sessionStorage.getItem('eduvance.plan.inject')
@@ -25,96 +38,112 @@ export function PlannerPage() {
 
   function replan() {
     setReplanned(true)
-    setItems(getSchedule(true).map((x) => ({ ...x })))
+    if (data.isDemo) setItems(getSchedule(true).map((x) => ({ ...x })))
   }
 
-  function onToggle(id) {
-    setItems((prev) => prev.map((x) => (x.id === id ? { ...x, done: !x.done } : x)))
-  }
-
-  function onMove(index, dir) {
-    setItems((prev) => {
-      const next = [...prev]
-      const target = index + dir
-      if (target < 0 || target >= next.length) return prev
-      const tmp = next[index]
-      next[index] = next[target]
-      next[target] = tmp
-      return next
-    })
-  }
+  const latest = (workspace.planUpdates || []).at(-1)
 
   return (
     <div>
+      <DemoBanner />
       <PageHeader
         eyebrow="Adaptive planner"
-        title="Today is allocated, not guessed."
-        description="Blocks are scored by priority. Replan reallocates minutes when performance or deadlines shift."
+        title="The plan is allowed to change."
+        description="Exam dates, topics, hours, and quiz evidence share one store. A weak quiz reallocates minutes."
         actions={
-          <Button variant="accent" onClick={replan}>
-            Replan
-          </Button>
+          data.isDemo ? (
+            <Button variant="accent" onClick={replan}>
+              Replan
+            </Button>
+          ) : null
         }
       />
 
+      <div className="mb-10">
+        <AdaptiveLoop compact />
+      </div>
+
       <AnimatePresence>
-        {injected ? (
+        {injected || latest ? (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-6 border border-accent bg-accent-soft px-4 py-3 text-sm"
           >
-            <p className="font-semibold">Quiz evidence added to the plan.</p>
+            <p className="font-semibold">Plan updated</p>
             <p className="mt-1 text-ink-2">
-              {injected.topic} will receive extra practice minutes on the next replan — backend will persist this later.
+              {(injected || latest).topic} {(injected || latest).minutesDelta > 0 ? '+' : ''}
+              {(injected || latest).minutesDelta || 45} minutes.{' '}
+              {(injected || latest).reason || 'Quiz evidence changed remaining allocation.'}
             </p>
           </motion.div>
         ) : null}
-        {replanned ? (
+        {replanned && data.isDemo ? (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             className="mb-8 border border-accent bg-accent-soft px-4 py-3 text-sm text-ink"
           >
-            <p className="font-semibold">Your study plan changed.</p>
+            <p className="font-semibold">Demo replan</p>
             <p className="mt-1 text-ink-2">
-              Normalization 90 min → 2h 15m. Accuracy is below target and the DBMS paper is 4 days away. Java
-              Collections lost 15 minutes; B+ Trees gained a 25-minute preview.
+              DBMS Normalization +45 min. Java Collections −20 min. This sample change is demo data, not your upload.
             </p>
           </motion.div>
         ) : null}
       </AnimatePresence>
 
-      <div className="mt-14">
-        <PlanCompare delta={getPlanDelta()} />
-      </div>
+      {data.planDelta ? (
+        <div className="mt-8">
+          <PlanCompare delta={data.planDelta} />
+        </div>
+      ) : (
+        <div className="mt-8">
+          <AdaptiveInsight>
+            After a quiz, this column will animate from the previous allocation to the next one.
+          </AdaptiveInsight>
+        </div>
+      )}
 
       <div className="mt-12 grid gap-12 lg:grid-cols-[1.3fr_0.7fr]">
         <section>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Today · 20 Aug</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Today</h2>
           <div className="mt-4">
-            {items.map((item, index) => (
-              <ScheduleCard
-                key={item.id}
-                item={item}
-                index={index}
-                total={items.length}
-                onToggle={onToggle}
-                onMove={onMove}
-              />
-            ))}
+            {items.length ? (
+              items.map((item, index) => (
+                <ScheduleCard
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  total={items.length}
+                  onToggle={(id) => setItems((prev) => prev.map((x) => (x.id === id ? { ...x, done: !x.done } : x)))}
+                  onMove={(index, dir) => {
+                    setItems((prev) => {
+                      const next = [...prev]
+                      const target = index + dir
+                      if (target < 0 || target >= next.length) return prev
+                      const tmp = next[index]
+                      next[index] = next[target]
+                      next[target] = tmp
+                      return next
+                    })
+                  }}
+                />
+              ))
+            ) : (
+              <p className="text-sm text-ink-2">Add subjects in setup to allocate today’s hours.</p>
+            )}
           </div>
         </section>
         <section>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Week horizon</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Exam horizon</h2>
           <ul className="mt-4">
-            {week.map((d) => (
-              <li key={d.day} className="flex justify-between gap-3 border-t border-line py-3 text-sm">
+            {data.exams.map((exam) => (
+              <li key={exam.id} className="flex justify-between gap-3 border-t border-line py-3 text-sm">
                 <div>
-                  <p className="font-medium text-ink">{d.day}</p>
-                  <p className="text-ink-2">{d.focus}</p>
+                  <p className="font-medium text-ink">{exam.name}</p>
+                  <p className="text-ink-2">{exam.date || 'Date TBD'}</p>
                 </div>
-                <p className="tabular text-ink-3">{d.hours}h</p>
+                <p className="tabular text-ink-3">{exam.time}</p>
               </li>
             ))}
           </ul>

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Button } from '../../components/ui/Button'
+import { StartPreparingButton } from '../../components/auth/StartPreparingButton'
 import { Reveal } from './Reveal'
 
 export function FinalCta() {
@@ -12,11 +13,9 @@ export function FinalCta() {
             Configure your exams once. Eduvance keeps the strategy honest as performance and time change.
           </p>
           <div className="mt-8 flex justify-center gap-3">
-            <Button as={Link} to="/setup" size="lg">
-              Start Preparing
-            </Button>
-            <Button as={Link} to="/dashboard" variant="secondary" size="lg">
-              View live dashboard
+            <StartPreparingButton size="lg" continueLabel="Continue Preparing" />
+            <Button as={Link} to="/login?next=/dashboard" variant="secondary" size="lg">
+              Open dashboard
             </Button>
           </div>
         </Reveal>

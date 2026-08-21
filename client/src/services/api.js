@@ -1,9 +1,54 @@
-/** REST client — unused in Phase 1. Point at VITE_API_URL when the backend exists. */
+const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
-const base = import.meta.env.VITE_API_URL || ''
+function token() {
+  try {
+    const raw = localStorage.getItem('eduvance.auth')
+    return raw ? JSON.parse(raw).token : null
+  } catch {
+    return null
+  }
+}
 
-export async function apiGet(path) {
-  const res = await fetch(`${base}${path}`)
-  if (!res.ok) throw new Error(`Request failed: ${res.status}`)
-  return res.json()
+export class ApiError extends Error {
+  constructor(message, status, body) {
+    super(message)
+    this.status = status
+    this.body = body
+  }
+}
+
+async function request(path, { method = 'GET', body, auth = true } = {}) {
+  const headers = { 'Content-Type': 'application/json' }
+  if (auth) {
+    const jwt = token()
+    if (jwt) headers.Authorization = `Bearer ${jwt}`
+  }
+
+  let res
+  try {
+    res = await fetch(`${BASE}${path}`, {
+      method,
+      headers,
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+  } catch {
+    throw new ApiError('Cannot reach the Eduvance API. Is the server running?', 0)
+  }
+
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok || json.success === false) {
+    throw new ApiError(json.message || `Request failed (${res.status})`, res.status, json)
+  }
+  return json.data
+}
+
+export const api = {
+  get: (path, opts) => request(path, { ...opts, method: 'GET' }),
+  post: (path, body, opts) => request(path, { ...opts, method: 'POST', body }),
+  put: (path, body, opts) => request(path, { ...opts, method: 'PUT', body }),
+  del: (path, opts) => request(path, { ...opts, method: 'DELETE' }),
+}
+
+export function apiBase() {
+  return BASE
 }

@@ -1,9 +1,13 @@
 import { Link, NavLink } from 'react-router-dom'
 import { Logo } from '../brand/Logo'
 import { Button } from '../ui/Button'
+import { StartPreparingButton } from '../auth/StartPreparingButton'
 import { cn } from '../../utils/cn'
+import { useAppState } from '../../context/AppState'
 
 export function MarketingNav() {
+  const { isLoggedIn, user, onboardingComplete } = useAppState()
+
   return (
     <header className="sticky top-0 z-30 border-b border-line/80 bg-canvas/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
@@ -23,12 +27,21 @@ export function MarketingNav() {
           </a>
         </nav>
         <div className="flex items-center gap-2">
-          <Button as={Link} to="/login" variant="ghost" size="sm">
-            Log in
-          </Button>
-          <Button as={Link} to="/setup" size="sm">
-            Start Preparing
-          </Button>
+          {isLoggedIn ? (
+            <>
+              <Button as={Link} to={onboardingComplete ? '/dashboard' : '/setup'} variant="ghost" size="sm">
+                {user?.name?.split(' ')[0]}
+              </Button>
+              <StartPreparingButton size="sm" continueLabel="Open Dashboard" />
+            </>
+          ) : (
+            <>
+              <Button as={Link} to="/login" variant="ghost" size="sm">
+                Log in
+              </Button>
+              <StartPreparingButton size="sm" />
+            </>
+          )}
         </div>
       </div>
     </header>

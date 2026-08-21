@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Upload } from 'lucide-react'
 import { cn } from '../../utils/cn'
 
-export function FileDrop({ label, accept = '.pdf,image/*,.doc,.docx', onFile, disabled }) {
+export function FileDrop({ label, hint = 'PDF / image / document', accept = '.pdf,image/*,.doc,.docx', onFile, disabled }) {
   const [over, setOver] = useState(false)
   const [name, setName] = useState('')
 
@@ -15,6 +15,7 @@ export function FileDrop({ label, accept = '.pdf,image/*,.doc,.docx', onFile, di
 
   return (
     <div
+      data-cursor="click"
       className={cn(
         'relative border border-dashed px-6 py-10 text-center transition-colors',
         over ? 'border-accent bg-accent-soft' : 'border-line bg-surface',
@@ -41,7 +42,7 @@ export function FileDrop({ label, accept = '.pdf,image/*,.doc,.docx', onFile, di
       />
       <Upload size={18} className="mx-auto text-ink-3" aria-hidden="true" />
       <p className="mt-3 text-sm font-medium text-ink">{label}</p>
-      <p className="mt-1 text-xs text-ink-3">PDF / image / document · simulated analysis</p>
+      <p className="mt-1 text-xs text-ink-3">{hint}</p>
       {name ? (
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3 text-xs font-medium text-accent">
           {name}
