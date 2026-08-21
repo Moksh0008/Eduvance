@@ -68,7 +68,7 @@ export function DashboardPage() {
         <EmptyState title="No subjects yet" body="Add exams in setup to rank today's work." />
       )}
 
-      <motion.div variants={fadeUp} className="mt-10">
+      <motion.div variants={fadeUp} className="mt-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-3">Adaptive loop</p>
         <div className="mt-3">
           <AdaptiveLoop compact />
@@ -76,17 +76,17 @@ export function DashboardPage() {
       </motion.div>
 
       {data.monitorRisks?.length ? (
-        <motion.div variants={fadeUp} className="mt-10">
+        <motion.div variants={fadeUp} className="mt-8">
           <RiskMonitor risks={data.monitorRisks} />
         </motion.div>
       ) : null}
 
       {data.planDelta ? (
-        <motion.div variants={fadeUp} className="mt-10">
+        <motion.div variants={fadeUp} className="mt-8">
           <PlanCompare delta={data.planDelta} />
         </motion.div>
       ) : (
-        <motion.section variants={fadeUp} className="mt-10">
+        <motion.section variants={fadeUp} className="mt-8">
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Current study plan</h2>
           <p className="mt-2 text-sm text-ink-2">
             {data.generate === 'quizzes'
@@ -96,7 +96,7 @@ export function DashboardPage() {
         </motion.section>
       )}
 
-      <div className="mt-10 grid gap-10 lg:grid-cols-[1.4fr_0.8fr]">
+      <div className="mt-8 grid gap-8 lg:grid-cols-[1.4fr_0.8fr]">
         <motion.div variants={fadeUp}>
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Today's allocated blocks</h2>
           {data.schedule?.length ? (
@@ -137,19 +137,19 @@ export function DashboardPage() {
         </motion.div>
       </div>
 
-      <motion.div variants={fadeUp} className="mt-12 grid gap-4 sm:grid-cols-3">
+      <motion.div variants={fadeUp} className="mt-8 grid gap-4 sm:grid-cols-3">
         <StatCard label="Study hours this week" value={`${progress.hoursThisWeek}h`} hint={`target ${progress.hoursTarget}h`} icon={Clock} />
         <StatCard label="Topics captured" value={`${progress.topicsCompleted}/${progress.topicsTotal}`} icon={BookOpen} />
         <StatCard label="Quiz average" value={`${progress.quizAverage}%`} icon={Target} />
       </motion.div>
 
       {data.readiness?.length ? (
-        <motion.div variants={fadeUp} className="mt-10">
+        <motion.div variants={fadeUp} className="mt-8">
           <ReadinessPanel items={data.readiness} />
         </motion.div>
       ) : null}
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-2">
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <motion.section variants={fadeUp}>
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Upcoming exams</h2>
           <div className="mt-2">
@@ -169,7 +169,7 @@ export function DashboardPage() {
       </div>
 
       {progress.weakTopics?.length ? (
-        <motion.section variants={fadeUp} className="mt-10">
+        <motion.section variants={fadeUp} className="mt-8">
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Weak topics</h2>
           <ul className="mt-3">
             {progress.weakTopics.map((t) => (

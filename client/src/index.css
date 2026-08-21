@@ -128,6 +128,24 @@ html {
     outline: none;
   }
 
+  /* Override Tailwind base button reset so bg-accent works in all themes */
+  button.bg-accent,
+  button.bg-risk,
+  button.bg-success,
+  a.bg-accent,
+  a.bg-risk,
+  a.bg-success {
+    background-color: var(--color-accent);
+  }
+  button.bg-risk,
+  a.bg-risk {
+    background-color: var(--color-risk);
+  }
+  button.bg-success,
+  a.bg-success {
+    background-color: var(--color-success);
+  }
+
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.15); border-radius: 3px; }

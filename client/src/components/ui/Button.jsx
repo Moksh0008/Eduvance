@@ -3,11 +3,11 @@ import { cn } from '../../utils/cn'
 import { useFinePointer, useReducedMotion } from '../../hooks/useReducedMotion'
 
 const variants = {
-  primary: 'bg-accent text-white hover:bg-accent-2 hover:shadow-[0_0_30px_rgba(99,102,241,0.25)] disabled:opacity-40',
-  accent: 'bg-accent text-white hover:bg-accent-2 hover:shadow-[0_0_30px_rgba(99,102,241,0.25)] disabled:opacity-40',
-  secondary: 'bg-surface-2 text-ink border border-line-2 hover:bg-surface hover:border-ink-3/20 hover:shadow-lg disabled:opacity-40',
+  primary: 'bg-accent text-white hover:shadow-[0_0_30px_rgba(99,102,241,0.25)] disabled:opacity-40',
+  accent: 'bg-accent text-white hover:shadow-[0_0_30px_rgba(99,102,241,0.25)] disabled:opacity-40',
+  secondary: 'bg-surface text-ink border border-line-2 hover:bg-surface-2 hover:border-ink-3/20 hover:shadow-lg disabled:opacity-40',
   ghost: 'bg-transparent text-ink-2 hover:bg-surface-2 hover:text-ink',
-  danger: 'bg-risk text-white hover:bg-risk/90 hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]',
+  danger: 'bg-risk text-white hover:shadow-[0_0_20px_rgba(239,68,68,0.2)]',
 }
 
 const sizes = {
@@ -39,6 +39,7 @@ export function Button({
       <motion.button
         type={type || 'button'}
         className={classes}
+        style={{ backgroundColor: variant === 'primary' || variant === 'accent' ? 'var(--color-accent)' : undefined, color: variant === 'primary' || variant === 'accent' ? '#fff' : undefined }}
         whileHover={fine && !reduce ? { y: -1, scale: 1.02 } : undefined}
         whileTap={reduce ? undefined : { scale: 0.97 }}
         data-cursor="click"
@@ -51,7 +52,12 @@ export function Button({
   }
 
   return (
-    <Tag type={undefined} className={classes} {...props}>
+    <Tag
+      type={undefined}
+      className={classes}
+      style={{ backgroundColor: variant === 'primary' || variant === 'accent' ? 'var(--color-accent)' : undefined, color: variant === 'primary' || variant === 'accent' ? '#fff' : undefined }}
+      {...props}
+    >
       {children}
     </Tag>
   )

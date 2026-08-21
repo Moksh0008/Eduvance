@@ -87,105 +87,112 @@ export function AnalyticsPage() {
         </div>
       ) : null}
 
-      <div className="mt-8 space-y-10">
-        <div className="grid gap-6 sm:grid-cols-3">
-          <Stat label="Overall accuracy" value={`${analytics.overallAccuracy ?? progress.quizAverage}%`} />
-          <Stat label="Quizzes logged" value={String(analytics.history?.length || 0)} />
-          <Stat label="Weak topics" value={String(progress.weakTopics?.length || 0)} />
-        </div>
+      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <Stat label="Overall accuracy" value={`${analytics.overallAccuracy ?? progress.quizAverage}%`} />
+        <Stat label="Quizzes logged" value={String(analytics.history?.length || 0)} />
+        <Stat label="Weak topics" value={String(progress.weakTopics?.length || 0)} />
+      </div>
 
-        <ChartCard title="Subject accuracy" question="Which paper is the bottleneck?">
+      <ChartCard title="Subject accuracy" question="Which paper is the bottleneck?">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={subjectBars} layout="vertical" margin={{ left: 28 }}>
+            <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} stroke={colors.axis} />
+            <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 11 }} stroke={colors.axis} />
+            <Tooltip content={<ThemeTooltip />} />
+            <Bar dataKey="mastery" fill={colors.bar} radius={[0, 4, 4, 0]} name="Accuracy %" />
+          </BarChart>
+        </ResponsiveContainer>
+      </ChartCard>
+
+      {topicBars?.length ? (
+        <ChartCard title="Topic accuracy" question="Where is accuracy too low?">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={subjectBars} layout="vertical" margin={{ left: 28 }}>
-              <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} stroke={colors.axis} />
-              <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 11 }} stroke={colors.axis} />
+            <BarChart data={topicBars}>
+              <XAxis dataKey="topic" tick={{ fontSize: 10 }} stroke={colors.axis} interval={0} />
+              <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke={colors.axis} />
               <Tooltip content={<ThemeTooltip />} />
-              <Bar dataKey="mastery" fill={colors.bar} radius={[0, 4, 4, 0]} name="Accuracy %" />
+              <Bar dataKey="accuracy" fill={colors.barDark} radius={[4, 4, 0, 0]} name="Accuracy %" />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
+      ) : null}
 
-        {topicBars?.length ? (
-          <ChartCard title="Topic accuracy" question="Where is accuracy too low?">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topicBars}>
-                <XAxis dataKey="topic" tick={{ fontSize: 10 }} stroke={colors.axis} interval={0} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke={colors.axis} />
-                <Tooltip content={<ThemeTooltip />} />
-                <Bar dataKey="accuracy" fill={colors.barDark} radius={[4, 4, 0, 0]} name="Accuracy %" />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartCard>
-        ) : null}
+      {trend?.length ? (
+        <ChartCard title="Improvement trend" question="Are assessments improving after replans?">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={trend}>
+              <XAxis dataKey={data.isDemo ? 'day' : 'attempt'} tick={{ fontSize: 11 }} stroke={colors.axis} />
+              <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke={colors.axis} />
+              <Tooltip content={<ThemeTooltip />} />
+              <Line type="monotone" dataKey="accuracy" stroke={colors.line} strokeWidth={2} dot={false} name="Accuracy %" />
+            </LineChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      ) : null}
 
-        {trend?.length ? (
-          <ChartCard title="Improvement trend" question="Are assessments improving after replans?">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trend}>
-                <XAxis dataKey={data.isDemo ? 'day' : 'attempt'} tick={{ fontSize: 11 }} stroke={colors.axis} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke={colors.axis} />
-                <Tooltip content={<ThemeTooltip />} />
-                <Line type="monotone" dataKey="accuracy" stroke={colors.line} strokeWidth={2} dot={false} name="Accuracy %" />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartCard>
-        ) : null}
+      {data.isDemo ? (
+        <ChartCard title="Overall mastery trend" question="Is readiness compounding, or stalling?">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={catalog.masteryTrend}>
+              <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke={colors.axis} />
+              <YAxis domain={[40, 100]} tick={{ fontSize: 11 }} stroke={colors.axis} />
+              <Tooltip content={<ThemeTooltip />} />
+              <Line type="monotone" dataKey="overall" stroke={colors.line} strokeWidth={2} name="Overall" />
+            </LineChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      ) : null}
 
-        {data.isDemo ? (
-          <ChartCard title="Overall mastery trend" question="Is readiness compounding, or stalling?">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={catalog.masteryTrend}>
-                <XAxis dataKey="day" tick={{ fontSize: 11 }} stroke={colors.axis} />
-                <YAxis domain={[40, 100]} tick={{ fontSize: 11 }} stroke={colors.axis} />
-                <Tooltip content={<ThemeTooltip />} />
-                <Line type="monotone" dataKey="overall" stroke={colors.line} strokeWidth={2} name="Overall" />
-              </LineChart>
-            </ResponsiveContainer>
-          </ChartCard>
-        ) : null}
-      </div>
-
-      <div className="mt-10 grid gap-8 lg:grid-cols-2">
-        <section>
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <section className="card">
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Weakest subjects</h2>
           <ul className="mt-3">
             {(analytics.weakest || []).map((t) => (
               <li key={t.name} className="flex justify-between border-t border-line py-3 text-sm">
                 <span>{t.name}</span>
-                <span className="tabular">{t.accuracy}%</span>
+                <span className="tabular text-risk">{t.accuracy}%</span>
               </li>
             ))}
+            {!(analytics.weakest || []).length && (
+              <li className="py-3 text-sm text-ink-3">No data yet.</li>
+            )}
           </ul>
         </section>
-        <section>
+        <section className="card">
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Strongest subjects</h2>
           <ul className="mt-3">
             {(analytics.strongest || []).map((t) => (
               <li key={t.name} className="flex justify-between border-t border-line py-3 text-sm">
                 <span>{t.name}</span>
-                <span className="tabular">{t.accuracy}%</span>
+                <span className="tabular text-success">{t.accuracy}%</span>
               </li>
             ))}
+            {!(analytics.strongest || []).length && (
+              <li className="py-3 text-sm text-ink-3">No data yet.</li>
+            )}
           </ul>
         </section>
       </div>
 
-      <section className="mt-10">
+      <section className="mt-8">
         <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Quiz history</h2>
         <ul className="mt-3">
           {(analytics.history || []).slice().reverse().map((q, i) => (
-            <li key={`${q.at}-${i}`} className="flex justify-between border-t border-line py-3 text-sm">
+            <li key={`${q.at}-${i}`} className="card mb-2 flex justify-between p-3 text-sm">
               <span>
                 {q.subject} → {q.topic}
               </span>
               <span className="tabular">{q.score}%</span>
             </li>
           ))}
+          {!(analytics.history || []).length && (
+            <li className="py-3 text-sm text-ink-3">No quiz history yet.</li>
+          )}
         </ul>
       </section>
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-2">
-        <section>
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <section className="card">
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Weak topics</h2>
           <ul className="mt-3">
             {(progress.weakTopics || []).map((t) => (
@@ -193,12 +200,15 @@ export function AnalyticsPage() {
                 <span>
                   {t.subject} → {t.name}
                 </span>
-                <span className="tabular">{t.mastery}%</span>
+                <span className="tabular text-risk">{t.mastery}%</span>
               </li>
             ))}
+            {!(progress.weakTopics || []).length && (
+              <li className="py-3 text-sm text-ink-3">No weak topics yet.</li>
+            )}
           </ul>
         </section>
-        <section>
+        <section className="card">
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Preparation readiness</h2>
           <div className="mt-5 space-y-4">
             {readiness.map((r) => (
@@ -213,7 +223,7 @@ export function AnalyticsPage() {
 
 function Stat({ label, value }) {
   return (
-    <div className="border-t border-line pt-3">
+    <div className="card text-center">
       <p className="text-[11px] uppercase tracking-wider text-ink-3">{label}</p>
       <p className="mt-1 font-serif text-3xl tabular">{value}</p>
     </div>

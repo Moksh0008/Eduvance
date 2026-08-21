@@ -72,7 +72,7 @@ export function ProgressPage() {
         <StatCard label="Quiz performance" value={`${progress.quizAverage}%`} />
       </div>
 
-      <section className="mt-10">
+      <section className="mt-8">
         <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Subject progress</h2>
         <div className="mt-4 space-y-4">
           {subjects.map((s) => (
@@ -82,13 +82,13 @@ export function ProgressPage() {
       </section>
 
       {!data.isDemo ? (
-        <section className="mt-10">
+        <section className="mt-8">
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Topic completion</h2>
           <ul className="mt-3">
             {topics.map((t) => {
               const done = (data.quizResults || []).some((q) => q.topic === t.name && q.score >= 70)
               return (
-                <li key={t.id} className="flex justify-between border-t border-line py-3 text-sm" data-cursor="topic">
+                <li key={t.id} className="card mb-2 flex justify-between p-3 text-sm" data-cursor="topic">
                   <span>
                     {t.subjectName} → {t.name}
                   </span>
@@ -101,7 +101,7 @@ export function ProgressPage() {
       ) : null}
 
       {!data.isDemo && !topics.length ? (
-        <div className="mt-8">
+        <div className="mt-6">
           <EmptyState
             title="Add syllabus topics to generate topic-level planning."
             body="Subjects from setup appear above. Topic completion unlocks after you enter units in Edit Preparation."
@@ -110,7 +110,7 @@ export function ProgressPage() {
       ) : null}
 
       {!data.isDemo && !(data.analytics?.history || []).length ? (
-        <div className="mt-8">
+        <div className="mt-6">
           <EmptyState
             title="Complete your first quiz to unlock performance insights."
             body="Progress already uses your subjects. Accuracy and weak areas appear after a quiz."
@@ -119,7 +119,7 @@ export function ProgressPage() {
       ) : null}
 
       {trend?.length ? (
-        <div className="mt-10">
+        <div className="mt-8">
           <ChartCard title="Performance trend" question="Is accuracy rising after each quiz?">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trend}>
@@ -140,8 +140,8 @@ export function ProgressPage() {
         </div>
       ) : null}
 
-      <div className="mt-10 grid gap-8 lg:grid-cols-2">
-        <section>
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <section className="card">
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Weak areas</h2>
           <ul className="mt-3">
             {(progress.weakTopics || []).map((t) => (
@@ -149,22 +149,28 @@ export function ProgressPage() {
                 <span>
                   {t.subject} → {t.name}
                 </span>
-                <span className="tabular font-medium">{t.mastery}%</span>
+                <span className="tabular font-medium text-risk">{t.mastery}%</span>
               </li>
             ))}
+            {!(progress.weakTopics || []).length && (
+              <li className="py-3 text-sm text-ink-3">No weak areas identified yet.</li>
+            )}
           </ul>
         </section>
-        <section>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Held topics</h2>
+        <section className="card">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Strongest subjects</h2>
           <ul className="mt-3">
             {(progress.strongTopics || []).map((t) => (
               <li key={`${t.subject}-${t.name}`} className="flex justify-between border-t border-line py-3 text-sm">
                 <span>
                   {t.subject} → {t.name}
                 </span>
-                <span className="tabular font-medium">{t.mastery}%</span>
+                <span className="tabular font-medium text-success">{t.mastery}%</span>
               </li>
             ))}
+            {!(progress.strongTopics || []).length && (
+              <li className="py-3 text-sm text-ink-3">Complete quizzes to identify strong subjects.</li>
+            )}
           </ul>
         </section>
       </div>
