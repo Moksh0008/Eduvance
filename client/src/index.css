@@ -128,28 +128,33 @@ html {
     outline: none;
   }
 
-  /* Override Tailwind base button reset so bg-accent works in all themes */
-  button.bg-accent,
-  button.bg-risk,
-  button.bg-success,
-  a.bg-accent,
-  a.bg-risk,
-  a.bg-success {
-    background-color: var(--color-accent);
-  }
-  button.bg-risk,
-  a.bg-risk {
-    background-color: var(--color-risk);
-  }
-  button.bg-success,
-  a.bg-success {
-    background-color: var(--color-success);
-  }
+
 
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.15); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.25); }
+}
+
+/* === Button background overrides (unlayered, beats Tailwind layers) === */
+button.bg-accent,
+a.bg-accent {
+  background-color: var(--color-accent);
+  color: #fff;
+}
+button.bg-accent:hover,
+a.bg-accent:hover {
+  background-color: var(--color-accent-2);
+}
+button.bg-risk,
+a.bg-risk {
+  background-color: var(--color-risk);
+  color: #fff;
+}
+button.bg-success,
+a.bg-success {
+  background-color: var(--color-success);
+  color: #fff;
 }
 
 /* === Utilities === */
