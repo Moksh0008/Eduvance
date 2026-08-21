@@ -12,7 +12,7 @@ const outputs = [
 
 export function ChaosToClarity() {
   return (
-    <section id="clarity" className="border-b border-line py-20">
+    <section id="clarity" className="py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Reveal>
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent-2">From chaos to clarity</p>

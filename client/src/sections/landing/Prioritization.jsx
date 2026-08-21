@@ -2,7 +2,7 @@ import { Reveal } from './Reveal'
 
 export function Prioritization() {
   return (
-    <section className="border-b border-line py-20">
+    <section className="py-24">
       <div className="mx-auto grid max-w-6xl gap-12 px-4 sm:px-6 lg:grid-cols-2">
         <Reveal>
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">

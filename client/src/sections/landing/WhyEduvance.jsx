@@ -9,7 +9,7 @@ const reasons = [
 
 export function WhyEduvance() {
   return (
-    <section id="why" className="border-b border-line py-20">
+    <section id="why" className="py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Reveal>
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent-2">Why Eduvance</p>

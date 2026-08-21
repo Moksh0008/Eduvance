@@ -1,5 +1,6 @@
 import { MarketingNav } from '../components/layout/MarketingNav'
 import { Hero } from '../sections/landing/Hero'
+import { ProductDemo } from '../sections/landing/ProductDemo'
 import { Problem } from '../sections/landing/Problem'
 import { ChaosToClarity } from '../sections/landing/ChaosToClarity'
 import { Comparison } from '../sections/landing/Comparison'
@@ -16,17 +17,18 @@ export function LandingPage() {
       <MarketingNav />
       <main>
         <Hero />
-        <ChaosToClarity />
-        <Comparison />
+        <ProductDemo />
         <Problem />
+        <ChaosToClarity />
         <HowItWorks />
+        <Comparison />
         <Prioritization />
         <AdaptivePlanning />
         <ProgressTracking />
         <WhyEduvance />
         <FinalCta />
       </main>
-      <footer className="border-t border-line py-8">
+      <footer className="py-12">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 text-xs text-ink-3 sm:flex-row sm:justify-between sm:px-6">
           <p>Eduvance — Education + Advance</p>
           <p>Adaptive examination preparation & study optimization</p>

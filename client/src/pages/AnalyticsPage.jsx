@@ -5,8 +5,6 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
 } from 'recharts'
 import { motion } from 'framer-motion'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -55,32 +53,33 @@ function ThemeTooltip({ active, payload, label }) {
   )
 }
 
-/* Custom subject accuracy bars — replaces the full-width Recharts BarChart */
-function SubjectAccuracyBars({ data }) {
+/* Compact horizontal bars — reusable for subject + topic accuracy */
+function AccuracyBars({ data, labelKey, valueKey, delay = 0 }) {
   const reduce = useReducedMotion()
   const { isDark } = useTheme()
   const barColor = isDark ? '#818cf8' : '#5558e6'
 
   return (
-    <div className="max-w-xl space-y-4">
+    <div className="space-y-3">
       {data.map((item, i) => {
-        const val = Math.max(0, Math.min(100, item.mastery || 0))
+        const name = item[labelKey] || item.name || item.topic
+        const val = Math.max(0, Math.min(100, item[valueKey] || 0))
         return (
-          <div key={item.name}>
-            <div className="mb-1.5 flex items-baseline justify-between text-sm">
-              <span className="font-medium text-ink">{item.name}</span>
-              <span className="tabular text-ink-2">{val}%</span>
+          <div key={name}>
+            <div className="mb-1 flex items-baseline justify-between text-sm">
+              <span className="font-medium text-ink truncate pr-3">{name}</span>
+              <span className="tabular text-ink-2 whitespace-nowrap">{val}%</span>
             </div>
-            <div className="h-3 w-full overflow-hidden rounded-full" style={{ background: 'var(--color-surface-2)' }}>
+            <div className="h-2 w-full overflow-hidden rounded-full" style={{ background: 'var(--color-surface-2)' }}>
               <motion.div
                 className="h-full rounded-full"
                 style={{
                   background: `linear-gradient(90deg, ${barColor}cc, ${barColor})`,
-                  boxShadow: val > 0 ? `0 0 12px ${barColor}40` : 'none',
+                  boxShadow: val > 0 ? `0 0 10px ${barColor}30` : 'none',
                 }}
                 initial={reduce ? false : { width: 0 }}
                 animate={{ width: `${val}%` }}
-                transition={{ duration: 0.8, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.8, delay: delay + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
               />
             </div>
           </div>
@@ -108,7 +107,7 @@ export function AnalyticsPage() {
     : (analytics.topicAccuracy || []).map((t) => ({ topic: t.topic, accuracy: t.accuracy }))
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8">
       <DemoBanner />
       <PageHeader
         eyebrow="Understand"
@@ -132,13 +131,13 @@ export function AnalyticsPage() {
         <Stat label="Weak topics" value={String(progress.weakTopics?.length || 0)} />
       </div>
 
-      {/* ═══ SUBJECT ACCURACY — custom bars, max-width ═══ */}
+      {/* ═══ SUBJECT ACCURACY ═══ */}
       <ScrollReveal preset="fadeUp">
-        <div>
+        <div className="card">
           <h3 className="text-sm font-semibold text-ink">Subject accuracy</h3>
           <p className="mt-1 text-xs text-ink-3">Which paper is the bottleneck?</p>
           <div className="mt-5">
-            <SubjectAccuracyBars data={subjectBars} />
+            <AccuracyBars data={subjectBars} labelKey="name" valueKey="mastery" />
           </div>
         </div>
       </ScrollReveal>
@@ -146,18 +145,13 @@ export function AnalyticsPage() {
       {/* ═══ TOPIC ACCURACY ═══ */}
       {topicBars?.length ? (
         <ScrollReveal preset="fadeUp" delay={0.05}>
-          <ChartCard title="Topic accuracy" question="Where is accuracy too low?">
-            <div className="max-w-xl">
-              <ResponsiveContainer width="100%" height={Math.max(180, topicBars.length * 40)}>
-                <BarChart data={topicBars} layout="vertical" margin={{ left: 20, right: 20 }}>
-                  <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} stroke={colors.axis} />
-                  <YAxis type="category" dataKey="topic" width={120} tick={{ fontSize: 11 }} stroke={colors.axis} />
-                  <Tooltip content={<ThemeTooltip />} />
-                  <Bar dataKey="accuracy" fill={colors.barDark} radius={[0, 4, 4, 0]} name="Accuracy %" />
-                </BarChart>
-              </ResponsiveContainer>
+          <div className="card">
+            <h3 className="text-sm font-semibold text-ink">Topic accuracy</h3>
+            <p className="mt-1 text-xs text-ink-3">Where is accuracy too low?</p>
+            <div className="mt-5">
+              <AccuracyBars data={topicBars} labelKey="topic" valueKey="accuracy" delay={0.1} />
             </div>
-          </ChartCard>
+          </div>
         </ScrollReveal>
       ) : null}
 

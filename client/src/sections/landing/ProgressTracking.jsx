@@ -8,7 +8,7 @@ export function ProgressTracking() {
     { k: 'Predicted readiness', v: '84% by exam', color: 'text-success' },
   ]
   return (
-    <section className="border-b border-line py-20">
+    <section className="py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Reveal>
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent-2">Progress tracking</p>

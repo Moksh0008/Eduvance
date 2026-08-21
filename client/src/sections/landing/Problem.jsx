@@ -8,7 +8,7 @@ export function Problem() {
   ]
 
   return (
-    <section id="problem" className="border-b border-line py-20">
+    <section id="problem" className="py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <Reveal>
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">The problem</p>
