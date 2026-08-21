@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Button } from '../components/ui/Button'
 import { QuizQuestion } from '../components/domain/QuizQuestion'
+import { QuizMentor } from '../components/domain/QuizMentor'
 import { getQuizBank, buildTopicQuiz } from '../services/quiz'
 import { quizSlide } from '../animations/variants'
 
@@ -22,6 +23,7 @@ export function QuizPlayPage() {
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState(() => Array(questions.length).fill(null))
   const [left, setLeft] = useState(limit)
+  const [mentorEvent, setMentorEvent] = useState({ type: 'enter' })
   const q = questions[index]
   const progress = questions.length ? ((index + 1) / questions.length) * 100 : 0
   const submitted = useRef(false)
@@ -36,9 +38,34 @@ export function QuizPlayPage() {
     if (left === 0) submit()
   }, [left])
 
+  // Trigger final stretch message when 2 questions remain
+  useEffect(() => {
+    if (index === questions.length - 3 && questions.length > 4) {
+      setMentorEvent({ type: 'finalStretch' })
+    }
+  }, [index, questions.length])
+
+  const handleAnswer = useCallback(
+    (selected) => {
+      const prev = answers[index]
+      setAnswers((a) => a.map((x, idx) => (idx === index ? selected : x)))
+
+      // Only trigger mentor reaction on first answer (not changing answer)
+      if (prev === null && selected !== null) {
+        const correct = selected === q.answer
+        setMentorEvent({
+          type: correct ? 'correct' : 'incorrect',
+          timestamp: Date.now(),
+        })
+      }
+    },
+    [answers, index, q],
+  )
+
   function submit() {
     if (submitted.current) return
     submitted.current = true
+    setMentorEvent({ type: 'submit' })
     const correct = questions.reduce((n, item, i) => n + (answers[i] === item.answer ? 1 : 0), 0)
     sessionStorage.setItem(
       'eduvance.quiz.result',
@@ -55,7 +82,8 @@ export function QuizPlayPage() {
         subjectId: config.subjectId || null,
       }),
     )
-    navigate('/quiz/result')
+    // Small delay to let mentor message show before navigating
+    setTimeout(() => navigate('/quiz/result'), 600)
   }
 
   const mm = String(Math.floor(left / 60)).padStart(2, '0')
@@ -63,6 +91,11 @@ export function QuizPlayPage() {
 
   return (
     <div>
+      {/* Mentor area */}
+      <div className="mb-6">
+        <QuizMentor event={mentorEvent} />
+      </div>
+
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-ink-2">
           {config.subject || bank.subject} → {config.topic || bank.topic}
@@ -86,12 +119,12 @@ export function QuizPlayPage() {
           <motion.div
             key={q.id}
             {...(reduce ? { initial: false } : quizSlide)}
-            className="mt-8"
+            className="mt-6"
           >
             <QuizQuestion
               question={q}
               selected={answers[index]}
-              onSelect={(i) => setAnswers((a) => a.map((x, idx) => (idx === index ? i : x)))}
+              onSelect={handleAnswer}
             />
           </motion.div>
         ) : null}

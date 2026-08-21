@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Button } from '../components/ui/Button'
 import { QuizResult } from '../components/domain/QuizResult'
+import { QuizMentorCompact } from '../components/domain/QuizMentor'
 import { useAppState } from '../context/AppState'
 
 export function QuizResultPage() {
@@ -52,6 +54,17 @@ export function QuizResultPage() {
   return (
     <div>
       <PageHeader eyebrow="Quiz performance" title={`${result.subject} → ${result.topic}`} />
+
+      {/* Mentor celebration/encouragement */}
+      <motion.div
+        className="mb-6"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <QuizMentorCompact score={result.score} />
+      </motion.div>
+
       {result.kind === 'demo' ? (
         <p className="mb-4 text-sm text-ink-3">Demo item bank — not produced from an uploaded syllabus.</p>
       ) : (
