@@ -1,4 +1,14 @@
-const BASE = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/$/, '')
+function resolveBase() {
+  const env = String(import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '')
+  if (typeof window === 'undefined') return env || '/api'
+
+  const host = window.location.hostname
+  const isLoopback = host === 'localhost' || host === '127.0.0.1'
+  const envPointsAtLoopback = /localhost|127\.0\.0\.1/.test(env)
+
+  if (!isLoopback && envPointsAtLoopback) return '/api'
+  return env || '/api'
+}
 
 function token() {
   try {
@@ -26,7 +36,7 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
 
   let res
   try {
-    res = await fetch(`${BASE}${path}`, {
+    res = await fetch(`${resolveBase()}${path}`, {
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -54,5 +64,5 @@ export const api = {
 }
 
 export function apiBase() {
-  return BASE
+  return resolveBase()
 }
