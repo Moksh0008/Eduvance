@@ -3,17 +3,17 @@ import { cn } from '../../utils/cn'
 import { useFinePointer, useReducedMotion } from '../../hooks/useReducedMotion'
 
 const variants = {
-  primary: 'bg-ink text-canvas hover:bg-ink/90 disabled:opacity-50',
-  accent: 'bg-accent text-white hover:bg-accent/90 disabled:opacity-50',
-  secondary: 'bg-transparent text-ink border border-line hover:bg-canvas-2 disabled:opacity-50',
-  ghost: 'bg-transparent text-ink-2 hover:bg-canvas-2 hover:text-ink',
+  primary: 'bg-accent text-white hover:bg-accent-2 disabled:opacity-40 shadow-[0_0_20px_rgba(99,102,241,0.15)]',
+  accent: 'bg-accent text-white hover:bg-accent-2 disabled:opacity-40 shadow-[0_0_20px_rgba(99,102,241,0.15)]',
+  secondary: 'bg-surface-2 text-ink border border-line-2 hover:bg-surface hover:border-ink-3/20 disabled:opacity-40',
+  ghost: 'bg-transparent text-ink-2 hover:bg-surface-2 hover:text-ink',
   danger: 'bg-risk text-white hover:bg-risk/90',
 }
 
 const sizes = {
-  sm: 'h-8 px-3 text-sm',
-  md: 'h-10 px-4 text-sm',
-  lg: 'h-12 px-5 text-[15px]',
+  sm: 'h-8 px-3 text-sm rounded-lg',
+  md: 'h-10 px-4 text-sm rounded-lg',
+  lg: 'h-12 px-5 text-[15px] rounded-xl',
 }
 
 export function Button({
@@ -28,7 +28,7 @@ export function Button({
   const fine = useFinePointer()
   const reduce = useReducedMotion()
   const classes = cn(
-    'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors duration-150',
+    'inline-flex items-center justify-center gap-2 font-medium transition-all duration-200',
     variants[variant],
     sizes[size],
     className,
@@ -39,8 +39,8 @@ export function Button({
       <motion.button
         type={type || 'button'}
         className={classes}
-        whileHover={fine && !reduce ? { y: -1, scale: 1.01 } : undefined}
-        whileTap={reduce ? undefined : { scale: 0.98 }}
+        whileHover={fine && !reduce ? { y: -1, scale: 1.02 } : undefined}
+        whileTap={reduce ? undefined : { scale: 0.97 }}
         data-cursor="click"
         transition={{ type: 'spring', stiffness: 420, damping: 28 }}
         {...props}

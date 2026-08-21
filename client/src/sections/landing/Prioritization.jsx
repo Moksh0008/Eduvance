@@ -15,12 +15,12 @@ export function Prioritization() {
           </p>
         </Reveal>
         <Reveal>
-          <div className="border border-ink bg-ink p-6 text-canvas">
-            <p className="text-xs uppercase tracking-wider text-canvas/50">Now</p>
-            <p className="mt-2 font-serif text-3xl">DBMS → Normalization</p>
-            <p className="mt-4 tabular text-5xl font-semibold">94</p>
-            <p className="text-sm text-canvas/50">Priority / 100</p>
-            <ul className="mt-6 space-y-1.5 text-sm text-canvas/80">
+          <div className="card bg-accent/[0.06] border-accent/20 p-6">
+            <p className="text-xs uppercase tracking-wider text-ink-3">Now</p>
+            <p className="mt-2 font-serif text-3xl text-ink">DBMS → Normalization</p>
+            <p className="mt-4 tabular text-5xl font-semibold gradient-text">94</p>
+            <p className="text-sm text-ink-3">Priority / 100</p>
+            <ul className="mt-6 space-y-1.5 text-sm text-ink-2">
               <li>Weightage 20%</li>
               <li>Mastery 35%</li>
               <li>Appeared 4/4 papers</li>

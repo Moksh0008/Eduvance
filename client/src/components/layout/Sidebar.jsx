@@ -15,6 +15,8 @@ import {
   PencilLine,
 } from 'lucide-react'
 import { cn } from '../../utils/cn'
+import { motion } from 'framer-motion'
+import { useReducedMotion } from '../../hooks/useReducedMotion'
 
 const groups = [
   {
@@ -55,31 +57,63 @@ const groups = [
   },
 ]
 
+function SidebarItem({ to, label, icon: Icon, onNavigate }) {
+  const reduce = useReducedMotion()
+  return (
+    <li>
+      <NavLink
+        to={to}
+        onClick={onNavigate}
+        className={({ isActive }) =>
+          cn(
+            'group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-200',
+            isActive
+              ? 'bg-accent-soft text-accent-2 font-medium'
+              : 'text-ink-2 hover:bg-surface-2 hover:text-ink',
+          )
+        }
+      >
+        {({ isActive }) => (
+          <>
+            {isActive && (
+              <motion.div
+                layoutId="sidebar-active"
+                className="absolute inset-0 rounded-lg bg-accent-soft"
+                transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 350, damping: 30 }}
+              />
+            )}
+            <Icon
+              size={16}
+              strokeWidth={1.6}
+              aria-hidden="true"
+              className={cn(
+                'relative z-10 transition-transform duration-200',
+                isActive ? 'text-accent-2' : 'text-ink-3 group-hover:text-ink-2',
+                !reduce && 'group-hover:scale-110',
+              )}
+            />
+            <span className="relative z-10">{label}</span>
+          </>
+        )}
+      </NavLink>
+    </li>
+  )
+}
+
 export function Sidebar({ onNavigate }) {
   return (
-    <nav aria-label="Application" className="flex h-full flex-col overflow-y-auto">
-      {groups.map((group) => (
-        <div key={group.label} className="px-3 py-2">
-          <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-3">{group.label}</p>
+    <nav aria-label="Application" className="flex h-full flex-col overflow-y-auto py-2">
+      {groups.map((group, gi) => (
+        <div key={group.label} className="px-3 py-1.5">
+          <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-3/60">
+            {group.label}
+          </p>
           <ul className="flex flex-col gap-0.5">
-            {group.items.map(({ to, label, icon: Icon }) => (
-              <li key={to}>
-                <NavLink
-                  to={to}
-                  onClick={onNavigate}
-                  className={({ isActive }) =>
-                    cn(
-                      'flex items-center gap-2.5 rounded-md px-3 py-2 text-sm transition-colors',
-                      isActive ? 'bg-canvas-2 font-medium text-ink' : 'text-ink-2 hover:bg-canvas-2/70 hover:text-ink',
-                    )
-                  }
-                >
-                  <Icon size={16} strokeWidth={1.6} aria-hidden="true" />
-                  {label}
-                </NavLink>
-              </li>
+            {group.items.map((item) => (
+              <SidebarItem key={item.to} {...item} onNavigate={onNavigate} />
             ))}
           </ul>
+          {gi < groups.length - 1 && <div className="mx-3 mt-3 border-t border-line" />}
         </div>
       ))}
     </nav>

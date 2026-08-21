@@ -16,7 +16,7 @@ export function ProgressBar({ value, className, barClassName, label, animateValu
         </div>
       ) : null}
       <div
-        className="h-1.5 w-full overflow-hidden rounded-full bg-canvas-2"
+        className="h-1.5 w-full overflow-hidden rounded-full bg-surface-2"
         role="progressbar"
         aria-valuenow={clamped}
         aria-valuemin={0}

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { TrendingUp, Clock, Target, BookOpen, Zap, AlertTriangle } from 'lucide-react'
 import { PageHeader } from '../components/ui/PageHeader'
 import { StatCard } from '../components/ui/StatCard'
 import { ProgressBar } from '../components/ui/ProgressBar'
@@ -15,6 +16,16 @@ import { DemoBanner } from '../components/domain/ModeBanners'
 import { StudyRecommendation } from '../components/domain/StudyRecommendation'
 import { useAppData } from '../hooks/useAppData'
 import { useAppState } from '../context/AppState'
+
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.06 } },
+}
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+}
 
 export function DashboardPage() {
   const data = useAppData()
@@ -39,7 +50,7 @@ export function DashboardPage() {
   const progress = data.progress
 
   return (
-    <div>
+    <motion.div variants={stagger} initial="hidden" animate="show">
       <DemoBanner />
 
       <PageHeader
@@ -49,54 +60,54 @@ export function DashboardPage() {
       />
 
       {now ? (
-        <>
+        <motion.div variants={fadeUp}>
           <PriorityCard item={now} />
           <StudyRecommendation item={now} />
-        </>
+        </motion.div>
       ) : (
-        <EmptyState title="No subjects yet" body="Add exams in setup to rank today’s work." />
+        <EmptyState title="No subjects yet" body="Add exams in setup to rank today's work." />
       )}
 
-      <div className="mt-10">
+      <motion.div variants={fadeUp} className="mt-10">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-3">Adaptive loop</p>
         <div className="mt-3">
           <AdaptiveLoop compact />
         </div>
-      </div>
+      </motion.div>
 
       {data.monitorRisks?.length ? (
-        <div className="mt-14">
+        <motion.div variants={fadeUp} className="mt-14">
           <RiskMonitor risks={data.monitorRisks} />
-        </div>
+        </motion.div>
       ) : null}
 
       {data.planDelta ? (
-        <div className="mt-14">
+        <motion.div variants={fadeUp} className="mt-14">
           <PlanCompare delta={data.planDelta} />
-        </div>
+        </motion.div>
       ) : (
-        <section className="mt-14">
+        <motion.section variants={fadeUp} className="mt-14">
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Current study plan</h2>
           <p className="mt-2 text-sm text-ink-2">
             {data.generate === 'quizzes'
               ? 'You asked for quizzes only. A calendar will appear if you add timetable generation in setup.'
               : 'The timetable is queued. Quiz evidence will reallocate minutes after the engine is connected.'}
           </p>
-        </section>
+        </motion.section>
       )}
 
       <div className="mt-14 grid gap-10 lg:grid-cols-[1.4fr_0.8fr]">
-        <div>
-          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Today’s allocated blocks</h2>
+        <motion.div variants={fadeUp}>
+          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Today's allocated blocks</h2>
           {data.schedule?.length ? (
             <ul className="mt-4">
               {data.schedule.map((block, i) => (
                 <motion.li
                   key={block.id}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.05 * i }}
-                  className="flex flex-wrap items-baseline justify-between gap-2 border-t border-line py-3"
+                  className="card mb-2 flex flex-wrap items-baseline justify-between gap-2 p-3"
                 >
                   <div>
                     <p className="tabular text-xs text-ink-3">
@@ -113,64 +124,65 @@ export function DashboardPage() {
           ) : (
             <p className="mt-4 text-sm text-ink-2">No timed blocks until the planner engine runs on your subjects.</p>
           )}
-          <Link to="/planner" className="mt-4 inline-block text-sm font-medium text-accent hover:underline">
+          <Link to="/planner" className="mt-4 inline-block text-sm font-medium text-accent-2 hover:text-accent transition-colors">
             Open planner →
           </Link>
-        </div>
-        <div>
+        </motion.div>
+
+        <motion.div variants={fadeUp}>
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Overall preparation</h2>
           <div className="mt-4">
-            <ProgressRing value={student.prepScore} size={120} stroke={8} label="Ready" />
+            <ProgressRing value={student.prepScore} size={140} stroke={8} label="Ready" />
           </div>
-        </div>
+        </motion.div>
       </div>
 
-      <div className="mt-12 grid gap-8 sm:grid-cols-3">
-        <StatCard label="Study hours this week" value={`${progress.hoursThisWeek}h`} hint={`target ${progress.hoursTarget}h`} />
-        <StatCard label="Topics captured" value={`${progress.topicsCompleted}/${progress.topicsTotal}`} />
-        <StatCard label="Quiz average" value={`${progress.quizAverage}%`} />
-      </div>
+      <motion.div variants={fadeUp} className="mt-12 grid gap-4 sm:grid-cols-3">
+        <StatCard label="Study hours this week" value={`${progress.hoursThisWeek}h`} hint={`target ${progress.hoursTarget}h`} icon={Clock} />
+        <StatCard label="Topics captured" value={`${progress.topicsCompleted}/${progress.topicsTotal}`} icon={BookOpen} />
+        <StatCard label="Quiz average" value={`${progress.quizAverage}%`} icon={Target} />
+      </motion.div>
 
       {data.readiness?.length ? (
-        <div className="mt-14">
+        <motion.div variants={fadeUp} className="mt-14">
           <ReadinessPanel items={data.readiness} />
-        </div>
+        </motion.div>
       ) : null}
 
       <div className="mt-14 grid gap-12 lg:grid-cols-2">
-        <section>
+        <motion.section variants={fadeUp}>
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Upcoming exams</h2>
           <div className="mt-2">
             {data.exams.map((exam) => (
               <ExamCard key={exam.id} exam={exam} />
             ))}
           </div>
-        </section>
-        <section>
+        </motion.section>
+        <motion.section variants={fadeUp}>
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Syllabus completion</h2>
           <div className="mt-4 space-y-4">
             {data.subjects.map((s) => (
               <ProgressBar key={s.id} value={s.progress} label={s.name} />
             ))}
           </div>
-        </section>
+        </motion.section>
       </div>
 
       {progress.weakTopics?.length ? (
-        <section className="mt-14">
+        <motion.section variants={fadeUp} className="mt-14">
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Weak topics</h2>
           <ul className="mt-3">
             {progress.weakTopics.map((t) => (
-              <li key={t.name} className="flex justify-between border-t border-line py-3 text-sm">
+              <li key={t.name} className="card mb-2 flex justify-between p-3 text-sm">
                 <span>
                   {t.subject} → {t.name}
                 </span>
-                <span className="tabular">{t.mastery}%</span>
+                <span className="tabular text-risk">{t.mastery}%</span>
               </li>
             ))}
           </ul>
-        </section>
+        </motion.section>
       ) : null}
-    </div>
+    </motion.div>
   )
 }
