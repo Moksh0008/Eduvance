@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { AnimatePresence } from 'framer-motion'
 import { AppShell } from './components/layout/AppShell'
 import { LandingPage } from './pages/LandingPage'
 import { LoginPage, RegisterPage } from './pages/AuthPages'
@@ -43,31 +44,35 @@ function ProtectedSetup() {
 }
 
 export default function App() {
+  const location = useLocation()
+
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/setup" element={<ProtectedSetup />} />
-      <Route element={<ProtectedShell />}>
-        <Route path="/dashboard" element={<AnimatedPage><DashboardPage /></AnimatedPage>} />
-        <Route path="/planner" element={<AnimatedPage><PlannerPage /></AnimatedPage>} />
-        <Route path="/syllabus" element={<AnimatedPage><SyllabusPage /></AnimatedPage>} />
-        <Route path="/progress" element={<AnimatedPage><ProgressPage /></AnimatedPage>} />
-        <Route path="/analytics" element={<AnimatedPage><AnalyticsPage /></AnimatedPage>} />
-        <Route path="/subjects" element={<AnimatedPage><SubjectsPage /></AnimatedPage>} />
-        <Route path="/timetable" element={<AnimatedPage><TimetablePage /></AnimatedPage>} />
-        <Route path="/question-papers" element={<AnimatedPage><QuestionPapersPage /></AnimatedPage>} />
-        <Route path="/study-session" element={<AnimatedPage><StudySessionPage /></AnimatedPage>} />
-        <Route path="/quiz" element={<AnimatedPage><QuizPage /></AnimatedPage>} />
-        <Route path="/quiz/play" element={<AnimatedPage><QuizPlayPage /></AnimatedPage>} />
-        <Route path="/quiz/result" element={<AnimatedPage><QuizResultPage /></AnimatedPage>} />
-        <Route path="/insights" element={<AnimatedPage><InsightsPage /></AnimatedPage>} />
-        <Route path="/revision" element={<AnimatedPage><RevisionPage /></AnimatedPage>} />
-        <Route path="/profile" element={<AnimatedPage><ProfilePage /></AnimatedPage>} />
-        <Route path="/settings" element={<AnimatedPage><SettingsPage /></AnimatedPage>} />
-      </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/setup" element={<ProtectedSetup />} />
+        <Route element={<ProtectedShell />}>
+          <Route path="/dashboard" element={<AnimatedPage><DashboardPage /></AnimatedPage>} />
+          <Route path="/planner" element={<AnimatedPage><PlannerPage /></AnimatedPage>} />
+          <Route path="/syllabus" element={<AnimatedPage><SyllabusPage /></AnimatedPage>} />
+          <Route path="/progress" element={<AnimatedPage><ProgressPage /></AnimatedPage>} />
+          <Route path="/analytics" element={<AnimatedPage><AnalyticsPage /></AnimatedPage>} />
+          <Route path="/subjects" element={<AnimatedPage><SubjectsPage /></AnimatedPage>} />
+          <Route path="/timetable" element={<AnimatedPage><TimetablePage /></AnimatedPage>} />
+          <Route path="/question-papers" element={<AnimatedPage><QuestionPapersPage /></AnimatedPage>} />
+          <Route path="/study-session" element={<AnimatedPage><StudySessionPage /></AnimatedPage>} />
+          <Route path="/quiz" element={<AnimatedPage><QuizPage /></AnimatedPage>} />
+          <Route path="/quiz/play" element={<AnimatedPage><QuizPlayPage /></AnimatedPage>} />
+          <Route path="/quiz/result" element={<AnimatedPage><QuizResultPage /></AnimatedPage>} />
+          <Route path="/insights" element={<AnimatedPage><InsightsPage /></AnimatedPage>} />
+          <Route path="/revision" element={<AnimatedPage><RevisionPage /></AnimatedPage>} />
+          <Route path="/profile" element={<AnimatedPage><ProfilePage /></AnimatedPage>} />
+          <Route path="/settings" element={<AnimatedPage><SettingsPage /></AnimatedPage>} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AnimatePresence>
   )
 }
