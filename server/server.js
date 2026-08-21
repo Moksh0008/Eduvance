@@ -18,7 +18,12 @@ origins.push('http://localhost:5173', 'http://localhost:5174')
 
 app.use(
   cors({
-    origin: [...new Set(origins)],
+    origin(origin, callback) {
+      if (!origin) return callback(null, true)
+      const local = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+      if (local || origins.includes(origin)) return callback(null, true)
+      return callback(new Error('Not allowed by CORS'))
+    },
     credentials: true,
   }),
 )
