@@ -14,9 +14,44 @@ import { DemoBanner } from '../components/domain/ModeBanners'
 import { EmptyState } from '../components/ui/EmptyState'
 import { getProgress, getAnalytics } from '../services/catalog'
 import { useAppData } from '../hooks/useAppData'
+import { useTheme } from '../context/ThemeContext'
+
+function useChartColors() {
+  const { isDark } = useTheme()
+  return {
+    line: isDark ? '#818cf8' : '#5558e6',
+    axis: isDark ? '#64748b' : '#7a8098',
+    tooltipBg: isDark ? '#1a2340' : '#ffffff',
+    tooltipBorder: isDark ? 'rgba(148,163,184,0.15)' : 'rgba(26,29,46,0.1)',
+    tooltipText: isDark ? '#e8eaf0' : '#1a1d2e',
+  }
+}
+
+function ThemeTooltip({ active, payload, label }) {
+  const colors = useChartColors()
+  if (!active || !payload?.length) return null
+  return (
+    <div
+      className="rounded-lg border px-3 py-2 text-xs shadow-lg"
+      style={{
+        background: colors.tooltipBg,
+        borderColor: colors.tooltipBorder,
+        color: colors.tooltipText,
+      }}
+    >
+      <p className="font-medium">{label}</p>
+      {payload.map((p) => (
+        <p key={p.dataKey} style={{ color: colors.line }}>
+          {p.name}: {p.value}%
+        </p>
+      ))}
+    </div>
+  )
+}
 
 export function ProgressPage() {
   const data = useAppData()
+  const colors = useChartColors()
   const progress = data.isDemo ? getProgress() : data.progress
   const subjects = data.subjects
   const trend = data.isDemo ? getAnalytics().masteryTrend : data.analytics?.trend
@@ -31,15 +66,15 @@ export function ProgressPage() {
         description="Syllabus, topics, quizzes, and consistency — all from the same preparation state."
       />
 
-      <div className="grid gap-8 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-3">
         <StatCard label="Study consistency" value={`${progress.hoursThisWeek}h`} hint={`Target ${progress.hoursTarget}h`} />
         <StatCard label="Topic completion" value={`${progress.topicsCompleted}/${progress.topicsTotal}`} />
         <StatCard label="Quiz performance" value={`${progress.quizAverage}%`} />
       </div>
 
-      <section className="mt-12">
+      <section className="mt-10">
         <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Subject progress</h2>
-        <div className="mt-5 space-y-5">
+        <div className="mt-4 space-y-4">
           {subjects.map((s) => (
             <ProgressBar key={s.id} value={s.progress} label={`${s.name}${s.fullName && s.fullName !== s.name ? ` — ${s.fullName}` : ''}`} />
           ))}
@@ -47,7 +82,7 @@ export function ProgressPage() {
       </section>
 
       {!data.isDemo ? (
-        <section className="mt-12">
+        <section className="mt-10">
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Topic completion</h2>
           <ul className="mt-3">
             {topics.map((t) => {
@@ -57,7 +92,7 @@ export function ProgressPage() {
                   <span>
                     {t.subjectName} → {t.name}
                   </span>
-                  <span className={done ? 'text-low' : 'text-ink-3'}>{done ? '✓ Evidence' : 'Open'}</span>
+                  <span className={done ? 'text-success' : 'text-ink-3'}>{done ? '✓ Evidence' : 'Open'}</span>
                 </li>
               )
             })}
@@ -66,7 +101,7 @@ export function ProgressPage() {
       ) : null}
 
       {!data.isDemo && !topics.length ? (
-        <div className="mt-10">
+        <div className="mt-8">
           <EmptyState
             title="Add syllabus topics to generate topic-level planning."
             body="Subjects from setup appear above. Topic completion unlocks after you enter units in Edit Preparation."
@@ -75,25 +110,26 @@ export function ProgressPage() {
       ) : null}
 
       {!data.isDemo && !(data.analytics?.history || []).length ? (
-        <div className="mt-10">
+        <div className="mt-8">
           <EmptyState
             title="Complete your first quiz to unlock performance insights."
             body="Progress already uses your subjects. Accuracy and weak areas appear after a quiz."
           />
         </div>
       ) : null}
+
       {trend?.length ? (
-        <div className="mt-12">
+        <div className="mt-10">
           <ChartCard title="Performance trend" question="Is accuracy rising after each quiz?">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trend}>
-                <XAxis dataKey={data.isDemo ? 'day' : 'attempt'} tick={{ fontSize: 11 }} stroke="#6b7280" />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke="#6b7280" />
-                <Tooltip />
+                <XAxis dataKey={data.isDemo ? 'day' : 'attempt'} tick={{ fontSize: 11 }} stroke={colors.axis} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} stroke={colors.axis} />
+                <Tooltip content={<ThemeTooltip />} />
                 <Line
                   type="monotone"
                   dataKey={data.isDemo ? 'overall' : 'accuracy'}
-                  stroke="#4338ca"
+                  stroke={colors.line}
                   strokeWidth={2}
                   dot={false}
                   name="Accuracy"
@@ -104,7 +140,7 @@ export function ProgressPage() {
         </div>
       ) : null}
 
-      <div className="mt-12 grid gap-12 lg:grid-cols-2">
+      <div className="mt-10 grid gap-8 lg:grid-cols-2">
         <section>
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Weak areas</h2>
           <ul className="mt-3">

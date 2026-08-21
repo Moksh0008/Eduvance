@@ -76,17 +76,17 @@ export function DashboardPage() {
       </motion.div>
 
       {data.monitorRisks?.length ? (
-        <motion.div variants={fadeUp} className="mt-14">
+        <motion.div variants={fadeUp} className="mt-10">
           <RiskMonitor risks={data.monitorRisks} />
         </motion.div>
       ) : null}
 
       {data.planDelta ? (
-        <motion.div variants={fadeUp} className="mt-14">
+        <motion.div variants={fadeUp} className="mt-10">
           <PlanCompare delta={data.planDelta} />
         </motion.div>
       ) : (
-        <motion.section variants={fadeUp} className="mt-14">
+        <motion.section variants={fadeUp} className="mt-10">
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Current study plan</h2>
           <p className="mt-2 text-sm text-ink-2">
             {data.generate === 'quizzes'
@@ -96,7 +96,7 @@ export function DashboardPage() {
         </motion.section>
       )}
 
-      <div className="mt-14 grid gap-10 lg:grid-cols-[1.4fr_0.8fr]">
+      <div className="mt-10 grid gap-10 lg:grid-cols-[1.4fr_0.8fr]">
         <motion.div variants={fadeUp}>
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Today's allocated blocks</h2>
           {data.schedule?.length ? (
@@ -144,12 +144,12 @@ export function DashboardPage() {
       </motion.div>
 
       {data.readiness?.length ? (
-        <motion.div variants={fadeUp} className="mt-14">
+        <motion.div variants={fadeUp} className="mt-10">
           <ReadinessPanel items={data.readiness} />
         </motion.div>
       ) : null}
 
-      <div className="mt-14 grid gap-12 lg:grid-cols-2">
+      <div className="mt-10 grid gap-8 lg:grid-cols-2">
         <motion.section variants={fadeUp}>
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Upcoming exams</h2>
           <div className="mt-2">
@@ -169,7 +169,7 @@ export function DashboardPage() {
       </div>
 
       {progress.weakTopics?.length ? (
-        <motion.section variants={fadeUp} className="mt-14">
+        <motion.section variants={fadeUp} className="mt-10">
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Weak topics</h2>
           <ul className="mt-3">
             {progress.weakTopics.map((t) => (

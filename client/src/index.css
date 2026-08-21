@@ -4,11 +4,8 @@
   --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Instrument Serif", ui-serif, Georgia, serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
-}
 
-/* ===== DARK THEME (default) ===== */
-:root,
-[data-theme="dark"] {
+  /* === Dark theme defaults (in @theme so Tailwind generates utilities) === */
   --color-canvas: #0a0e1a;
   --color-canvas-2: #111827;
   --color-surface: #141b2d;
@@ -35,10 +32,9 @@
   --color-glow: rgba(99, 102, 241, 0.06);
   --color-card: #111827;
   --color-card-border: rgba(148, 163, 184, 0.06);
-  color-scheme: dark;
 }
 
-/* ===== LIGHT THEME ===== */
+/* === Light theme overrides === */
 [data-theme="light"] {
   --color-canvas: #f5f3ef;
   --color-canvas-2: #ebe8e2;
@@ -69,14 +65,11 @@
   color-scheme: light;
 }
 
-/* ===== GLOBAL THEME TRANSITION ===== */
-*,
-*::before,
-*::after {
-  transition: background-color 0.5s ease, border-color 0.5s ease, color 0.3s ease, box-shadow 0.3s ease;
+/* === Theme transition === */
+html {
+  transition: background-color 0.4s ease;
 }
 
-/* ===== BASE STYLES ===== */
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -114,22 +107,13 @@
     html.has-edu-cursor * {
       cursor: auto !important;
     }
-    *,
-    *::before,
-    *::after {
-      transition-duration: 0.01ms !important;
-      animation-duration: 0.01ms !important;
-    }
   }
 
   #root {
     min-height: 100vh;
   }
 
-  button,
-  input,
-  select,
-  textarea {
+  button, input, select, textarea {
     font-family: inherit;
   }
 
@@ -144,26 +128,14 @@
     outline: none;
   }
 
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.15);
-    border-radius: 3px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(148, 163, 184, 0.25);
-  }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.15); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.25); }
 }
 
-/* ===== UTILITIES ===== */
-@utility tabular {
-  font-variant-numeric: tabular-nums;
-}
+/* === Utilities === */
+@utility tabular { font-variant-numeric: tabular-nums; }
 
 @utility input {
   height: 2.5rem;
