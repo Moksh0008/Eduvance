@@ -84,11 +84,14 @@ function AuthDoodles() {
 
 function AuthVisual({ passwordVisible = false, isTypingPassword = false }) {
   const octoMessages = [
-    "Not looking! 👀🚫",
-    "Your secret is safe with me! 🤫",
-    "I see nothing! Nothing at all! 🙈",
-    "Privacy mode: ON! 🔒",
-    "My eyes are closed, promise! 🐙",
+    "I see Nothing! Nothing at all! 🙈",
+    "Your密码 is safe with me! 🤫",
+    "Not looking! My eyes are closed! 👀🚫",
+    "Privacy mode: ACTIVATED! 🔒",
+    "What password? I see no password! 🐙",
+    "Shhh... I'm blind by choice! 🙈",
+    "Your secret dies with me! 💀",
+    "I'm an octopus, I can't even type! 🐙",
   ]
   const msgIndex = Math.floor(Math.random() * octoMessages.length)
 
