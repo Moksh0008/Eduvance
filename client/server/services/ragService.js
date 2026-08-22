@@ -59,21 +59,40 @@ export async function processAndStoreMaterial(userId, materialId, fileName, file
  */
 export async function retrieveRelevantChunks(userId, subject, topic, limit = 5) {
   // First try exact subject+topic match
-  let chunks = await MaterialChunk.find({
-    userId,
-    subject: { $regex: new RegExp(subject, 'i') },
-    topic: { $regex: new RegExp(topic, 'i') },
-  }).sort({ chunkIndex: 1 }).limit(limit)
+  let chunks = []
+  
+  if (subject && topic) {
+    chunks = await MaterialChunk.find({
+      userId,
+      subject: { $regex: new RegExp(subject.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') },
+      topic: { $regex: new RegExp(topic.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') },
+    }).sort({ chunkIndex: 1 }).limit(limit)
+  }
 
   // If not enough, broaden to subject only
-  if (chunks.length < limit) {
+  if (chunks.length < limit && subject) {
     const existingIds = new Set(chunks.map(c => String(c._id)))
     const moreChunks = await MaterialChunk.find({
       userId,
-      subject: { $regex: new RegExp(subject, 'i') },
+      subject: { $regex: new RegExp(subject.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') },
       _id: { $nin: [...existingIds] },
     }).sort({ chunkIndex: 1 }).limit(limit - chunks.length)
     chunks = [...chunks, ...moreChunks]
+  }
+
+  // If still not enough, try partial topic match
+  if (chunks.length < limit && topic) {
+    const existingIds = new Set(chunks.map(c => String(c._id)))
+    const topicWords = topic.split(/\s+/).filter(w => w.length > 2)
+    if (topicWords.length > 0) {
+      const topicRegex = topicWords.join('|')
+      const moreChunks = await MaterialChunk.find({
+        userId,
+        topic: { $regex: new RegExp(topicRegex, 'i') },
+        _id: { $nin: [...existingIds] },
+      }).sort({ chunkIndex: 1 }).limit(limit - chunks.length)
+      chunks = [...chunks, ...moreChunks]
+    }
   }
 
   // If still not enough, get any material for this user

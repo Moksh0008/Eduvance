@@ -37,6 +37,8 @@ export function QuizPlayPage() {
   const [aiQuestions, setAiQuestions] = useState(null)
   const [aiQuizId, setAiQuizId] = useState(null)
   const [loadingAi, setLoadingAi] = useState(false)
+  const [aiError, setAiError] = useState(null)
+  const [fromMaterial, setFromMaterial] = useState(false)
   const questions = aiQuestions || localQuestions
   const limit = (config.minutes || 15) * 60
   const [index, setIndex] = useState(0)
@@ -49,8 +51,12 @@ export function QuizPlayPage() {
     setLoadingAi(true)
     aiApi.generateQuiz(config.subject, config.topic, difficulty, config.count || 10)
       .then(result => {
-        if (cancelled || !result?.questions?.length) return
+        if (cancelled || !result?.questions?.length) {
+          setAiError('AI could not generate questions. Using local question bank.')
+          return
+        }
         setAiQuizId(result.quizId)
+        setFromMaterial(result.fromMaterial || false)
         setAiQuestions(result.questions.map((q, i) => ({
           id: q.id || `ai-${i}`,
           prompt: q.prompt,
@@ -61,8 +67,8 @@ export function QuizPlayPage() {
           topic: config.topic,
         })))
       })
-      .catch(() => {
-        // Silently fall back to local question bank
+      .catch((err) => {
+        setAiError(`AI quiz unavailable: ${err.message || 'Backend may be starting up'}. Using local questions.`)
       })
       .finally(() => setLoadingAi(false))
     return () => { cancelled = true }
@@ -193,6 +199,17 @@ export function QuizPlayPage() {
       <p className="text-xs text-ink-3">
         Question {index + 1} / {questions.length}
       </p>
+      {/* AI vs Local indicator */}
+      {aiQuestions ? (
+        <p className="mt-1 flex items-center gap-1 text-[10px] text-accent">
+          <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+          AI-generated{fromMaterial ? ' from your study material' : ''}
+        </p>
+      ) : aiError ? (
+        <p className="mt-1 text-[10px] text-amber-500">
+          ⚠️ {aiError}
+        </p>
+      ) : null}
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-2">
         <motion.div className="h-full rounded-full bg-accent" animate={{ width: `${progress}%` }} />
       </div>
