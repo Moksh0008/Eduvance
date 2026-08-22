@@ -36,7 +36,7 @@ function SlideShow() {
   return (
     <div className="relative w-full max-w-md">
       <div className="relative h-[200px] flex items-center justify-center overflow-hidden rounded-2xl"
-           style={{ background: 'var(--color-surface)', border: '1px solid var(--color-line-2)' }}>
+           style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
         <AnimatePresence mode="wait">
           <motion.div key={active}
             initial={{ opacity: 0, scale: 0.9, y: 10 }}
@@ -120,7 +120,7 @@ export function LandingPage() {
                 {features.map((f) => (
                   <motion.span key={f.text} whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.97 }}
                     className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-ink-2"
-                    style={{ background: 'var(--color-surface)', border: '1px solid var(--color-line-2)' }}>
+                    style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.08)' }}>
                     <span>{f.emoji}</span>{f.text}
                   </motion.span>
                 ))}
@@ -132,7 +132,7 @@ export function LandingPage() {
           <div style={{ height: '80vh' }} />
 
           {/* ── SEE IT IN ACTION ── */}
-          <section className="relative px-4 py-20 sm:px-6" style={{ background: 'linear-gradient(180deg, transparent 0%, var(--color-canvas) 15%, var(--color-canvas) 85%, transparent 100%)' }}>
+          <section className="relative px-4 py-20 sm:px-6">
             <div className="mx-auto flex max-w-6xl flex-col items-center gap-10 lg:flex-row lg:items-center lg:gap-16">
               <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }} className="flex-1 text-center lg:text-left">
@@ -158,7 +158,7 @@ export function LandingPage() {
           </section>
 
           {/* ── FEATURE GRID ── */}
-          <section className="px-4 py-20 sm:px-6" style={{ background: 'linear-gradient(180deg, transparent 0%, var(--color-canvas) 15%, var(--color-canvas) 85%, transparent 100%)' }}>
+          <section className="px-4 py-20 sm:px-6">
             <div className="mx-auto max-w-4xl">
               <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }} className="text-center">
@@ -181,7 +181,7 @@ export function LandingPage() {
                     viewport={{ once: true }} transition={{ delay: i * 0.05 }}
                     whileHover={{ y: -4, scale: 1.02 }}
                     className="group flex flex-col items-center gap-2 rounded-2xl p-5 text-center transition-all"
-                    style={{ background: 'var(--color-surface)', border: '1px solid var(--color-line-2)' }}>
+                    style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.08)' }}>
                     <motion.span className="text-3xl"
                       whileHover={{ scale: 1.2, rotate: [0, -8, 8, 0] }}
                       transition={{ duration: 0.4 }}>{f.emoji}</motion.span>
@@ -194,7 +194,7 @@ export function LandingPage() {
           </section>
 
           {/* ── FINAL CTA ── */}
-          <section className="relative px-4 py-20 text-center sm:px-6" style={{ background: 'linear-gradient(180deg, transparent 0%, var(--color-canvas) 15%, var(--color-canvas) 85%, transparent 100%)' }}>
+          <section className="relative px-4 py-20 text-center sm:px-6">
             <div className="pointer-events-none absolute inset-0">
               <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[500px] rounded-full bg-accent/[0.04] blur-[120px]" />
             </div>
