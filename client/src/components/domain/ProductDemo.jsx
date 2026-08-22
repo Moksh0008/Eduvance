@@ -511,15 +511,19 @@ export function ProductDemo() {
         style={{ borderColor: isDark ? 'rgba(148,163,184,0.06)' : 'rgba(0,0,0,0.04)' }}>
         {/* Pause/Play */}
         <button onClick={() => setIsPaused(!isPaused)}
+          aria-label={isPaused ? 'Play demo' : 'Pause demo'}
           className="flex h-6 w-6 items-center justify-center rounded-full text-[10px]"
           style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' }}>
           {isPaused ? '▶' : '⏸'}
         </button>
 
         {/* Dots */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" role="tablist" aria-label="Demo steps">
           {DEMO_STEPS.map((s, i) => (
             <button key={s.id} onClick={() => setStep(i)}
+              role="tab"
+              aria-selected={i === step}
+              aria-label={`Step ${i + 1}: ${s.id}`}
               className="rounded-full transition-all duration-300"
               style={{
                 width: i === step ? '16px' : '6px',
