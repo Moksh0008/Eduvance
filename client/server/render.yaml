@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: eduvance-api
+    runtime: node
+    plan: free
+    rootDir: client/server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: XAI_API_KEY
+        sync: false
+      - key: CLIENT_URL
+        value: https://eduvance-mmra.vercel.app
+      - key: JWT_EXPIRES_IN
+        value: 7d
+    healthCheckPath: /api/health
+    autoDeploy: true
