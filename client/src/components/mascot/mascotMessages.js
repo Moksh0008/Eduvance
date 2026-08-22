@@ -2,33 +2,29 @@
    MASCOT MESSAGES — Context-aware, data-driven
    ═══════════════════════════════════════════════════ */
 
-// Pose mapping from the turnaround-expressions sheet
-// Sheet layout: top row = 4 turnaround views, bottom row = 6 expressions
+// Pose mapping — uses the main octopus image for all poses
+const OCTO_IMG = '/mascot/octo-main.png'
 export const POSES = {
-  // From turnaround-expressions.png — expressions row
-  happy:    { image: '/mascot/turnaround-expressions.png', bgPos: '0% 55%', label: 'Happy' },
-  excited:  { image: '/mascot/turnaround-expressions.png', bgPos: '20% 55%', label: 'Excited' },
-  thinking: { image: '/mascot/turnaround-expressions.png', bgPos: '40% 55%', label: 'Thinking' },
-  surprised:{ image: '/mascot/turnaround-expressions.png', bgPos: '60% 55%', label: 'Surprised' },
-  curious:  { image: '/mascot/turnaround-expressions.png', bgPos: '80% 55%', label: 'Curious' },
-  sleepy:   { image: '/mascot/turnaround-expressions.png', bgPos: '100% 55%', label: 'Sleepy' },
-  // From turnaround-expressions.png — turnaround row
-  front:    { image: '/mascot/turnaround-expressions.png', bgPos: '0% 0%', label: 'Front' },
-  side:     { image: '/mascot/turnaround-expressions.png', bgPos: '33% 0%', label: 'Side' },
-  back:     { image: '/mascot/turnaround-expressions.png', bgPos: '66% 0%', label: 'Back' },
-  threeQ:   { image: '/mascot/turnaround-expressions.png', bgPos: '100% 0%', label: '3/4 View' },
-  // From action-poses.png
-  reading:    { image: '/mascot/action-poses.png', bgPos: '0% 50%', label: 'Reading' },
-  studying:   { image: '/mascot/action-poses.png', bgPos: '25% 50%', label: 'Studying' },
-  experimenting: { image: '/mascot/action-poses.png', bgPos: '50% 50%', label: 'Experimenting' },
-  helping:    { image: '/mascot/action-poses.png', bgPos: '75% 50%', label: 'Helping' },
-  celebrating:{ image: '/mascot/action-poses.png', bgPos: '100% 50%', label: 'Celebrating' },
-  // From stickers.png
-  timeToLearn:  { image: '/mascot/stickers.png', bgPos: '0% 50%', label: 'Time to Learn' },
-  greatQuestion:{ image: '/mascot/stickers.png', bgPos: '25% 50%', label: 'Great Question' },
-  youCanDoIt:   { image: '/mascot/stickers.png', bgPos: '50% 50%', label: 'You Can Do It' },
-  keepGoing:    { image: '/mascot/stickers.png', bgPos: '75% 50%', label: 'Keep Going' },
-  smallSteps:   { image: '/mascot/stickers.png', bgPos: '100% 50%', label: 'Small Steps' },
+  happy:        { image: OCTO_IMG, bgPos: 'center', label: 'Happy' },
+  excited:      { image: OCTO_IMG, bgPos: 'center', label: 'Excited' },
+  thinking:     { image: OCTO_IMG, bgPos: 'center', label: 'Thinking' },
+  surprised:    { image: OCTO_IMG, bgPos: 'center', label: 'Surprised' },
+  curious:      { image: OCTO_IMG, bgPos: 'center', label: 'Curious' },
+  sleepy:       { image: OCTO_IMG, bgPos: 'center', label: 'Sleepy' },
+  front:        { image: OCTO_IMG, bgPos: 'center', label: 'Front' },
+  side:         { image: OCTO_IMG, bgPos: 'center', label: 'Side' },
+  back:         { image: OCTO_IMG, bgPos: 'center', label: 'Back' },
+  threeQ:       { image: OCTO_IMG, bgPos: 'center', label: '3/4 View' },
+  reading:      { image: OCTO_IMG, bgPos: 'center', label: 'Reading' },
+  studying:     { image: OCTO_IMG, bgPos: 'center', label: 'Studying' },
+  experimenting:{ image: OCTO_IMG, bgPos: 'center', label: 'Experimenting' },
+  helping:      { image: OCTO_IMG, bgPos: 'center', label: 'Helping' },
+  celebrating:  { image: OCTO_IMG, bgPos: 'center', label: 'Celebrating' },
+  timeToLearn:  { image: OCTO_IMG, bgPos: 'center', label: 'Time to Learn' },
+  greatQuestion:{ image: OCTO_IMG, bgPos: 'center', label: 'Great Question' },
+  youCanDoIt:   { image: OCTO_IMG, bgPos: 'center', label: 'You Can Do It' },
+  keepGoing:    { image: OCTO_IMG, bgPos: 'center', label: 'Keep Going' },
+  smallSteps:   { image: OCTO_IMG, bgPos: 'center', label: 'Small Steps' },
 }
 
 // Default pose for each page
