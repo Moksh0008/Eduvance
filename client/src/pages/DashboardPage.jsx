@@ -12,7 +12,8 @@ import { AdaptiveLoop } from '../components/domain/AdaptiveLoop'
 import { DemoBanner } from '../components/domain/ModeBanners'
 import { StudyRecommendation } from '../components/domain/StudyRecommendation'
 import { ScrollReveal, StaggerChildren, StaggerItem } from '../components/ui/ScrollReveal'
-import { StudyMascot } from '../components/ui/StudyMascot'
+import { StudyMascot } from '../components/ui/OctoMascot'
+import { StreakDisplay, StreakReminder } from '../components/ui/StreakDisplay'
 import { useAppData } from '../hooks/useAppData'
 import { useAppState } from '../context/AppState'
 
@@ -58,9 +59,10 @@ export function DashboardPage() {
           <div className="pointer-events-none absolute -left-32 top-1/2 h-96 w-96 -translate-y-1/2 rounded-full blur-[160px]"
             style={{ background: 'var(--color-accent-glow)' }} />
 
-          {/* Mascot greeting */}
-          <div className="mb-6">
+          {/* Mascot greeting + Streak */}
+          <div className="mb-6 flex flex-wrap items-center gap-4">
             <StudyMascot context="welcome" compact />
+            <StreakDisplay />
           </div>
 
           <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-accent-2">
@@ -126,6 +128,9 @@ export function DashboardPage() {
           )}
         </div>
       </ScrollReveal>
+
+      {/* Streak reminder if today not studied */}
+      <StreakReminder />
 
       {now && (
         <ScrollReveal preset="fadeUp" delay={0.1}>

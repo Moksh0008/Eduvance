@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppData } from '../../hooks/useAppData'
+import { getStreak } from '../../utils/streaks'
 
 /* ═══════════════════════════════════════════════════
    OCTO — Curious mind, Happy learner
@@ -154,6 +155,12 @@ const octoMessages = {
     "Your preparation score is incredible! 📈",
     "Keep this up and you'll ACE the exam! 🏆",
     "I'm so proud of you! You're crushing it! 💜",
+  ],
+  streak: [
+    "🔥 Your streak is INCREDIBLE! Keep it going!",
+    "🔥 I love seeing those fire emojis! You're on a roll!",
+    "🔥 Streak power! You're building an unstoppable habit!",
+    "🔥 That streak makes me so happy! Don't stop now!",
   ],
 }
 
@@ -437,11 +444,13 @@ export function PageMascot({ pagePath }) {
   const data = useAppData()
   const reminder = getReminder(data)
 
-  // Build message list: page messages + possible reminder
+  // Build message list: page messages + possible reminder + streak
   const msgs = useMemo(() => {
     const base = octoMessages[pagePath] || octoMessages.idle
     const extra = reminder ? octoMessages[reminder] : []
-    return [...extra, ...base]
+    const streak = getStreak()
+    const streakMsgs = streak.current >= 3 ? octoMessages.streak : []
+    return [...extra, ...streakMsgs, ...base]
   }, [pagePath, reminder])
 
   const currentMsg = msgs[msgIndex % msgs.length]

@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button'
 import { QuizQuestion } from '../components/domain/QuizQuestion'
 import { QuizMentor } from '../components/domain/QuizMentor'
 import { getQuizBank, buildTopicQuiz } from '../services/quiz'
+import { recordStudyDay } from '../utils/streaks'
 import { quizSlide } from '../animations/variants'
 
 export function QuizPlayPage() {
@@ -82,6 +83,8 @@ export function QuizPlayPage() {
         subjectId: config.subjectId || null,
       }),
     )
+    // Record study day for streak tracking
+    recordStudyDay()
     // Small delay to let mentor message show before navigating
     setTimeout(() => navigate('/quiz/result'), 600)
   }

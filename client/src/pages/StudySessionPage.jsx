@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { recordStudyDay } from '../utils/streaks'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Button } from '../components/ui/Button'
 import { Modal } from '../components/ui/Modal'
@@ -71,7 +72,7 @@ export function StudySessionPage() {
             <Button variant="ghost" onClick={() => setDone(false)}>
               Keep studying
             </Button>
-            <Button as={Link} to="/planner" disabled={!picked}>
+            <Button as={Link} to="/planner" disabled={!picked} onClick={() => recordStudyDay()}>
               Save & return
             </Button>
           </>
