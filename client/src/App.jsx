@@ -4,6 +4,7 @@ import { AppShell } from './components/layout/AppShell'
 import { LandingPage } from './pages/LandingPage'
 import { LoginPage, RegisterPage } from './pages/AuthPages'
 import { AuthCallback } from './pages/AuthCallback'
+import VerifyOTP from './pages/VerifyOTP'
 import { DashboardPage } from './pages/DashboardPage'
 import { PlannerPage } from './pages/PlannerPage'
 import { SyllabusPage } from './pages/SyllabusPage'
@@ -64,6 +65,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/verify-email" element={<VerifyOTP />} />
         <Route path="/forgot-password" element={<LoginPage />} />
         <Route path="/setup" element={<ProtectedSetup />} />
         <Route element={<ProtectedShell />}>

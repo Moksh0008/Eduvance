@@ -32,12 +32,13 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
     "oxlint": "^1.75.0",
+    "sharp": "^0.35.3",
     "tailwindcss": "^4.3.3",
     "vite": "^8.2.0"
   },
   "optionalDependencies": {
     "@rolldown/binding-linux-x64-gnu": "1.2.5",
-    "lightningcss-linux-x64-gnu": "1.32.0",
-    "@tailwindcss/oxide-linux-x64-gnu": "4.3.3"
+    "@tailwindcss/oxide-linux-x64-gnu": "4.3.3",
+    "lightningcss-linux-x64-gnu": "1.32.0"
   }
 }

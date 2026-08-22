@@ -79,7 +79,11 @@ export function LoginPage() {
     setError('')
     setPending(true)
     try {
-      const { workspace } = await login({ email, password })
+      const { workspace, user } = await login({ email, password })
+      if (user && !user.isEmailVerified) {
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`)
+        return
+      }
       const next = params.get('next')
       if (next) navigate(next)
       else navigate(workspace.setupCompleted || workspace.onboardingComplete ? '/dashboard' : '/setup')
@@ -147,8 +151,12 @@ export function RegisterPage() {
     setError('')
     setPending(true)
     try {
-      await register({ name, email, password })
-      navigate('/setup')
+      const result = await register({ name, email, password })
+      if (result?.requiresVerification) {
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`)
+      } else {
+        navigate('/setup')
+      }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Could not create account')
     } finally {

@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
-import { login, me, register } from '../controllers/authController.js'
+import { login, me, register, verifyOTP, resendOTP } from '../controllers/authController.js'
 import { authMiddleware } from '../middleware/authMiddleware.js'
 import { User } from '../models/User.js'
 import { Preparation } from '../models/Preparation.js'
@@ -14,6 +14,8 @@ export const authRoutes = Router()
 authRoutes.post('/register', register)
 authRoutes.post('/login', login)
 authRoutes.get('/me', authMiddleware, me)
+authRoutes.post('/verify-otp', verifyOTP)
+authRoutes.post('/resend-otp', resendOTP)
 
 // Google OAuth — redirects to Google login
 authRoutes.get('/google', (req, res) => {
