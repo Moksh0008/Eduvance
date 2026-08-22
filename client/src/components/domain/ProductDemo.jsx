@@ -349,7 +349,7 @@ function DoneScreen({ isDark }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center p-6 text-center">
       <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 200 }}>
-        <img src={OCTO_IMG} alt="Octo" className="h-20 w-20" style={{ filter: 'drop-shadow(0 4px 16px rgba(109,76,216,0.4))' }} />
+        <img src={OCTO_IMG} alt="Octo" className="h-20 w-20" width="80" height="80" style={{ filter: 'drop-shadow(0 4px 16px rgba(109,76,216,0.4))' }} />
       </motion.div>
       <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
         className="mt-4 font-serif text-lg font-semibold" style={{ color: isDark ? '#e8eaf0' : '#111827' }}>
@@ -500,6 +500,8 @@ export function ProductDemo() {
           </AnimatePresence>
           <motion.img src={OCTO_IMG} alt="Octo"
             className="h-12 w-12 shrink-0 sm:h-16 sm:w-16"
+            width="64"
+            height="64"
             style={{ filter: 'drop-shadow(0 3px 10px rgba(109,76,216,0.4))' }}
             animate={{ y: [0, -3, 0] }}
             transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }} />
