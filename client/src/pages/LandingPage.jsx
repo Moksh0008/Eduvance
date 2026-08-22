@@ -35,7 +35,7 @@ export function LandingPage() {
           src={isDark ? '/dark-theme-bg.webp' : '/light-theme-bg.webp'}
           alt=""
           className="h-full w-full object-cover object-center"
-          style={{ opacity: isDark ? 0.5 : 0.55, filter: isDark ? 'none' : 'saturate(0.7) brightness(1.0)' }}
+          style={{ opacity: isDark ? 0.5 : 0.7, filter: isDark ? 'none' : 'saturate(0.8) brightness(0.95)' }}
         />
         <div className="absolute inset-0" style={{
           background: isDark
