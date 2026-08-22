@@ -230,16 +230,22 @@ export function AdaptiveLoop({ compact = false }) {
             const p1 = getStepPosition(i, STEPS.length, radius)
             const p2 = getStepPosition(next, STEPS.length, radius)
             const isActive = i === activeStep
+            // Curved arc path between nodes
+            const mx = center + (p1.x + p2.x) / 2
+            const my = center + (p1.y + p2.y) / 2
+            // Control point pulled slightly toward center for curve
+            const cx = mx + (center - mx) * 0.15
+            const cy = my + (center - my) * 0.15
+            const d = `M ${center + p1.x} ${center + p1.y} Q ${cx} ${cy} ${center + p2.x} ${center + p2.y}`
             return (
-              <motion.line
+              <motion.path
                 key={`line-${i}`}
-                x1={center + p1.x}
-                y1={center + p1.y}
-                x2={center + p2.x}
-                y2={center + p2.y}
+                d={d}
+                fill="none"
                 stroke={isActive ? step.color : isDark ? 'rgba(148,163,184,0.08)' : 'rgba(26,29,46,0.06)'}
                 strokeWidth={isActive ? 2 : 1}
                 strokeDasharray={isActive ? 'none' : '4 4'}
+                strokeLinecap="round"
                 initial={{ pathLength: 0 }}
                 animate={{ pathLength: 1 }}
                 transition={{ duration: 0.8, delay: i * 0.1 }}
