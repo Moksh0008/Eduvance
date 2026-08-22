@@ -4,6 +4,7 @@ import { MarketingNav } from '../components/layout/MarketingNav'
 import { StudyMascot } from '../components/ui/StudyMascot'
 import { StartPreparingButton } from '../components/auth/StartPreparingButton'
 import { Button } from '../components/ui/Button'
+import { CinematicScroll } from '../components/domain/CinematicScroll'
 import { Link } from 'react-router-dom'
 
 /* ═══ SLIDESHOW DATA ═══ */
@@ -193,6 +194,56 @@ export function LandingPage() {
               ))}
             </motion.div>
           </motion.div>
+        </section>
+
+        {/* Cinematic Scroll Story */}
+        <section className="relative">
+          <div className="mx-auto max-w-6xl px-4 text-center sm:px-6">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="mb-8"
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-accent-2">
+                The adaptive loop
+              </p>
+              <h2 className="mt-3 font-serif text-3xl text-ink sm:text-4xl">
+                Watch your preparation transform.
+              </h2>
+              <p className="mt-3 mx-auto max-w-md text-sm text-ink-2">
+                Scroll to see how Eduvance organizes scattered exam prep into a focused, intelligent plan.
+              </p>
+              <div className="mt-4 flex items-center justify-center gap-2 text-xs text-ink-3">
+                <motion.span
+                  animate={{ y: [0, 6, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                >↓</motion.span>
+                <span>Scroll slowly</span>
+                <motion.span
+                  animate={{ y: [0, 6, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                >↓</motion.span>
+              </div>
+            </motion.div>
+          </div>
+          <CinematicScroll />
+          <div className="mx-auto max-w-6xl px-4 text-center sm:px-6">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="py-12"
+            >
+              <h2 className="font-serif text-3xl text-ink sm:text-4xl">Ready to focus</h2>
+              <p className="mt-3 mx-auto max-w-md text-sm text-ink-2">
+                Your preparation is organized. Let&apos;s make it count.
+              </p>
+              <div className="mt-6">
+                <StartPreparingButton size="lg" continueLabel="Continue Preparing" />
+              </div>
+            </motion.div>
+          </div>
         </section>
 
         {/* Slideshow — "See it in action" */}
