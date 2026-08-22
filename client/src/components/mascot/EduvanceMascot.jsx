@@ -391,8 +391,8 @@ export function EduvanceMascot() {
             src={OCTO_IMG}
             alt="Octo — your study companion"
             className="object-contain select-none"
-            width="130"
-            height="130"
+            width="160"
+            height="160"
             loading="lazy"
             style={{
               width: 'clamp(80px, 12vw, 130px)',
