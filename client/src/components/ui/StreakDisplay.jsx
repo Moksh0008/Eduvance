@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getStreak, getStreakMilestone, getStreakColor, isNewMilestone, recordStudyDay } from '../../utils/streaks'
-import { OctoSVG } from './OctoMascot'
 
 /* ═══ STREAK DISPLAY — Shows fire streaks with Octo ═══ */
 
@@ -155,12 +154,13 @@ function MilestonePopup({ milestone, streak, onClose }) {
         className="relative rounded-2xl p-8 text-center max-w-sm w-full"
         style={{ background: 'var(--color-surface)', border: '1px solid var(--color-line-2)', boxShadow: '0 24px 64px rgba(0,0,0,0.3)' }}
       >
-        {/* Octo celebrating */}
+        {/* Celebration */}
         <motion.div
           animate={{ rotate: [0, -10, 10, -10, 0], scale: [1, 1.1, 1] }}
           transition={{ duration: 0.6, repeat: 2 }}
+          className="text-6xl"
         >
-          <OctoSVG expression="excited" size={100} enable3D={false} />
+          🎉
         </motion.div>
 
         {/* Milestone emoji */}

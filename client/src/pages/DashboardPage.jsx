@@ -12,7 +12,6 @@ import { AdaptiveLoop } from '../components/domain/AdaptiveLoop'
 import { DemoBanner } from '../components/domain/ModeBanners'
 import { StudyRecommendation } from '../components/domain/StudyRecommendation'
 import { ScrollReveal, StaggerChildren, StaggerItem } from '../components/ui/ScrollReveal'
-import { StudyMascot } from '../components/ui/OctoMascot'
 import { StreakDisplay, StreakReminder } from '../components/ui/StreakDisplay'
 import { useAppData } from '../hooks/useAppData'
 import { useAppState } from '../context/AppState'
@@ -59,9 +58,8 @@ export function DashboardPage() {
           <div className="pointer-events-none absolute -left-32 top-1/2 h-96 w-96 -translate-y-1/2 rounded-full blur-[160px]"
             style={{ background: 'var(--color-accent-glow)' }} />
 
-          {/* Mascot greeting + Streak */}
-          <div className="mb-6 flex flex-wrap items-center gap-4">
-            <StudyMascot context="welcome" compact />
+          {/* Streak */}
+          <div className="mb-6">
             <StreakDisplay />
           </div>
 

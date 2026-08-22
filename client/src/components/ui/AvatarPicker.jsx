@@ -26,6 +26,8 @@ const avatars = [
   { id: 'd3', category: 'disney', label: 'Simba', img: '/avatars/simba.png' },
   { id: 'd4', category: 'disney', label: 'Buzz', img: '/avatars/buzz.png' },
   { id: 'd5', category: 'disney', label: 'Nemo', img: '/avatars/nemo.png' },
+  { id: 'd6', category: 'disney', label: 'Genie', img: '/avatars/genie.png' },
+  { id: 'd7', category: 'disney', label: 'Stitch', img: '/avatars/stitch.png' },
 ]
 
 const CATEGORIES = [

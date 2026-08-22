@@ -1,6 +1,5 @@
 import { motion } from 'framer-motion'
 import { MarketingNav } from '../components/layout/MarketingNav'
-import { StudyMascot } from '../components/ui/OctoMascot'
 import { StartPreparingButton } from '../components/auth/StartPreparingButton'
 import { useTheme } from '../context/ThemeContext'
 
@@ -40,8 +39,6 @@ export function LandingPage() {
           <section className="relative flex flex-col items-center justify-center px-4 pt-20 pb-16 text-center sm:pt-32 sm:pb-24">
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }} className="relative z-10 flex flex-col items-center">
-
-              <StudyMascot context="welcome" />
 
               <motion.h1 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.15, duration: 0.5 }}
