@@ -12,13 +12,13 @@ const CHARS = {
 }
 
 const SCENES = [
-  { id: 'problem', duration: 7500, bg: 'linear-gradient(135deg, #1a1a2e, #0f3460)' },
-  { id: 'octo-helps', duration: 8000, bg: 'linear-gradient(135deg, #1a1a2e, #1e3a8a)' },
-  { id: 'analyzing', duration: 8000, bg: 'linear-gradient(135deg, #0f172a, #1e40af)' },
-  { id: 'planning', duration: 8000, bg: 'linear-gradient(135deg, #0f172a, #065f46)' },
-  { id: 'quizzing', duration: 9000, bg: 'linear-gradient(135deg, #0f172a, #581c87)' },
-  { id: 'adapting', duration: 8000, bg: 'linear-gradient(135deg, #0f172a, #9d174d)' },
-  { id: 'success', duration: 9000, bg: 'linear-gradient(135deg, #0f172a, #4338ca)' },
+  { id: 'problem', duration: 4000, bg: 'linear-gradient(135deg, #1a1a2e, #0f3460)' },
+  { id: 'octo-helps', duration: 4500, bg: 'linear-gradient(135deg, #1a1a2e, #1e3a8a)' },
+  { id: 'analyzing', duration: 4500, bg: 'linear-gradient(135deg, #0f172a, #1e40af)' },
+  { id: 'planning', duration: 4500, bg: 'linear-gradient(135deg, #0f172a, #065f46)' },
+  { id: 'quizzing', duration: 5000, bg: 'linear-gradient(135deg, #0f172a, #581c87)' },
+  { id: 'adapting', duration: 4500, bg: 'linear-gradient(135deg, #0f172a, #9d174d)' },
+  { id: 'success', duration: 5000, bg: 'linear-gradient(135deg, #0f172a, #4338ca)' },
 ]
 
 /* ═══ OCTO GUIDE — appears in every scene from slide 2 ═══ */
@@ -447,8 +447,8 @@ export function ProductDemo() {
   const cur = SCENES[scene]
 
   return (
-    <div ref={ref} style={{ maxWidth: 900, margin: '0 auto', borderRadius: 24, overflow: 'hidden', boxShadow: isDark ? '0 20px 80px rgba(99,102,241,0.2)' : '0 20px 60px rgba(0,0,0,0.15)' }}>
-      <div style={{ background: cur.bg, minHeight: 480, position: 'relative' }}>
+    <div ref={ref} style={{ maxWidth: 900, margin: '0 auto', borderRadius: 24, overflow: 'hidden', boxShadow: isDark ? '0 20px 80px rgba(99,102,241,0.2)' : '0 20px 60px rgba(0,0,0,0.15)', background: isDark ? '#0f172a' : '#1a1a2e' }}>
+      <div style={{ background: cur.bg, minHeight: 480, position: 'relative', zIndex: 1 }}>
         <Comp />
       </div>
 
