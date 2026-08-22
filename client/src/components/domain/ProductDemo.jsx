@@ -47,7 +47,7 @@ const DEMO_STEPS = [
   },
 ]
 
-const STEP_DURATION = 4000 // ms per step
+const STEP_DURATION = 2500 // ms per step — fast snappy transitions
 
 /* ── Individual screen components ── */
 
@@ -222,8 +222,8 @@ function QuizScreen({ isDark }) {
   const [showResult, setShowResult] = useState(false)
 
   useEffect(() => {
-    const t1 = setTimeout(() => setSelected(2), 1500)
-    const t2 = setTimeout(() => setShowResult(true), 2500)
+    const t1 = setTimeout(() => setSelected(2), 800)
+    const t2 = setTimeout(() => setShowResult(true), 1400)
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [])
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation } from 'react-router-dom'
 import { useAppData } from '../../hooks/useAppData'
@@ -90,16 +90,27 @@ export function EduvanceMascot() {
     return getContextMessage(location.pathname, data, { quizScore, streakCount })
   }, [location.pathname, data, quizScore, streakCount])
 
-  // Auto-show contextual bubble on page load
+  // Auto-show contextual bubble on PAGE CHANGE only (not on every contextMsg change)
+  const prevPathRef = useRef(location.pathname)
   useEffect(() => {
-    setMessage(contextMsg.message)
-    setView('bubble')
-    const now = Date.now()
-    if (now - lastAutoShow > COOLDOWN_MS) {
-      setIsOpen(true)
-      setLastAutoShow(now)
-      const timer = setTimeout(() => setIsOpen(false), MESSAGE_VISIBLE_MS)
-      return () => clearTimeout(timer)
+    // Only auto-show when navigating to a new page
+    if (prevPathRef.current !== location.pathname) {
+      prevPathRef.current = location.pathname
+      setMessage(contextMsg.message)
+      setView('bubble')
+      const now = Date.now()
+      if (now - lastAutoShow > COOLDOWN_MS) {
+        setIsOpen(true)
+        setLastAutoShow(now)
+        const timer = setTimeout(() => {
+          // Only close if still in bubble view (don't close panel if user clicked)
+          setView(v => { if (v === 'bubble') setIsOpen(false); return v })
+        }, MESSAGE_VISIBLE_MS)
+        return () => clearTimeout(timer)
+      }
+    } else {
+      // Same page — just update message silently, don't open/close
+      setMessage(contextMsg.message)
     }
   }, [location.pathname, contextMsg])
 
