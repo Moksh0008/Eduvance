@@ -7,7 +7,7 @@ import { useTheme } from '../../context/ThemeContext'
    Auto-plays through screens with Octo narrating
    ═══════════════════════════════════════════════════ */
 
-const OCTO_IMG = '/mascot/octo-main.png'
+const OCTO_IMG = '/mascot/octo-main.webp'
 
 const DEMO_STEPS = [
   {

@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════ */
 
 // Pose mapping — uses the main octopus image for all poses
-const OCTO_IMG = '/mascot/octo-main.png'
+const OCTO_IMG = '/mascot/octo-main.webp'
 export const POSES = {
   happy:        { image: OCTO_IMG, bgPos: 'center', label: 'Happy' },
   excited:      { image: OCTO_IMG, bgPos: 'center', label: 'Excited' },

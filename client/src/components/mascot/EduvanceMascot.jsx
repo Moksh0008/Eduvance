@@ -14,7 +14,7 @@ import { daysUntil } from '../../utils/format'
 
 const COOLDOWN_MS = 12000
 const MESSAGE_VISIBLE_MS = 8000
-const OCTO_IMG = '/mascot/octo-main.png'
+const OCTO_IMG = '/mascot/octo-main.webp'
 
 /* CSS keyframes injected once */
 const STYLES = `
