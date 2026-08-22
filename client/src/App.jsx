@@ -20,6 +20,10 @@ import { QuizPlayPage } from './pages/QuizPlayPage'
 import { QuizResultPage } from './pages/QuizResultPage'
 import { InsightsPage } from './pages/InsightsPage'
 import { RevisionPage } from './pages/RevisionPage'
+import { TheLoopPage } from './pages/TheLoopPage'
+import { ProblemPage } from './pages/ProblemPage'
+import { HowItWorksPage } from './pages/HowItWorksPage'
+import { WhyEduvancePage } from './pages/WhyEduvancePage'
 import { PageTransition } from './components/ui/PageTransition'
 import { RequireAuth } from './components/auth/RequireAuth'
 
@@ -50,6 +54,10 @@ export default function App() {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/the-loop" element={<TheLoopPage />} />
+        <Route path="/problem" element={<ProblemPage />} />
+        <Route path="/how-it-works" element={<HowItWorksPage />} />
+        <Route path="/why-eduvance" element={<WhyEduvancePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/setup" element={<ProtectedSetup />} />

@@ -15,18 +15,18 @@ export function MarketingNav() {
         <Logo />
         <nav className="hidden items-center gap-6 text-sm text-ink-2 md:flex" aria-label="Marketing">
           {[
-            { href: '#clarity', label: 'The loop' },
-            { href: '#problem', label: 'Problem' },
-            { href: '#how', label: 'How it works' },
-            { href: '#why', label: 'Why Eduvance' },
+            { to: '/the-loop', label: 'The loop' },
+            { to: '/problem', label: 'Problem' },
+            { to: '/how-it-works', label: 'How it works' },
+            { to: '/why-eduvance', label: 'Why Eduvance' },
           ].map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
+            <Link
+              key={item.to}
+              to={item.to}
               className="relative transition-colors hover:text-ink after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 after:bg-accent-2 after:transition-all after:duration-300 hover:after:w-full"
             >
               {item.label}
-            </a>
+            </Link>
           ))}
         </nav>
         <div className="flex items-center gap-3">

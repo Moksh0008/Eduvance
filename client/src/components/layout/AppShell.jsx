@@ -54,7 +54,7 @@ export function AppShell() {
           src={isDark ? '/dark-theme-bg.png' : '/light-theme-bg.png'}
           alt=""
           className="h-full w-full object-cover object-center"
-          style={{ opacity: 0.15 }}
+          style={{ opacity: 0.25 }}
         />
         <div className="absolute inset-0" style={{
           background: isDark
