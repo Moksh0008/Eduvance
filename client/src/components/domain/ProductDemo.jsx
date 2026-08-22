@@ -12,13 +12,13 @@ const CHARS = {
 }
 
 const SCENES = [
-  { id: 'problem', duration: 5500, bg: 'linear-gradient(135deg, #1a1a2e, #0f3460)' },
-  { id: 'octo-helps', duration: 5500, bg: 'linear-gradient(135deg, #1a1a2e, #1e3a8a)' },
-  { id: 'analyzing', duration: 5500, bg: 'linear-gradient(135deg, #0f172a, #1e40af)' },
-  { id: 'planning', duration: 5500, bg: 'linear-gradient(135deg, #0f172a, #065f46)' },
-  { id: 'quizzing', duration: 5500, bg: 'linear-gradient(135deg, #0f172a, #581c87)' },
-  { id: 'adapting', duration: 5500, bg: 'linear-gradient(135deg, #0f172a, #9d174d)' },
-  { id: 'success', duration: 6000, bg: 'linear-gradient(135deg, #0f172a, #4338ca)' },
+  { id: 'problem', duration: 7500, bg: 'linear-gradient(135deg, #1a1a2e, #0f3460)' },
+  { id: 'octo-helps', duration: 8000, bg: 'linear-gradient(135deg, #1a1a2e, #1e3a8a)' },
+  { id: 'analyzing', duration: 8000, bg: 'linear-gradient(135deg, #0f172a, #1e40af)' },
+  { id: 'planning', duration: 8000, bg: 'linear-gradient(135deg, #0f172a, #065f46)' },
+  { id: 'quizzing', duration: 9000, bg: 'linear-gradient(135deg, #0f172a, #581c87)' },
+  { id: 'adapting', duration: 8000, bg: 'linear-gradient(135deg, #0f172a, #9d174d)' },
+  { id: 'success', duration: 9000, bg: 'linear-gradient(135deg, #0f172a, #4338ca)' },
 ]
 
 /* ═══ OCTO GUIDE — appears in every scene from slide 2 ═══ */
