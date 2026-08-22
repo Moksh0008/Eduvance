@@ -21,8 +21,27 @@ export function createApp() {
   )
   app.use(express.json({ limit: '2mb' }))
 
-  app.get('/api/health', (_req, res) => {
-    res.json({ success: true, data: { ok: true } })
+  app.get('/api/health', async (_req, res) => {
+    const checks = { ok: true, timestamp: new Date().toISOString() }
+
+    // Check MongoDB
+    try {
+      const mongoose = await import('mongoose')
+      const state = mongoose.default.connection.readyState
+      checks.mongodb = state === 1 ? 'connected' : state === 2 ? 'connecting' : 'disconnected'
+      if (state !== 1) checks.ok = false
+    } catch {
+      checks.mongodb = 'unavailable'
+    }
+
+    // Check Grok API key
+    checks.grok = process.env.XAI_API_KEY ? 'configured' : 'missing'
+
+    // Server uptime
+    checks.uptime = Math.round(process.uptime()) + 's'
+
+    const status = checks.ok ? 200 : 503
+    res.status(status).json({ success: checks.ok, data: checks })
   })
 
   app.use(async (req, _res, next) => {

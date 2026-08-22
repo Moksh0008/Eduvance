@@ -6,6 +6,7 @@ import { Sidebar } from './Sidebar'
 import { Navbar } from './Navbar'
 import { ParticleBackground } from '../ui/ParticleBackground'
 import { FloatingSymbols } from '../ui/FloatingSymbols'
+import { BackendStatus } from '../ui/BackendStatus'
 
 import { useTheme } from '../../context/ThemeContext'
 
@@ -93,6 +94,9 @@ export function AppShell() {
           style={{ background: isDark ? 'rgba(99,102,241,0.015)' : 'rgba(85,88,230,0.02)' }}
         />
       </div>
+
+      {/* Backend health check banner */}
+      <BackendStatus />
 
       <a
         href="#main"

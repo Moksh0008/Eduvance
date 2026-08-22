@@ -19,33 +19,58 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path, { method = 'GET', body, auth = true } = {}) {
+async function request(path, { method = 'GET', body, auth = true, retries = 2 } = {}) {
   const headers = { 'Content-Type': 'application/json' }
   if (auth) {
     const jwt = token()
     if (jwt) headers.Authorization = `Bearer ${jwt}`
   }
 
-  let res
-  try {
-    res = await fetch(`${resolveBase()}${path}`, {
-      method,
-      headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
-    })
-  } catch {
-    throw new ApiError('Cannot reach the Eduvance API. Is the server running?', 0)
+  let lastError
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    let res
+    try {
+      res = await fetch(`${resolveBase()}${path}`, {
+        method,
+        headers,
+        body: body === undefined ? undefined : JSON.stringify(body),
+      })
+    } catch (err) {
+      lastError = new ApiError(
+        'Cannot reach the Eduvance API. The backend server may be starting up — retrying...',
+        0,
+      )
+      // Wait before retry (exponential backoff: 1s, 2s)
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)))
+        continue
+      }
+      throw lastError
+    }
+
+    // Don't retry on 4xx errors (client errors)
+    if (res.status >= 400 && res.status < 500) {
+      const json = await res.json().catch(() => ({}))
+      const fallback = res.status === 404
+        ? 'API route not found.'
+        : `Request failed (${res.status})`
+      throw new ApiError(json.message || fallback, res.status, json)
+    }
+
+    // Retry on 5xx errors (server errors)
+    if (res.status >= 500 && attempt < retries) {
+      await new Promise(r => setTimeout(r, 1000 * (attempt + 1)))
+      continue
+    }
+
+    const json = await res.json().catch(() => ({}))
+    if (!res.ok || json.success === false) {
+      throw new ApiError(json.message || `Request failed (${res.status})`, res.status, json)
+    }
+    return json.data
   }
 
-  const json = await res.json().catch(() => ({}))
-  if (!res.ok || json.success === false) {
-    const fallback =
-      res.status === 404
-        ? 'API route not found. Keep the server running (`cd server && npm run dev`) and restart the client.'
-        : `Request failed (${res.status})`
-    throw new ApiError(json.message || fallback, res.status, json)
-  }
-  return json.data
+  throw lastError || new ApiError('Request failed after retries', 0)
 }
 
 export const api = {

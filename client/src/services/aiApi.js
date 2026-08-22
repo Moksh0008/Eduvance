@@ -17,14 +17,23 @@ export const aiApi = {
         return raw ? JSON.parse(raw).token : null
       } catch { return null }
     })()
-    const res = await fetch('/api/ai/analyze-file', {
-      method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      body: formData,
-    })
-    const json = await res.json()
-    if (!res.ok || json.success === false) throw new Error(json.message || 'Analysis failed')
-    return json.data
+    let lastErr
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch('/api/ai/analyze-file', {
+          method: 'POST',
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: formData,
+        })
+        const json = await res.json()
+        if (!res.ok || json.success === false) throw new Error(json.message || `Analysis failed (${res.status})`)
+        return json.data
+      } catch (err) {
+        lastErr = err
+        if (attempt < 1) await new Promise(r => setTimeout(r, 1500))
+      }
+    }
+    throw lastErr || new Error('Analysis failed after retries')
   },
 
   /** Analyze a timetable PDF server-side → returns exam/subject dates */
@@ -37,14 +46,23 @@ export const aiApi = {
         return raw ? JSON.parse(raw).token : null
       } catch { return null }
     })()
-    const res = await fetch('/api/ai/analyze-timetable', {
-      method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      body: formData,
-    })
-    const json = await res.json()
-    if (!res.ok || json.success === false) throw new Error(json.message || 'Analysis failed')
-    return json.data
+    let lastErr
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch('/api/ai/analyze-timetable', {
+          method: 'POST',
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: formData,
+        })
+        const json = await res.json()
+        if (!res.ok || json.success === false) throw new Error(json.message || `Analysis failed (${res.status})`)
+        return json.data
+      } catch (err) {
+        lastErr = err
+        if (attempt < 1) await new Promise(r => setTimeout(r, 1500))
+      }
+    }
+    throw lastErr || new Error('Analysis failed after retries')
   },
 
   /** Analyze syllabus text → returns structured subjects/units/topics */
@@ -56,7 +74,6 @@ export const aiApi = {
     const formData = new FormData()
     formData.append('file', file)
     if (subject) formData.append('subject', subject)
-
     const token = (() => {
       try {
         const raw = localStorage.getItem('eduvance.auth')
@@ -64,17 +81,25 @@ export const aiApi = {
       } catch { return null }
     })()
 
-    const res = await fetch('/api/ai/upload-material', {
-      method: 'POST',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      body: formData,
-    })
-
-    const json = await res.json()
-    if (!res.ok || json.success === false) {
-      throw new Error(json.message || 'Upload failed')
+    let lastErr
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch('/api/ai/upload-material', {
+          method: 'POST',
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: formData,
+        })
+        const json = await res.json()
+        if (!res.ok || json.success === false) {
+          throw new Error(json.message || `Upload failed (${res.status})`)
+        }
+        return json.data
+      } catch (err) {
+        lastErr = err
+        if (attempt < 1) await new Promise(r => setTimeout(r, 1500))
+      }
     }
-    return json.data
+    throw lastErr || new Error('Upload failed after retries')
   },
 
   /** Generate AI quiz questions */
