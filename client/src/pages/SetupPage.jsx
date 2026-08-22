@@ -167,24 +167,20 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile }) {
     setPhase('run')
     setDone(false)
     setCurrent(0)
-    // Try to extract exam dates from timetable PDF via AI
+    // Send PDF to backend for server-side parsing + AI extraction
     try {
-      const text = await file.text()
-      if (text && text.trim().length > 20) {
-        const result = await aiApi.analyzeSyllabus(text, 'timetable')
-        if (result?.subjects?.length) {
-          // Try to extract exam dates from the analyzed data
-          const extracted = result.subjects.map(s => ({
-            id: `sub_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
-            name: s.name || '',
-            date: s.examDate || '',
-            time: s.examTime || '10:00',
-            marks: s.marks || 100,
-          })).filter(s => s.name)
-          if (extracted.length > 0) {
-            setExams(extracted)
-            syncSubjectsFromExams(extracted)
-          }
+      const result = await aiApi.analyzeTimetable(file)
+      if (result?.exams?.length) {
+        const extracted = result.exams.map(e => ({
+          id: `sub_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+          name: e.name || '',
+          date: e.date || '',
+          time: e.time || '10:00',
+          marks: e.marks || 100,
+        })).filter(e => e.name)
+        if (extracted.length > 0) {
+          setExams(extracted)
+          syncSubjectsFromExams(extracted)
         }
       }
     } catch {
@@ -289,6 +285,25 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile }) {
 }
 
 function StepSyllabus({ subjects, setSubjects }) {
+  const [studyFiles, setStudyFiles] = useState([])
+  const [uploadingStudy, setUploadingStudy] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState('')
+
+  async function uploadStudyMaterial(file, subjectName) {
+    setUploadingStudy(true)
+    setUploadProgress(`Uploading ${file.name}...`)
+    try {
+      await aiApi.uploadMaterial(file, subjectName)
+      setStudyFiles(prev => [...prev, { name: file.name, subject: subjectName, status: 'done' }])
+      setUploadProgress(`${file.name} uploaded & indexed for RAG ✅`)
+    } catch (err) {
+      setStudyFiles(prev => [...prev, { name: file.name, subject: subjectName, status: 'error' }])
+      setUploadProgress(`Failed: ${err.message}`)
+    }
+    setUploadingStudy(false)
+    setTimeout(() => setUploadProgress(''), 3000)
+  }
+
   if (!subjects.length) {
     return (
       <div>
@@ -303,8 +318,7 @@ function StepSyllabus({ subjects, setSubjects }) {
       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">Step 2 · Syllabus</p>
       <h1 className="mt-2 font-serif text-4xl text-ink">What do you need to prepare?</h1>
       <p className="mt-3 text-sm text-ink-2">
-        Attach a syllabus/notes PDF per subject, or enter units and topics yourself. Uploads are stored as files — they
-        do not invent a topic tree.
+        Attach a syllabus/notes PDF per subject, or enter units and topics yourself. AI will extract topics automatically.
       </p>
       <div className="mt-8 space-y-10">
         {subjects.map((subject) => (
@@ -314,6 +328,53 @@ function StepSyllabus({ subjects, setSubjects }) {
             onChange={(next) => setSubjects(subjects.map((s) => (s.id === next.id ? next : s)))}
           />
         ))}
+      </div>
+
+      {/* Study Materials Upload */}
+      <div className="mt-10 border-t border-line pt-8">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">Study Materials</p>
+        <h2 className="mt-2 text-xl font-semibold text-ink">Upload notes & study material</h2>
+        <p className="mt-2 text-sm text-ink-2">
+          Upload PDFs, notes, or text files. These will be indexed for RAG so quiz questions can be generated from your actual material.
+        </p>
+        <div className="mt-4 space-y-3">
+          {subjects.map((subject) => (
+            <div key={subject.id} className="flex items-center gap-3">
+              <label className="relative cursor-pointer rounded-lg border border-dashed border-line-2 bg-surface px-4 py-2.5 text-center transition-colors hover:border-accent hover:bg-accent/[0.04]">
+                <input
+                  type="file"
+                  className="absolute inset-0 cursor-pointer opacity-0"
+                  accept=".pdf,.txt,.md,.doc,.docx"
+                  disabled={uploadingStudy}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) uploadStudyMaterial(file, subject.name)
+                  }}
+                />
+                <span className="text-xs font-medium text-ink">📄 {subject.name}</span>
+                <span className="ml-2 text-[10px] text-ink-3">PDF / notes</span>
+              </label>
+            </div>
+          ))}
+        </div>
+        {uploadProgress && (
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3 text-xs text-accent-2">
+            {uploadProgress}
+          </motion.p>
+        )}
+        {studyFiles.length > 0 && (
+          <div className="mt-4 space-y-1">
+            {studyFiles.map((f, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs">
+                <span className={f.status === 'done' ? 'text-green-500' : 'text-red-500'}>
+                  {f.status === 'done' ? '✅' : '❌'}
+                </span>
+                <span className="text-ink-2">{f.name}</span>
+                <span className="text-ink-3">({f.subject})</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
@@ -332,32 +393,17 @@ function SubjectSyllabus({ subject, onChange }) {
     setPhase('run')
     setDone(false)
     setAiError('')
-    // Upload file for RAG storage
-    try {
-      await aiApi.uploadMaterial(file, subject.name)
-    } catch {
-      // RAG upload is best-effort — continue with local storage
-    }
-    // Also try to extract text and analyze with AI
     setAiAnalyzing(true)
+    // Send file to backend — server parses PDF + sends text to Grok
     try {
-      let text = ''
-      if (file.type === 'application/pdf') {
-        // Read PDF as text for analysis
-        text = await file.text()
-      } else {
-        text = await file.text()
-      }
-      if (text && text.trim().length > 50) {
-        const result = await aiApi.analyzeSyllabus(text, subject.name)
-        if (result?.subjects?.[0]?.units) {
-          applyAiTopics(result.subjects[0].units)
-          setDone(true)
-          setPhase('stored')
-          setAiAnalyzing(false)
-          onChange({ ...subject, syllabusFile: fileMeta(file) })
-          return
-        }
+      const result = await aiApi.analyzeFile(file, subject.name)
+      if (result?.subjects?.[0]?.units) {
+        applyAiTopics(result.subjects[0].units)
+        setDone(true)
+        setPhase('stored')
+        setAiAnalyzing(false)
+        onChange({ ...subject, syllabusFile: fileMeta(file) })
+        return
       }
     } catch (err) {
       setAiError(err.message || 'AI analysis failed — you can add topics manually below')

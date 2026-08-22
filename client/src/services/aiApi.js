@@ -6,6 +6,47 @@
 import { api } from './api'
 
 export const aiApi = {
+  /** Analyze a file (PDF/text) server-side → returns structured subjects/units/topics */
+  analyzeFile: async (file, subject = '') => {
+    const formData = new FormData()
+    formData.append('file', file)
+    if (subject) formData.append('subject', subject)
+    const token = (() => {
+      try {
+        const raw = localStorage.getItem('eduvance.auth')
+        return raw ? JSON.parse(raw).token : null
+      } catch { return null }
+    })()
+    const res = await fetch('/api/ai/analyze-file', {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    })
+    const json = await res.json()
+    if (!res.ok || json.success === false) throw new Error(json.message || 'Analysis failed')
+    return json.data
+  },
+
+  /** Analyze a timetable PDF server-side → returns exam/subject dates */
+  analyzeTimetable: async (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const token = (() => {
+      try {
+        const raw = localStorage.getItem('eduvance.auth')
+        return raw ? JSON.parse(raw).token : null
+      } catch { return null }
+    })()
+    const res = await fetch('/api/ai/analyze-timetable', {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    })
+    const json = await res.json()
+    if (!res.ok || json.success === false) throw new Error(json.message || 'Analysis failed')
+    return json.data
+  },
+
   /** Analyze syllabus text → returns structured subjects/units/topics */
   analyzeSyllabus: (syllabusText, subject) =>
     api.post('/ai/analyze-syllabus', { syllabusText, subject }),

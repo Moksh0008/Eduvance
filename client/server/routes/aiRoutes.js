@@ -25,6 +25,85 @@ const upload = multer({
   },
 })
 
+// ═══ ANALYZE FILE (server-side PDF parsing + Grok) ═══
+aiRoutes.post('/analyze-file', upload.single('file'), asyncHandler(async (req, res) => {
+  const file = req.file
+  if (!file) {
+    return res.status(400).json({ success: false, message: 'No file uploaded' })
+  }
+
+  let text = ''
+  if (file.mimetype === 'application/pdf') {
+    try {
+      const pdfParse = (await import('pdf-parse')).default
+      const data = await pdfParse(file.buffer)
+      text = data.text
+    } catch {
+      return res.status(400).json({ success: false, message: 'Failed to parse PDF.' })
+    }
+  } else {
+    text = file.buffer.toString('utf-8')
+  }
+
+  if (!text || text.trim().length < 20) {
+    return res.status(400).json({ success: false, message: 'File content is too short or empty.' })
+  }
+
+  const subject = req.body.subject || ''
+
+  // Also store for RAG
+  const materialId = `mat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+  try {
+    await agent.indexStudyMaterial(req.user.userId, materialId, file.originalname, file.mimetype, text, ragService)
+  } catch { /* RAG storage is best-effort */ }
+
+  // Analyze with Grok
+  const result = await agent.analyzeSyllabus(req.user.userId, text, {
+    analyzeSyllabus: async (t) => callGrokJSON(
+      `You are an academic syllabus analyzer. Extract structured topics from this document.
+Return JSON: { "subjects": [{ "name": "string", "examDate": "YYYY-MM-DD or empty", "units": [{ "name": "string", "topics": [{ "name": "string", "difficulty": "easy|medium|hard", "importance": "high|medium|low", "estimatedMinutes": 60 }] }] }] }
+Extract ALL subjects, units, topics from the document. If exam dates are mentioned, include them. Return ONLY valid JSON.`,
+      `Subject context: ${subject}\n\nDocument content:\n${t.slice(0, 8000)}`
+    ),
+  })
+
+  return res.json({ success: true, data: { ...result, fileName: file.originalname, textLength: text.length } })
+}))
+
+// ═══ ANALYZE TIMETABLE (server-side PDF parsing) ═══
+aiRoutes.post('/analyze-timetable', upload.single('file'), asyncHandler(async (req, res) => {
+  const file = req.file
+  if (!file) {
+    return res.status(400).json({ success: false, message: 'No file uploaded' })
+  }
+
+  let text = ''
+  if (file.mimetype === 'application/pdf') {
+    try {
+      const pdfParse = (await import('pdf-parse')).default
+      const data = await pdfParse(file.buffer)
+      text = data.text
+    } catch {
+      return res.status(400).json({ success: false, message: 'Failed to parse PDF.' })
+    }
+  } else {
+    text = file.buffer.toString('utf-8')
+  }
+
+  if (!text || text.trim().length < 10) {
+    return res.status(400).json({ success: false, message: 'File content is too short or empty.' })
+  }
+
+  const result = await callGrokJSON(
+    `You are a timetable parser. Extract exam/subject information from this timetable document.
+Return JSON: { "exams": [{ "name": "subject name", "date": "YYYY-MM-DD", "time": "HH:MM", "marks": 100 }] }
+Extract ALL exams with their dates, times, and marks. If a field is not found, use reasonable defaults. Return ONLY valid JSON.`,
+    `Timetable content:\n${text.slice(0, 6000)}`
+  )
+
+  return res.json({ success: true, data: { ...result, fileName: file.originalname } })
+}))
+
 // ═══ SYLLABUS ANALYSIS ═══
 aiRoutes.post('/analyze-syllabus', asyncHandler(async (req, res) => {
   const { syllabusText, subject } = req.body
