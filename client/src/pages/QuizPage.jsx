@@ -8,7 +8,7 @@ import { AdaptiveLoop } from '../components/domain/AdaptiveLoop'
 import { SubjectSelector } from '../components/domain/SubjectSelector'
 import { TopicSelector } from '../components/domain/TopicSelector'
 import { AdaptiveInsight } from '../components/domain/AdaptiveInsight'
-import { getQuizBank } from '../services/quiz'
+import { getQuizBank, hasRealQuestions } from '../services/quiz'
 import { useAppData } from '../hooks/useAppData'
 import { useAppState } from '../context/AppState'
 
@@ -46,11 +46,12 @@ export function QuizPage() {
   function startCheck() {
     const topic = selectedTopic
     if (!topic) return
+    const subjectName = topic.subjectName || topic.subject || subjects.find(s => s.id === topic.subjectId)?.name || ''
     sessionStorage.setItem(
       'eduvance.quiz.config',
       JSON.stringify({
         kind: 'check',
-        subject: topic.subjectName || topic.subject,
+        subject: subjectName,
         subjectId: topic.subjectId,
         topic: topic.name,
         topicId: topic.id,
@@ -60,6 +61,11 @@ export function QuizPage() {
     )
     navigate('/quiz/play')
   }
+
+  const hasBankQuestions = selectedTopic && (() => {
+    const subjName = selectedTopic.subjectName || selectedTopic.subject || subjects.find(s => s.id === selectedTopic.subjectId)?.name || ''
+    return hasRealQuestions(subjName, selectedTopic.name)
+  })()
 
   if (!data.isDemo && !setupCompleted) {
     return (
@@ -136,9 +142,16 @@ export function QuizPage() {
             }}
           />
           <TopicSelector topics={topicOptions} value={topicId} onChange={setTopicId} />
-          <Button className="mt-2" onClick={startCheck} disabled={!selectedTopic}>
-            Start quiz
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button className="mt-2" onClick={startCheck} disabled={!selectedTopic}>
+              Start quiz
+            </Button>
+            {selectedTopic && (
+              <span className="mt-2 text-xs text-ink-3">
+                {hasBankQuestions ? '✅ Real MCQ questions available' : '📝 Self-assessment mode'}
+              </span>
+            )}
+          </div>
         </div>
       ) : null}
 

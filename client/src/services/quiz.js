@@ -1,6 +1,18 @@
 import { getQuizBank } from './catalog'
+import { getQuestions, getAvailableTopics, adaptDifficulty } from './questionBank'
 
-export function buildTopicQuiz(topicName, count = 10) {
+/**
+ * Build quiz questions for a topic.
+ * Uses the real question bank when available, falls back to self-assessment.
+ */
+export function buildTopicQuiz(topicName, count = 10, subject = '', difficulty = 'medium') {
+  // Try the real question bank first
+  if (subject) {
+    const realQuestions = getQuestions(subject, topicName, difficulty, count)
+    if (realQuestions.length > 0) return realQuestions
+  }
+
+  // Fallback: self-assessment questions
   const topic = topicName || 'this topic'
   const stems = [
     [`I can explain ${topic} clearly, without notes.`, ['No', 'Somewhat', 'Yes'], 2],
@@ -19,7 +31,36 @@ export function buildTopicQuiz(topicName, count = 10) {
     prompt: row[0],
     options: row[1],
     answer: row[2],
+    difficulty: 'self-assessment',
+    subject,
+    topic: topicName,
   }))
+}
+
+/**
+ * Check if real MCQ questions are available for a subject/topic
+ */
+export function hasRealQuestions(subject, topic) {
+  const questions = getQuestions(subject, topic, 'medium', 1)
+  return questions.length > 0
+}
+
+/**
+ * Get available topic names from the question bank for a subject
+ */
+export function getBankTopics(subject) {
+  return getAvailableTopics(subject)
+}
+
+/**
+ * Get adaptive difficulty based on history
+ */
+export function getAdaptiveDifficulty(workspace, subject, topic) {
+  const history = workspace.quizResults || workspace.quizHistory || []
+  const topicQuizzes = history.filter(q => q.subject === subject && q.topic === topic)
+  if (topicQuizzes.length === 0) return 'easy'
+  const lastScore = topicQuizzes[topicQuizzes.length - 1].score
+  return adaptDifficulty(lastScore, 'medium')
 }
 
 export { getQuizBank }

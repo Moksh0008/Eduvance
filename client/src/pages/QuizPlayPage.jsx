@@ -4,12 +4,14 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { Button } from '../components/ui/Button'
 import { QuizQuestion } from '../components/domain/QuizQuestion'
 import { QuizMentor } from '../components/domain/QuizMentor'
-import { getQuizBank, buildTopicQuiz } from '../services/quiz'
+import { getQuizBank, buildTopicQuiz, hasRealQuestions } from '../services/quiz'
+import { useAppData } from '../hooks/useAppData'
 import { recordStudyDay } from '../utils/streaks'
 import { quizSlide } from '../animations/variants'
 
 export function QuizPlayPage() {
   const bank = getQuizBank()
+  const data = useAppData()
   const reduce = useReducedMotion()
   const config = useMemo(() => {
     try {
@@ -18,7 +20,18 @@ export function QuizPlayPage() {
       return {}
     }
   }, [])
-  const checkQuestions = buildTopicQuiz(config.topic, config.count || 10)
+  // Use adaptive difficulty based on past performance
+  const difficulty = useMemo(() => {
+    if (!data || config.kind !== 'check') return 'medium'
+    const history = data.quizResults || []
+    const topicQuizzes = history.filter(q => q.subject === config.subject && q.topic === config.topic)
+    if (topicQuizzes.length === 0) return 'easy'
+    const lastScore = topicQuizzes[topicQuizzes.length - 1].score
+    if (lastScore >= 80) return 'hard'
+    if (lastScore < 50) return 'easy'
+    return 'medium'
+  }, [data, config])
+  const checkQuestions = buildTopicQuiz(config.topic, config.count || 10, config.subject, difficulty)
   const questions = config.kind === 'check' ? checkQuestions : bank.questions.slice(0, config.count || 10)
   const limit = (config.minutes || 15) * 60
   const [index, setIndex] = useState(0)
@@ -68,6 +81,24 @@ export function QuizPlayPage() {
     submitted.current = true
     setMentorEvent({ type: 'submit' })
     const correct = questions.reduce((n, item, i) => n + (answers[i] === item.answer ? 1 : 0), 0)
+    // Calculate per-question details for analytics
+    const questionDetails = questions.map((item, i) => ({
+      id: item.id,
+      prompt: item.prompt,
+      correct: answers[i] === item.answer,
+      userAnswer: answers[i],
+      correctAnswer: item.answer,
+      difficulty: item.difficulty || difficulty,
+      topic: item.topic || config.topic,
+      subject: item.subject || config.subject,
+    }))
+    const difficultyScores = {}
+    questionDetails.forEach(qd => {
+      const d = qd.difficulty || 'unknown'
+      if (!difficultyScores[d]) difficultyScores[d] = { correct: 0, total: 0 }
+      difficultyScores[d].total++
+      if (qd.correct) difficultyScores[d].correct++
+    })
     sessionStorage.setItem(
       'eduvance.quiz.result',
       JSON.stringify({
@@ -76,7 +107,10 @@ export function QuizPlayPage() {
         score: Math.round((correct / questions.length) * 100),
         kind: config.kind || 'demo',
         leftover: left,
+        difficulty,
         missed: questions.filter((item, i) => answers[i] !== item.answer).map((item) => item.id),
+        questionDetails,
+        difficultyScores,
         topic: config.topic || bank.topic,
         topicId: config.topicId || null,
         subject: config.subject || bank.subject,
