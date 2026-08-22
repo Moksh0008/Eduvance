@@ -1,0 +1,15 @@
+{
+  "name": "Eduvance — AI-Powered Exam Preparation",
+  "short_name": "Eduvance",
+  "description": "Adaptive exam preparation powered by AI. Upload your syllabus, get personalized study plans, and track your progress.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060918",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "/favicon-16x16.png", "sizes": "16x16", "type": "image/png" },
+    { "src": "/favicon-32x32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
