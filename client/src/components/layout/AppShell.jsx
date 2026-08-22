@@ -7,7 +7,7 @@ import { Navbar } from './Navbar'
 import { ParticleBackground } from '../ui/ParticleBackground'
 import { FloatingSymbols } from '../ui/FloatingSymbols'
 import { EdgeScrollbar } from '../ui/EdgeScrollbar'
-import { PageMascot } from '../ui/PageMascot'
+import { PageMascot } from '../ui/OctoMascot'
 import { useTheme } from '../../context/ThemeContext'
 
 /* Page-specific ambient glow colors */
