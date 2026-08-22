@@ -32,18 +32,17 @@ export function LandingPage() {
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-canvas)' }}>
       {/* Fixed background image */}
-      <div className="fixed inset-0 z-0">
-        <img
-          src={isDark ? '/dark-theme-bg.png' : '/light-theme-bg.png'}
-          alt=""
-          className="h-full w-full object-cover object-center"
-          style={{ opacity: 0.5 }}
-        />
-        <div className="absolute inset-0" style={{
-          background: isDark
-            ? 'linear-gradient(180deg, rgba(6,9,24,0.15) 0%, rgba(6,9,24,0.5) 40%, rgba(6,9,24,0.85) 70%, var(--color-canvas) 100%)'
-            : 'linear-gradient(180deg, rgba(244,242,238,0.05) 0%, rgba(244,242,238,0.35) 40%, rgba(244,242,238,0.75) 70%, var(--color-canvas) 100%)'
-        }} />
+      <div className="fixed inset-0 z-0">          <img
+            src={isDark ? '/dark-theme-bg.png' : '/light-theme-bg.png'}
+            alt=""
+            className="h-full w-full object-cover object-center"
+            style={{ opacity: isDark ? 0.5 : 0.2, filter: isDark ? 'none' : 'saturate(0.5) brightness(1.1)' }}
+          />
+          <div className="absolute inset-0" style={{
+            background: isDark
+              ? 'linear-gradient(180deg, rgba(6,9,24,0.15) 0%, rgba(6,9,24,0.5) 40%, rgba(6,9,24,0.85) 70%, var(--color-canvas) 100%)'
+              : 'linear-gradient(180deg, rgba(240,237,232,0.6) 0%, rgba(240,237,232,0.82) 40%, rgba(240,237,232,0.95) 70%, var(--color-canvas) 100%)'
+          }} />
       </div>
 
       <div className="relative" style={{ zIndex: 1 }}>
@@ -79,7 +78,7 @@ export function LandingPage() {
                 {features.map((f) => (
                   <motion.span key={f.text} whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.97 }}
                     className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-ink-2"
-                    style={{ background: 'rgba(10,14,40,0.5)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                    style={{ background: isDark ? 'rgba(10,14,40,0.5)' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)', border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'}` }}>
                     <span>{f.emoji}</span>{f.text}
                   </motion.span>
                 ))}
@@ -133,9 +132,10 @@ export function LandingPage() {
                       <div className={`ml-14 sm:ml-0 sm:w-[calc(50%-2.5rem)] ${isLeft ? 'sm:pr-8 sm:text-right' : 'sm:pl-8'}`}>
                         <div className="rounded-2xl p-4 sm:p-5"
                           style={{
-                            background: isDark ? 'rgba(17,22,49,0.5)' : 'rgba(255,255,255,0.6)',
+                            background: isDark ? 'rgba(17,22,49,0.5)' : '#ffffff',
                             backdropFilter: 'blur(12px)',
-                            border: `1px solid ${isDark ? 'rgba(148,163,184,0.06)' : 'rgba(26,29,46,0.04)'}`,
+                            border: `1px solid ${isDark ? 'rgba(148,163,184,0.06)' : 'rgba(0,0,0,0.08)'}`,
+                            boxShadow: isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.03)',
                           }}
                         >
                           <h3 className="font-serif text-lg font-medium" style={{ color: step.color }}>
@@ -165,15 +165,14 @@ export function LandingPage() {
               </div>
             </ScrollReveal>
 
-            <ScrollReveal preset="scaleIn" delay={0.15}>
-              <div className="mx-auto mt-12 max-w-4xl overflow-hidden rounded-2xl"
+            <ScrollReveal preset="scaleIn" delay={0.15}>                <div className="mx-auto mt-12 max-w-4xl overflow-hidden rounded-2xl"
                 style={{
-                  background: isDark ? 'rgba(17,22,49,0.6)' : 'rgba(255,255,255,0.7)',
+                  background: isDark ? 'rgba(17,22,49,0.6)' : '#ffffff',
                   backdropFilter: 'blur(20px)',
-                  border: `1px solid ${isDark ? 'rgba(148,163,184,0.1)' : 'rgba(26,29,46,0.06)'}`,
+                  border: `1px solid ${isDark ? 'rgba(148,163,184,0.1)' : 'rgba(0,0,0,0.08)'}`,
                   boxShadow: isDark
                     ? '0 8px 40px rgba(99,102,241,0.12), 0 0 80px rgba(99,102,241,0.05)'
-                    : '0 8px 40px rgba(0,0,0,0.08)',
+                    : '0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
                 }}>
                 {/* Video player container */}
                 <div className="relative aspect-video w-full overflow-hidden" style={{

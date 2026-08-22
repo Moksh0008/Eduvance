@@ -48,18 +48,17 @@ export function AppShell() {
   return (
     <div className="min-h-screen bg-canvas">
       {/* Fixed background image — same as landing page */}
-      <div className="fixed inset-0 z-0">
-        <img
-          src={isDark ? '/dark-theme-bg.png' : '/light-theme-bg.png'}
-          alt=""
-          className="h-full w-full object-cover object-center"
-          style={{ opacity: 0.5 }}
-        />
-        <div className="absolute inset-0" style={{
-          background: isDark
-            ? 'linear-gradient(180deg, rgba(6,9,24,0.6) 0%, rgba(6,9,24,0.85) 50%, var(--color-canvas) 100%)'
-            : 'linear-gradient(180deg, rgba(244,242,238,0.5) 0%, rgba(244,242,238,0.8) 50%, var(--color-canvas) 100%)'
-        }} />
+      <div className="fixed inset-0 z-0">            <img
+              src={isDark ? '/dark-theme-bg.png' : '/light-theme-bg.png'}
+              alt=""
+              className="h-full w-full object-cover object-center"
+              style={{ opacity: isDark ? 0.5 : 0.25, filter: isDark ? 'none' : 'saturate(0.6) brightness(1.1)' }}
+            />
+            <div className="absolute inset-0" style={{
+              background: isDark
+                ? 'linear-gradient(180deg, rgba(6,9,24,0.6) 0%, rgba(6,9,24,0.85) 50%, var(--color-canvas) 100%)'
+                : 'linear-gradient(180deg, rgba(240,237,232,0.85) 0%, rgba(240,237,232,0.92) 50%, var(--color-canvas) 100%)'
+            }} />
       </div>
 
       {/* Particle background */}
@@ -106,7 +105,7 @@ export function AppShell() {
 
       <div className="relative z-10 flex min-h-screen">
         {/* Desktop sidebar — borderless, floating feel */}
-        <aside className="sticky top-0 hidden h-screen w-[15.5rem] shrink-0 bg-surface/30 backdrop-blur-md lg:block">
+        <aside className="sticky top-0 hidden h-screen w-[15.5rem] shrink-0 bg-surface/60 backdrop-blur-lg lg:block" style={{ borderRight: isDark ? '1px solid rgba(148,163,184,0.06)' : '1px solid rgba(0,0,0,0.06)' }}>
           <div className="flex h-14 items-center px-4">
             <Logo to="/dashboard" />
           </div>
