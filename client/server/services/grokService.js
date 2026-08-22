@@ -19,7 +19,7 @@ function getApiKey() {
  * @returns {string} Raw text response from Grok
  */
 export async function callGrok(systemPrompt, userPrompt, options = {}) {
-  const { temperature = 0.7, maxTokens = 2000, model = 'grok-4-0709' } = options
+  const { temperature = 0.7, maxTokens = 2000, model = 'grok-2-1212' } = options
 
   const response = await fetch(`${GROK_BASE_URL}/chat/completions`, {
     method: 'POST',
@@ -40,6 +40,7 @@ export async function callGrok(systemPrompt, userPrompt, options = {}) {
 
   if (!response.ok) {
     const err = await response.text()
+    console.error('Grok API error:', response.status, err)
     throw new Error(`Grok API error (${response.status}): ${err}`)
   }
 
