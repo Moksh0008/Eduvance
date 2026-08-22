@@ -3,6 +3,7 @@ import cors from 'cors'
 import { connectDb } from './config/db.js'
 import { authRoutes } from './routes/authRoutes.js'
 import { preparationRoutes } from './routes/preparationRoutes.js'
+import { aiRoutes } from './routes/aiRoutes.js'
 import { errorHandler, notFound } from './middleware/errorMiddleware.js'
 
 export async function ensureDb() {
@@ -38,6 +39,7 @@ export function createApp() {
 
   app.use('/api/auth', authRoutes)
   app.use('/api/preparation', preparationRoutes)
+  app.use('/api/ai', aiRoutes)
   app.use(notFound)
   app.use(errorHandler)
 

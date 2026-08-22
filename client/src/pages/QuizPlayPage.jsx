@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button'
 import { QuizQuestion } from '../components/domain/QuizQuestion'
 import { QuizMentor } from '../components/domain/QuizMentor'
 import { getQuizBank, buildTopicQuiz, hasRealQuestions } from '../services/quiz'
+import { aiApi } from '../services/aiApi'
 import { useAppData } from '../hooks/useAppData'
 import { recordStudyDay } from '../utils/streaks'
 import { quizSlide } from '../animations/variants'
@@ -32,10 +33,40 @@ export function QuizPlayPage() {
     return 'medium'
   }, [data, config])
   const checkQuestions = buildTopicQuiz(config.topic, config.count || 10, config.subject, difficulty)
-  const questions = config.kind === 'check' ? checkQuestions : bank.questions.slice(0, config.count || 10)
+  const localQuestions = config.kind === 'check' ? checkQuestions : bank.questions.slice(0, config.count || 10)
+  const [aiQuestions, setAiQuestions] = useState(null)
+  const [aiQuizId, setAiQuizId] = useState(null)
+  const [loadingAi, setLoadingAi] = useState(false)
+  const questions = aiQuestions || localQuestions
   const limit = (config.minutes || 15) * 60
   const [index, setIndex] = useState(0)
   const [answers, setAnswers] = useState(() => Array(questions.length).fill(null))
+
+  // Try loading AI-generated questions on mount
+  useEffect(() => {
+    if (config.kind !== 'check' || !config.subject || !config.topic) return
+    let cancelled = false
+    setLoadingAi(true)
+    aiApi.generateQuiz(config.subject, config.topic, difficulty, config.count || 10)
+      .then(result => {
+        if (cancelled || !result?.questions?.length) return
+        setAiQuizId(result.quizId)
+        setAiQuestions(result.questions.map((q, i) => ({
+          id: q.id || `ai-${i}`,
+          prompt: q.prompt,
+          options: q.options,
+          answer: q.correctAnswer,
+          difficulty: q.difficulty || difficulty,
+          subject: config.subject,
+          topic: config.topic,
+        })))
+      })
+      .catch(() => {
+        // Silently fall back to local question bank
+      })
+      .finally(() => setLoadingAi(false))
+    return () => { cancelled = true }
+  }, [config.subject, config.topic, difficulty])
   const [left, setLeft] = useState(limit)
   const [mentorEvent, setMentorEvent] = useState({ type: 'enter' })
   const q = questions[index]
@@ -99,32 +130,47 @@ export function QuizPlayPage() {
       difficultyScores[d].total++
       if (qd.correct) difficultyScores[d].correct++
     })
-    sessionStorage.setItem(
-      'eduvance.quiz.result',
-      JSON.stringify({
-        correct,
-        total: questions.length,
-        score: Math.round((correct / questions.length) * 100),
-        kind: config.kind || 'demo',
-        leftover: left,
-        difficulty,
-        missed: questions.filter((item, i) => answers[i] !== item.answer).map((item) => item.id),
-        questionDetails,
-        difficultyScores,
-        topic: config.topic || bank.topic,
-        topicId: config.topicId || null,
-        subject: config.subject || bank.subject,
-        subjectId: config.subjectId || null,
-      }),
-    )
+    const resultData = {
+      correct,
+      total: questions.length,
+      score: Math.round((correct / questions.length) * 100),
+      kind: config.kind || 'demo',
+      leftover: left,
+      difficulty,
+      missed: questions.filter((item, i) => answers[i] !== item.answer).map((item) => item.id),
+      questionDetails,
+      difficultyScores,
+      topic: config.topic || bank.topic,
+      topicId: config.topicId || null,
+      subject: config.subject || bank.subject,
+      subjectId: config.subjectId || null,
+      aiQuizId,
+    }
+    sessionStorage.setItem('eduvance.quiz.result', JSON.stringify(resultData))
     // Record study day for streak tracking
     recordStudyDay()
+    // If using AI quiz, complete it on backend for mastery tracking + replan
+    if (aiQuizId) {
+      aiApi.completeQuiz(aiQuizId).catch(() => {
+        // Backend evaluation is best-effort — quiz result is already saved locally
+      })
+    }
     // Small delay to let mentor message show before navigating
     setTimeout(() => navigate('/quiz/result'), 600)
   }
 
   const mm = String(Math.floor(left / 60)).padStart(2, '0')
   const ss = String(left % 60).padStart(2, '0')
+
+  if (loadingAi && !aiQuestions) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <div className="mb-4 h-10 w-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
+        <p className="text-sm text-ink-2">Generating AI questions for {config.topic}...</p>
+        <p className="mt-1 text-xs text-ink-3">Analyzing your study material and performance</p>
+      </div>
+    )
+  }
 
   return (
     <div>
