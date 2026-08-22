@@ -32,7 +32,7 @@ export function LandingPage() {
       {/* Fixed background image */}
       <div className="fixed inset-0 z-0">
         <img
-          src={isDark ? '/dark-theme-bg.png' : '/light-theme-bg.png'}
+          src={isDark ? '/dark-theme-bg.webp' : '/light-theme-bg.webp'}
           alt=""
           className="h-full w-full object-cover object-center"
           style={{ opacity: isDark ? 0.5 : 0.2, filter: isDark ? 'none' : 'saturate(0.5) brightness(1.1)' }}
