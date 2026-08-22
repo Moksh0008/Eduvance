@@ -20,7 +20,7 @@ const orbitalNodes = [
 
 function OrbitalVisual() {
   return (
-    <div className="relative h-[380px] w-[380px]">
+    <div className="relative h-[450px] w-[450px]">
       <motion.div
         className="absolute left-1/2 top-1/2 z-10 h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-accent/30 flex items-center justify-center"
         style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(79,70,229,0.15))', boxShadow: '0 0 40px rgba(99,102,241,0.15)' }}
@@ -29,7 +29,7 @@ function OrbitalVisual() {
         <span className="text-2xl font-bold text-accent-2">Ev</span>
       </motion.div>
       {orbitalNodes.map((node, i) => {
-        const radius = 150
+        const radius = 180
         return (
           <motion.div key={node.label} className="absolute flex flex-col items-center gap-1.5"
             style={{ left: '50%', top: '50%' }}
@@ -47,18 +47,76 @@ function OrbitalVisual() {
           </motion.div>
         )
       })}
-      <div className="absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-line/30" />
-      <div className="absolute left-1/2 top-1/2 h-[220px] w-[220px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-line/15" />
+      <div className="absolute left-1/2 top-1/2 h-[360px] w-[360px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-line/30" />
+      <div className="absolute left-1/2 top-1/2 h-[280px] w-[280px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-line/15" />
       <div className="absolute left-1/2 top-1/2 h-[200px] w-[200px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.04] blur-[60px]" />
     </div>
   )
 }
 
-function AuthVisual() {
+function AuthDoodles() {
+  const doodles = [
+    { icon: '📚', x: '10%', y: '12%', size: 28, delay: 0 },
+    { icon: '🎯', x: '85%', y: '15%', size: 24, delay: 0.5 },
+    { icon: '⚡', x: '5%', y: '45%', size: 26, delay: 1 },
+    { icon: '🧠', x: '90%', y: '50%', size: 28, delay: 1.5 },
+    { icon: '📊', x: '8%', y: '75%', size: 24, delay: 2 },
+    { icon: '🗓', x: '88%', y: '80%', size: 26, delay: 2.5 },
+    { icon: '💡', x: '15%', y: '90%', size: 22, delay: 3 },
+    { icon: '✨', x: '80%', y: '10%', size: 20, delay: 0.8 },
+    { icon: '📝', x: '20%', y: '30%', size: 22, delay: 1.2 },
+    { icon: '🔑', x: '78%', y: '65%', size: 20, delay: 2.2 },
+  ]
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+      {doodles.map((d, i) => (
+        <motion.div key={i}
+          className="absolute"
+          style={{ left: d.x, top: d.y, fontSize: d.size }}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 0.15, scale: 1, y: [0, -8, 0] }}
+          transition={{ delay: d.delay, duration: 4 + i * 0.5, repeat: Infinity, ease: 'easeInOut' }}
+        >{d.icon}</motion.div>
+      ))}
+    </div>
+  )
+}
+
+function AuthVisual({ passwordVisible = false, isTypingPassword = false }) {
+  const octoMessages = [
+    "Not looking! 👀🚫",
+    "Your secret is safe with me! 🤫",
+    "I see nothing! Nothing at all! 🙈",
+    "Privacy mode: ON! 🔒",
+    "My eyes are closed, promise! 🐙",
+  ]
+  const msgIndex = Math.floor(Math.random() * octoMessages.length)
+
   return (
     <div className="relative flex h-full flex-col items-center justify-center gap-6 px-8">
       <div className="pointer-events-none absolute inset-0 bg-accent/[0.03] blur-[100px] rounded-3xl" />
+      <AuthDoodles />
       <OrbitalVisual />
+      {/* Octo reaction to password typing */}
+      {isTypingPassword && (
+        <motion.div
+          className="absolute bottom-12 right-8 flex flex-col items-center gap-2"
+          initial={{ opacity: 0, y: 20, scale: 0.8 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 20 }}
+        >
+          <motion.div className="rounded-xl px-4 py-2 text-xs font-medium shadow-lg"
+            style={{ background: 'rgba(99,102,241,0.9)', color: 'white' }}
+            animate={{ scale: [1, 1.03, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}>
+            {octoMessages[msgIndex]}
+          </motion.div>
+          <motion.img src="/mascot/octo-140.webp" alt="Octo"
+            style={{ width: 80, height: 80, filter: 'drop-shadow(0 0 15px rgba(99,102,241,0.5))' }}
+            animate={{ rotate: [-5, 5, -5], y: [0, -4, 0] }}
+            transition={{ duration: 2, repeat: Infinity }} />
+        </motion.div>
+      )}
     </div>
   )
 }
@@ -128,7 +186,7 @@ export function LoginPage() {
           </motion.div>
         </div>
         <div className="hidden border-l border-line bg-surface/30 lg:block">
-          <AuthVisual />
+          <AuthVisual isTypingPassword={focusedField === 'password' && password.length > 0} />
         </div>
       </div>
     </div>
@@ -195,7 +253,7 @@ export function RegisterPage() {
           </motion.div>
         </div>
         <div className="hidden border-l border-line bg-surface/30 lg:block">
-          <AuthVisual />
+          <AuthVisual isTypingPassword={focusedField === 'password' && password.length > 0} />
         </div>
       </div>
     </div>
