@@ -760,9 +760,12 @@ export function ProductDemo() {
           {isPaused ? '▶' : '⏸'}
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" role="tablist" aria-label="Demo scenes">
           {SCENES.map((s, i) => (
             <button key={s.id} onClick={() => setScene(i)}
+              role="tab"
+              aria-selected={i === scene}
+              aria-label={`Scene ${i + 1}: ${s.id}`}
               className="rounded-full transition-all duration-500"
               style={{
                 width: i === scene ? '24px' : '8px',

@@ -33,10 +33,21 @@ export function createApp() {
   app.get('/api/health', async (_req, res) => {
     const checks = { ok: true, timestamp: new Date().toISOString() }
 
-    // Check MongoDB
+    // Check MongoDB — try to reconnect if disconnected
     try {
       const mongoose = await import('mongoose')
-      const state = mongoose.default.connection.readyState
+      let state = mongoose.default.connection.readyState
+      
+      // If disconnected, try to reconnect
+      if (state !== 1 && process.env.MONGODB_URI) {
+        try {
+          await connectDb(process.env.MONGODB_URI)
+          state = mongoose.default.connection.readyState
+        } catch {
+          // Reconnect failed, continue with current state
+        }
+      }
+      
       checks.mongodb = state === 1 ? 'connected' : state === 2 ? 'connecting' : 'disconnected'
       if (state !== 1) checks.ok = false
     } catch {
