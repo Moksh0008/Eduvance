@@ -24,42 +24,44 @@ const SCENES = [
 /* ═══ OCTO GUIDE — appears in every scene from slide 2 ═══ */
 function OctoGuide({ message, position = 'right', delay = 0.5 }) {
   const posStyles = {
-    right: { right: 16, top: 16, left: 'auto', alignItems: 'flex-end' },
-    left: { left: 16, top: 16, right: 'auto', alignItems: 'flex-start' },
+    right: { right: 12, bottom: 16, left: 'auto', alignItems: 'flex-end' },
+    left: { left: 12, bottom: 16, right: 'auto', alignItems: 'flex-start' },
   }
   const p = posStyles[position] || posStyles.right
 
   return (
     <motion.div
-      style={{ position: 'absolute', zIndex: 20, display: 'flex', flexDirection: 'column', gap: 6, ...p }}
-      initial={{ opacity: 0, x: position === 'right' ? 50 : -50, scale: 0.4 }}
-      animate={{ opacity: 1, x: 0, scale: 1 }}
-      transition={{ delay, type: 'spring', stiffness: 180, damping: 14 }}
+      style={{ position: 'absolute', zIndex: 20, display: 'flex', flexDirection: 'column', alignItems: p.alignItems, gap: 8, ...p }}
+      initial={{ opacity: 0, x: position === 'right' ? 60 : -60, scale: 0.3, rotate: position === 'right' ? 15 : -15 }}
+      animate={{ opacity: 1, x: 0, scale: 1, rotate: 0 }}
+      exit={{ opacity: 0, x: position === 'right' ? 40 : -40, scale: 0.5 }}
+      transition={{ delay, type: 'spring', stiffness: 150, damping: 12 }}
     >
       <motion.div
         style={{
-          background: 'rgba(99,102,241,0.92)',
-          borderRadius: 14,
-          padding: '10px 14px',
+          background: 'linear-gradient(135deg, rgba(99,102,241,0.95), rgba(139,92,246,0.95))',
+          borderRadius: 16,
+          padding: '12px 18px',
           color: 'white',
-          fontSize: 12,
-          maxWidth: 180,
+          fontSize: 13,
+          maxWidth: 200,
           textAlign: position === 'left' ? 'left' : 'right',
-          lineHeight: 1.4,
-          boxShadow: '0 4px 20px rgba(99,102,241,0.35)',
+          lineHeight: 1.5,
+          boxShadow: '0 6px 30px rgba(99,102,241,0.4)',
+          border: '1px solid rgba(255,255,255,0.15)',
         }}
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ delay: delay + 0.25, type: 'spring', stiffness: 300 }}
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: delay + 0.3, type: 'spring', stiffness: 250, damping: 15 }}
       >
         {message}
       </motion.div>
       <motion.img
         src={OCTO_IMG}
         alt="Octo your study guide"
-        style={{ width: 60, height: 60, filter: 'drop-shadow(0 0 12px rgba(99,102,241,0.5))' }}
-        animate={{ y: [0, -4, 0], rotate: [-2, 2, -2] }}
-        transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ width: 90, height: 90, filter: 'drop-shadow(0 0 18px rgba(99,102,241,0.6))' }}
+        animate={{ y: [0, -6, 0], rotate: [-3, 3, -3] }}
+        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
       />
     </motion.div>
   )
@@ -327,11 +329,13 @@ function SceneSuccess() {
 
       <OctoGuide message="You did it! From tensed to happy — I'm so proud! 🎉🐙" position="right" delay={0.3} />
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 30 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 30 }}>
         <Char src={CHARS.happy} size={200} />
-        <motion.img src={OCTO_IMG} alt="Octo" style={{ width: 90, height: 90, filter: 'drop-shadow(0 0 20px rgba(99,102,241,0.5))' }}
-          initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5, type: 'spring' }}
-          animate={{ scale: [1, 1.05, 1], y: [0, -5, 0] }}
+        <motion.img src={OCTO_IMG} alt="Octo" 
+          style={{ width: 110, height: 110, filter: 'drop-shadow(0 0 25px rgba(99,102,241,0.6))' }}
+          initial={{ scale: 0, rotate: -20 }} 
+          animate={{ scale: [1, 1.08, 1], y: [0, -8, 0], rotate: [-3, 3, -3] }} 
+          transition={{ delay: 0.4, type: 'spring', stiffness: 150, y: { duration: 2, repeat: Infinity } }}
         />
       </div>
 
