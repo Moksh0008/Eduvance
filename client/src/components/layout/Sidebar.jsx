@@ -21,38 +21,38 @@ import { useReducedMotion } from '../../hooks/useReducedMotion'
 const groups = [
   {
     label: 'Overview',
-    items: [{ to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }],
+    items: [{ to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, emoji: '🏠' }],
   },
   {
     label: 'Prepare',
     items: [
-      { to: '/syllabus', label: 'Syllabus', icon: BookOpen },
-      { to: '/subjects', label: 'Subjects', icon: Library },
-      { to: '/planner', label: 'Planner', icon: CalendarClock },
-      { to: '/revision', label: 'Revision', icon: RotateCcw },
+      { to: '/syllabus', label: 'Syllabus', icon: BookOpen, emoji: '📚' },
+      { to: '/subjects', label: 'Subjects', icon: Library, emoji: '🧪' },
+      { to: '/planner', label: 'Planner', icon: CalendarClock, emoji: '🗓' },
+      { to: '/revision', label: 'Revision', icon: RotateCcw, emoji: '🔄' },
     ],
   },
   {
     label: 'Practice',
     items: [
-      { to: '/quiz', label: 'Quiz', icon: ListChecks },
-      { to: '/question-papers', label: 'Question papers', icon: FileText },
+      { to: '/quiz', label: 'Quiz', icon: ListChecks, emoji: '🎯' },
+      { to: '/question-papers', label: 'Question papers', icon: FileText, emoji: '📝' },
     ],
   },
   {
     label: 'Understand',
     items: [
-      { to: '/progress', label: 'Progress', icon: LineChart },
-      { to: '/analytics', label: 'Analytics', icon: ChartNoAxesCombined },
-      { to: '/insights', label: 'Insights', icon: ScanSearch },
+      { to: '/progress', label: 'Progress', icon: LineChart, emoji: '📈' },
+      { to: '/analytics', label: 'Analytics', icon: ChartNoAxesCombined, emoji: '📊' },
+      { to: '/insights', label: 'Insights', icon: ScanSearch, emoji: '💡' },
     ],
   },
   {
     label: 'Account',
     items: [
-      { to: '/profile', label: 'Profile', icon: UserRound },
-      { to: '/setup', label: 'Edit preparation', icon: PencilLine },
-      { to: '/settings', label: 'Settings', icon: SlidersHorizontal },
+      { to: '/profile', label: 'Profile', icon: UserRound, emoji: '🧑' },
+      { to: '/setup', label: 'Edit preparation', icon: PencilLine, emoji: '✏️' },
+      { to: '/settings', label: 'Settings', icon: SlidersHorizontal, emoji: '⚙️' },
     ],
   },
 ]
@@ -73,7 +73,7 @@ const iconAnimations = {
   '/settings': { hover: { rotate: 90, transition: { duration: 0.35 } } },
 }
 
-function SidebarItem({ to, label, icon: Icon, onNavigate }) {
+function SidebarItem({ to, label, icon: Icon, emoji, onNavigate }) {
   const reduce = useReducedMotion()
   const anim = iconAnimations[to] || {}
 
@@ -114,18 +114,19 @@ function SidebarItem({ to, label, icon: Icon, onNavigate }) {
               />
             )}
 
-            {/* Icon */}
+            {/* Emoji + Icon */}
             <motion.div
               className="relative z-10 flex items-center justify-center"
               whileHover={reduce ? undefined : anim.hover}
               transition={anim.hover?.transition || { type: 'spring', stiffness: 400, damping: 20 }}
             >
+              <span className="text-base mr-0.5" aria-hidden="true">{emoji}</span>
               <Icon
-                size={16}
+                size={14}
                 strokeWidth={1.6}
                 aria-hidden="true"
                 className={cn(
-                  'transition-colors duration-200',
+                  'transition-colors duration-200 hidden',
                   isActive ? 'text-accent-2' : 'text-ink-3 group-hover:text-accent-2',
                 )}
               />

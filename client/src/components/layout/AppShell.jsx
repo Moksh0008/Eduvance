@@ -8,6 +8,7 @@ import { ParticleBackground } from '../ui/ParticleBackground'
 import { FloatingSymbols } from '../ui/FloatingSymbols'
 import { StudyWatermark } from '../ui/StudyWatermark'
 import { EdgeScrollbar } from '../ui/EdgeScrollbar'
+import { PageMascot } from '../ui/PageMascot'
 import { useTheme } from '../../context/ThemeContext'
 
 /* Page-specific ambient glow colors */
@@ -136,6 +137,9 @@ export function AppShell() {
           </main>
         </div>
       </div>
+
+      {/* Floating Evo mascot on every page */}
+      <PageMascot pagePath={location.pathname} />
     </div>
   )
 }
