@@ -41,7 +41,7 @@ export function WhyEduvancePage() {
               transition={{ delay: i * 0.06 }}
               whileHover={{ y: -3, scale: 1.01 }}
               className="rounded-2xl p-5"
-              style={{ background: 'rgba(10,14,40,0.5)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              style={{ background: isDark ? 'rgba(10,14,40,0.5)' : 'rgba(255,255,255,0.8)', backdropFilter: 'blur(16px)', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)', boxShadow: isDark ? 'none' : '0 2px 12px rgba(0,0,0,0.06)' }}>
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-2xl">{f.emoji}</span>
                 <div>

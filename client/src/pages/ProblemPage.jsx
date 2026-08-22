@@ -37,7 +37,7 @@ export function ProblemPage() {
               transition={{ delay: i * 0.1 }}
               whileHover={{ y: -4, scale: 1.01 }}
               className="rounded-2xl p-6"
-              style={{ background: 'rgba(10,14,40,0.5)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              style={{ background: isDark ? 'rgba(10,14,40,0.5)' : 'rgba(255,255,255,0.8)', backdropFilter: 'blur(16px)', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)', boxShadow: isDark ? 'none' : '0 2px 12px rgba(0,0,0,0.06)' }}>
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-3xl">{item.emoji}</span>
                 <div>
@@ -52,7 +52,7 @@ export function ProblemPage() {
 
         <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="mt-12 rounded-2xl p-8 text-center"
-          style={{ background: 'rgba(10,14,40,0.5)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+          style={{ background: isDark ? 'rgba(10,14,40,0.5)' : 'rgba(255,255,255,0.8)', backdropFilter: 'blur(16px)', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)', boxShadow: isDark ? 'none' : '0 2px 12px rgba(0,0,0,0.06)' }}>
           <span className="text-4xl">💡</span>
           <h2 className="mt-3 font-serif text-2xl text-ink">What if your preparation could think?</h2>
           <p className="mt-2 text-sm text-ink-2">That&apos;s exactly what Eduvance does.</p>

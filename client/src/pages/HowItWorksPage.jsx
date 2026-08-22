@@ -36,7 +36,7 @@ export function HowItWorksPage() {
               viewport={{ once: true }}
               transition={{ delay: i * 0.12 }}
               className="relative rounded-2xl p-6"
-              style={{ background: 'rgba(10,14,40,0.5)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+              style={{ background: isDark ? 'rgba(10,14,40,0.5)' : 'rgba(255,255,255,0.8)', backdropFilter: 'blur(16px)', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)', boxShadow: isDark ? 'none' : '0 2px 12px rgba(0,0,0,0.06)' }}>
               <div className="flex items-start gap-5">
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl text-2xl"
                   style={{ background: 'var(--color-accent-soft)' }}>
