@@ -101,6 +101,11 @@
   color-scheme: light;
 }
 
+/* === Default dark color-scheme === */
+:root {
+  color-scheme: dark;
+}
+
 /* === Theme transition === */
 html, body, #root {
   transition: background-color 0.7s cubic-bezier(0.22, 1, 0.36, 1), color 0.5s ease;
@@ -209,6 +214,29 @@ a.bg-success {
   color: var(--color-ink);
   border-radius: 0.5rem;
   transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Fix native date/time pickers in dark mode */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  color-scheme: dark;
+}
+[data-theme="light"] input[type="date"],
+[data-theme="light"] input[type="time"],
+[data-theme="light"] input[type="datetime-local"] {
+  color-scheme: light;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+  cursor: pointer;
+  opacity: 0.6;
+}
+[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="light"] input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: none;
 }
 
 /* DEPTH-BASED card — visible border + shadow for clear segmentation */
