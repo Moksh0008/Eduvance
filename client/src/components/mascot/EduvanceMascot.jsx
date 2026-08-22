@@ -14,7 +14,7 @@ import { daysUntil } from '../../utils/format'
 
 const COOLDOWN_MS = 12000
 const MESSAGE_VISIBLE_MS = 8000
-const OCTO_IMG = '/mascot/octo-main.webp'
+const OCTO_IMG = '/mascot/octo-140.webp'
 
 /* CSS keyframes injected once */
 const STYLES = `
@@ -391,8 +391,8 @@ export function EduvanceMascot() {
             src={OCTO_IMG}
             alt="Octo — your study companion"
             className="object-contain select-none"
-            width="160"
-            height="160"
+            width="140"
+            height="140"
             loading="lazy"
             style={{
               width: 'clamp(80px, 12vw, 130px)',

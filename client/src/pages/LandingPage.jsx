@@ -175,7 +175,7 @@ export function LandingPage() {
             <div className="flex flex-col gap-6 sm:flex-row sm:justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold" style={{ background: '#4338ca', color: '#fff' }}>Ev</div>
+                  <div className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold" style={{ background: '#3730a3', color: '#fff' }}>Ev</div>
                   <span className="font-serif text-sm font-semibold text-ink">Eduvance</span>
                 </div>
                 <p className="mt-2 max-w-xs text-xs leading-relaxed text-ink-3">
