@@ -19,7 +19,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path, { method = 'GET', body, auth = true, retries = 2 } = {}) {
+async function request(path, { method = 'GET', body, auth = true, retries = 2, timeout: timeoutMs = 10000 } = {}) {
   const headers = { 'Content-Type': 'application/json' }
   if (auth) {
     const jwt = token()
@@ -31,7 +31,7 @@ async function request(path, { method = 'GET', body, auth = true, retries = 2 } 
     let res
     try {
       const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 10000) // 10s timeout
+      const timeout = setTimeout(() => controller.abort(), timeoutMs)
       res = await fetch(`${resolveBase()}${path}`, {
         method,
         headers,
@@ -40,11 +40,11 @@ async function request(path, { method = 'GET', body, auth = true, retries = 2 } 
       })
       clearTimeout(timeout)
     } catch (err) {
-      lastError = new ApiError(
-        'Cannot reach the Eduvance API. The backend server may be starting up — retrying...',
-        0,
-      )
-      // Wait before retry (exponential backoff: 1s, 2s)
+      if (err.name === 'AbortError') {
+        lastError = new ApiError('Server is waking up — this may take 30 seconds on first load. Please try again.', 0)
+      } else {
+        lastError = new ApiError('Cannot reach the server. Please check your connection.', 0)
+      }
       if (attempt < retries) {
         await new Promise(r => setTimeout(r, 1000 * (attempt + 1)))
         continue
