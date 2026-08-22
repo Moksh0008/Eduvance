@@ -34,18 +34,29 @@ export function AppStateProvider({ children }) {
         setBootstrapped(true)
         return
       }
+      // Set token immediately so UI can render
+      setSession(stored)
+
+      // Race: try to fetch user data with 8s timeout
+      // If backend is waking up, show cached data immediately
       try {
-        const me = await fetchMe()
+        const fetchPromise = fetchMe()
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Timeout')), 8000)
+        )
+        const me = await Promise.race([fetchPromise, timeoutPromise])
         if (cancelled) return
         setSession((prev) => ({ ...prev, user: me.user }))
-        const prep = await pullPreparation()
-        if (cancelled) return
-        dispatch({ type: PrepAction.HYDRATE, payload: prep })
+        // Fetch preparation data in background (non-blocking)
+        pullPreparation()
+          .then((prep) => {
+            if (!cancelled) dispatch({ type: PrepAction.HYDRATE, payload: prep })
+          })
+          .catch(() => {})
       } catch {
         if (cancelled) return
-        clearAuth()
-        setSession(null)
-        dispatch({ type: PrepAction.HYDRATE, payload: emptyWorkspace() })
+        // Backend unreachable — use cached session data
+        // Dashboard will show with last-known data
       } finally {
         if (!cancelled) setBootstrapped(true)
       }

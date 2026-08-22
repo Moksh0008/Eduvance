@@ -30,11 +30,15 @@ async function request(path, { method = 'GET', body, auth = true, retries = 2 } 
   for (let attempt = 0; attempt <= retries; attempt++) {
     let res
     try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 10000) // 10s timeout
       res = await fetch(`${resolveBase()}${path}`, {
         method,
         headers,
         body: body === undefined ? undefined : JSON.stringify(body),
+        signal: controller.signal,
       })
+      clearTimeout(timeout)
     } catch (err) {
       lastError = new ApiError(
         'Cannot reach the Eduvance API. The backend server may be starting up — retrying...',
