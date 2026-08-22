@@ -323,7 +323,7 @@ function RenderCardContent({ id, t }) {
    MAIN COMPONENT
    ═══════════════════════════════════════════════════════════════ */
 
-export function CinematicScroll() {
+export function CinematicScroll({ scrollHeight = 600 }) {
   const { isDark } = useTheme()
   const wrapperRef = useRef(null)
   const stageRef = useRef(null)
@@ -430,9 +430,6 @@ export function CinematicScroll() {
   }, [isDark])
 
   useEffect(() => {
-    const wrapper = wrapperRef.current
-    if (!wrapper) return
-
     // Initialize SVG path lengths
     const initPaths = () => {
       doodleRefs.current.forEach(({ el }) => {
@@ -453,13 +450,12 @@ export function CinematicScroll() {
       })
     }
 
-    // Delay to ensure DOM is ready
     const timer = setTimeout(initPaths, 100)
 
     const onScroll = () => {
-      const rect = wrapper.getBoundingClientRect()
-      const total = wrapper.offsetHeight - window.innerHeight
-      const scrolled = -rect.top
+      // Progress based on full page scroll height
+      const total = document.documentElement.scrollHeight - window.innerHeight
+      const scrolled = window.scrollY
       const progress = total > 0 ? scrolled / total : 0
       requestAnimationFrame(() => update(progress))
     }
@@ -495,14 +491,10 @@ export function CinematicScroll() {
         }
       })
       // Re-trigger scroll to update positions
-      const wrapper = wrapperRef.current
-      if (wrapper) {
-        const rect = wrapper.getBoundingClientRect()
-        const total = wrapper.offsetHeight - window.innerHeight
-        const scrolled = -rect.top
-        const progress = total > 0 ? scrolled / total : 0
-        update(progress)
-      }
+      const total = document.documentElement.scrollHeight - window.innerHeight
+      const scrolled = window.scrollY
+      const progress = total > 0 ? scrolled / total : 0
+      update(progress)
     }, 50)
     return () => clearTimeout(timer)
   }, [isDark, update])
@@ -521,16 +513,19 @@ export function CinematicScroll() {
   }, [])
 
   return (
-    <div className="cs-wrapper" ref={wrapperRef}>
+    <div ref={wrapperRef} className="cs-fixed-bg" style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
       <style>{`
-        .cs-wrapper { position: relative; height: 600vh; }
+        .cs-fixed-bg {
+          position: fixed; inset: 0; z-index: 0;
+          pointer-events: none;
+        }
         .cs-viewport {
-          position: sticky; top: 0; height: 100vh; width: 100%;
+          position: absolute; inset: 0; width: 100%; height: 100%;
           display: flex; align-items: center; justify-content: center;
           overflow: hidden; background: ${theme.stageBg};
         }
         .cs-stage {
-          position: relative; width: min(92vw, 158vh); aspect-ratio: 16/10;
+          position: relative; width: min(92vw, 158vh); height: min(80vh, 90vw * 0.625);
           border-radius: 18px; overflow: hidden;
           box-shadow: 0 40px 120px rgba(0,0,0,.6);
           transform-origin: center center; will-change: transform;
