@@ -186,3 +186,9 @@ export const resendOTP = asyncHandler(async (req, res) => {
 
   return res.json({ success: true, data: { message: 'OTP sent successfully' } })
 })
+
+export const refreshToken = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.userId)
+  if (!user) return res.status(401).json({ success: false, message: 'User not found' })
+  return res.json({ success: true, data: authPayload(user) })
+})

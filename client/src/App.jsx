@@ -29,6 +29,7 @@ import { WhyEduvancePage } from './pages/WhyEduvancePage'
 import { PageTransition } from './components/ui/PageTransition'
 import { RequireAuth } from './components/auth/RequireAuth'
 import { EduvanceMascot } from './components/mascot/EduvanceMascot'
+import SessionTimeout from './components/ui/SessionTimeout'
 
 function AnimatedPage({ children }) {
   return <PageTransition>{children}</PageTransition>
@@ -90,6 +91,7 @@ export default function App() {
       </Routes>
     </AnimatePresence>
     <EduvanceMascot />
+    <SessionTimeout />
     </>
   )
 }
