@@ -61,7 +61,7 @@ export function AdaptiveLoop({ compact = false }) {
   /* ── Compact mode: simple horizontal flow ── */
   if (compact) {
     return (
-      <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
+      <div className="flex flex-wrap items-center justify-center gap-y-2">
         {STEPS.map((step, i) => (
           <div key={step.label} className="flex items-center">
             <motion.div
@@ -70,6 +70,7 @@ export function AdaptiveLoop({ compact = false }) {
                 background: i === activeStep ? `${step.color}22` : 'transparent',
                 color: i === activeStep ? step.color : 'var(--color-ink-3)',
                 boxShadow: i === activeStep ? `0 0 20px ${step.color}15` : 'none',
+                whiteSpace: 'nowrap',
               }}
               animate={i === activeStep && !reduce ? { scale: [1, 1.08, 1] } : {}}
               transition={{ duration: 0.5 }}
@@ -78,13 +79,17 @@ export function AdaptiveLoop({ compact = false }) {
               <span>{step.label}</span>
             </motion.div>
             {i < STEPS.length - 1 && (
-              <motion.span
-                className="mx-1 text-ink-3"
-                animate={i === activeStep && !reduce ? { x: [0, 3, 0] } : {}}
-                transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 2 }}
-              >
-                →
-              </motion.span>
+              <svg className="mx-1 shrink-0" width="16" height="12" viewBox="0 0 16 12" fill="none">
+                <motion.path
+                  d="M0 6h12M10 1l5 5-5 5"
+                  stroke={i === activeStep ? step.color : 'var(--color-ink-3)'}
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  animate={i === activeStep && !reduce ? { pathLength: [0, 1] } : {}}
+                  transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 2.5 }}
+                />
+              </svg>
             )}
           </div>
         ))}

@@ -25,12 +25,16 @@ export const aiApi = {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: formData,
         })
-        const json = await res.json()
+        const text = await res.text()
+        let json
+        try { json = JSON.parse(text) } catch {
+          throw new Error('Backend is starting up (Render cold start). Please retry in 30 seconds.')
+        }
         if (!res.ok || json.success === false) throw new Error(json.message || `Analysis failed (${res.status})`)
         return json.data
       } catch (err) {
         lastErr = err
-        if (attempt < 1) await new Promise(r => setTimeout(r, 1500))
+        if (attempt < 1) await new Promise(r => setTimeout(r, 3000))
       }
     }
     throw lastErr || new Error('Analysis failed after retries')
@@ -54,12 +58,16 @@ export const aiApi = {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: formData,
         })
-        const json = await res.json()
+        const text = await res.text()
+        let json
+        try { json = JSON.parse(text) } catch {
+          throw new Error('Backend is starting up (Render cold start). Please retry in 30 seconds.')
+        }
         if (!res.ok || json.success === false) throw new Error(json.message || `Analysis failed (${res.status})`)
         return json.data
       } catch (err) {
         lastErr = err
-        if (attempt < 1) await new Promise(r => setTimeout(r, 1500))
+        if (attempt < 1) await new Promise(r => setTimeout(r, 3000))
       }
     }
     throw lastErr || new Error('Analysis failed after retries')
@@ -89,14 +97,18 @@ export const aiApi = {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
           body: formData,
         })
-        const json = await res.json()
+        const text = await res.text()
+        let json
+        try { json = JSON.parse(text) } catch {
+          throw new Error('Backend is starting up (Render cold start). Please retry in 30 seconds.')
+        }
         if (!res.ok || json.success === false) {
           throw new Error(json.message || `Upload failed (${res.status})`)
         }
         return json.data
       } catch (err) {
         lastErr = err
-        if (attempt < 1) await new Promise(r => setTimeout(r, 1500))
+        if (attempt < 1) await new Promise(r => setTimeout(r, 3000))
       }
     }
     throw lastErr || new Error('Upload failed after retries')

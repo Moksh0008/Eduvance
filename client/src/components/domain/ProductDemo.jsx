@@ -13,36 +13,50 @@ const DEMO_STEPS = [
   {
     id: 'welcome',
     octoMsg: "Hey! Let me show you how Eduvance works! 🐙",
+    octoPos: { bottom: '12px', right: '16px' },
+    octoBubbleDir: 'left',
     screen: WelcomeScreen,
   },
   {
     id: 'dashboard',
-    octoMsg: "Your dashboard shows exam countdown and priorities at a glance.",
+    octoMsg: "Look at your exam countdown & today's priorities — everything at a glance!",
+    octoPos: { top: '40px', right: '12px' },
+    octoBubbleDir: 'left',
     screen: DashboardScreen,
   },
   {
     id: 'syllabus',
-    octoMsg: "I analyze your syllabus and break it into manageable topics.",
+    octoMsg: "I break your syllabus into topics and track your progress on each one.",
+    octoPos: { top: '80px', right: '12px' },
+    octoBubbleDir: 'left',
     screen: SyllabusScreen,
   },
   {
     id: 'priority',
-    octoMsg: "I calculate what you should study FIRST based on urgency & weakness.",
+    octoMsg: "I calculate what to study FIRST — based on urgency & weakness!",
+    octoPos: { bottom: '12px', left: '50%', transform: 'translateX(-50%)' },
+    octoBubbleDir: 'top',
     screen: PriorityScreen,
   },
   {
     id: 'quiz',
-    octoMsg: "Then I quiz you on weak areas — every question targets a gap.",
+    octoMsg: "I quiz you on weak areas — every question targets a specific gap.",
+    octoPos: { bottom: '50px', right: '12px' },
+    octoBubbleDir: 'left',
     screen: QuizScreen,
   },
   {
     id: 'replan',
-    octoMsg: "After each quiz, I replan your schedule automatically! 🔄",
+    octoMsg: "After each quiz, I detect weaknesses and replan automatically! 🔄",
+    octoPos: { top: '40px', left: '12px' },
+    octoBubbleDir: 'right',
     screen: ReplanScreen,
   },
   {
     id: 'done',
     octoMsg: "That's Eduvance — your AI study companion. Ready to start? 🚀",
+    octoPos: { bottom: '40px', right: '16px' },
+    octoBubbleDir: 'left',
     screen: DoneScreen,
   },
 ]
@@ -476,36 +490,51 @@ export function ProductDemo() {
           </AnimatePresence>
         </div>
 
-        {/* Octo mascot + speech bubble */}
-        <div className="absolute bottom-3 right-3 flex items-end gap-2 sm:bottom-5 sm:right-5">
-          <AnimatePresence mode="wait">
-            <motion.div key={step}
-              initial={{ opacity: 0, scale: 0.85, x: 8 }}
-              animate={{ opacity: 1, scale: 1, x: 0 }}
-              exit={{ opacity: 0, scale: 0.85, x: 8 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-              className="max-w-[180px] rounded-xl rounded-br-sm px-3 py-2 text-[9px] leading-relaxed shadow-lg sm:max-w-[220px] sm:text-[11px]"
+        {/* Octo mascot + speech bubble — moves to each slide's focal point */}
+        <AnimatePresence mode="wait">
+          <motion.div key={step}
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.6 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+            className="absolute z-10 flex items-end gap-2"
+            style={{
+              ...currentStep.octoPos,
+              flexDirection: currentStep.octoBubbleDir === 'right' ? 'row-reverse' : 'row',
+            }}
+          >
+            {/* Speech bubble */}
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+              className="relative max-w-[160px] rounded-xl px-3 py-2 text-[9px] leading-relaxed shadow-lg sm:max-w-[200px] sm:text-[10px]"
               style={{
-                background: isDark ? 'rgba(17,22,49,0.94)' : '#ffffff',
-                border: `1px solid ${isDark ? 'rgba(148,163,184,0.1)' : 'rgba(0,0,0,0.08)'}`,
+                background: isDark ? 'rgba(17,22,49,0.95)' : '#ffffff',
+                border: `1px solid ${isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)'}`,
                 color: isDark ? '#e2e8f0' : '#1e293b',
+                boxShadow: `0 4px 20px ${isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.08)'}`,
               }}>
               {currentStep.octoMsg}
-              <div className="absolute -bottom-1.5 right-3 h-0 w-0" style={{
-                borderLeft: '5px solid transparent',
-                borderRight: '5px solid transparent',
-                borderTop: `6px solid ${isDark ? 'rgba(17,22,49,0.94)' : '#ffffff'}`,
-              }} />
+              {/* Bubble pointer */}
+              <div className="absolute bottom-1.5 h-0 w-0"
+                style={{
+                  [currentStep.octoBubbleDir === 'right' ? 'right' : currentStep.octoBubbleDir === 'top' ? 'left' : 'left']: '-5px',
+                  borderLeft: '5px solid transparent',
+                  borderRight: '5px solid transparent',
+                  borderTop: `6px solid ${isDark ? 'rgba(17,22,49,0.95)' : '#ffffff'}`,
+                }} />
             </motion.div>
-          </AnimatePresence>
-          <motion.img src={OCTO_IMG} alt="Octo"
-            className="h-12 w-12 shrink-0 sm:h-16 sm:w-16"
-            width="64"
-            height="64"
-            style={{ filter: 'drop-shadow(0 3px 10px rgba(109,76,216,0.4))' }}
-            animate={{ y: [0, -3, 0] }}
-            transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }} />
-        </div>
+            {/* Octo image with bounce */}
+            <motion.img src={OCTO_IMG} alt="Octo the tutor"
+              className="h-10 w-10 shrink-0 sm:h-14 sm:w-14"
+              width="56" height="56"
+              style={{ filter: 'drop-shadow(0 3px 10px rgba(109,76,216,0.4))' }}
+              animate={{ y: [0, -4, 0], rotate: [0, -3, 3, 0] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          </motion.div>
+        </AnimatePresence>
       </div>
 
       {/* Progress dots + controls */}
