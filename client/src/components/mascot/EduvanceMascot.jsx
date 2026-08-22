@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useLocation } from 'react-router-dom'
 import { useAppData } from '../../hooks/useAppData'
+import { useAppState } from '../../context/AppState'
 import { useTheme } from '../../context/ThemeContext'
 import { getStreak } from '../../utils/streaks'
 import { getContextMessage } from './mascotMessages'
@@ -67,6 +68,7 @@ export function EduvanceMascot() {
   const location = useLocation()
   const data = useAppData()
   const { isDark } = useTheme()
+  const { isLoggedIn } = useAppState()
 
   const [isOpen, setIsOpen] = useState(false)
   const [view, setView] = useState('bubble') // 'bubble' | 'panel'
@@ -84,7 +86,8 @@ export function EduvanceMascot() {
     } catch { return null }
   }, [location.pathname])
 
-  const streakCount = useMemo(() => getStreak().current, [location.pathname])
+  // Only show streak for logged-in users
+  const streakCount = useMemo(() => isLoggedIn ? getStreak().current : 0, [location.pathname, isLoggedIn])
 
   const contextMsg = useMemo(() => {
     return getContextMessage(location.pathname, data, { quizScore, streakCount })
