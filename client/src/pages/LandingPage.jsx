@@ -3,6 +3,7 @@ import { MarketingNav } from '../components/layout/MarketingNav'
 import { StartPreparingButton } from '../components/auth/StartPreparingButton'
 import { useTheme } from '../context/ThemeContext'
 import { ScrollReveal } from '../components/ui/ScrollReveal'
+import { ProductDemo } from '../components/domain/ProductDemo'
 
 const features = [
   { emoji: '⚡', text: 'Priority engine' },
@@ -12,7 +13,6 @@ const features = [
   { emoji: '🎯', text: 'Focus sessions' },
 ]
 
-/* ═══ Cinematic story steps ═══ */
 const storySteps = [
   { emoji: '📚', title: 'Too much to study', desc: 'Your syllabus feels endless. Every subject demands attention.', color: '#ef4444' },
   { emoji: '⏳', title: 'Too little time', desc: 'The exam date creeps closer. Panic sets in.', color: '#f97316' },
@@ -24,25 +24,24 @@ const storySteps = [
   { emoji: '🔄', title: 'The plan adapts', desc: 'Weaknesses detected. Strategy replanned. You keep improving.', color: '#eab308' },
 ]
 
-
-
 export function LandingPage() {
   const { isDark } = useTheme()
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-canvas)' }}>
       {/* Fixed background image */}
-      <div className="fixed inset-0 z-0">          <img
-            src={isDark ? '/dark-theme-bg.png' : '/light-theme-bg.png'}
-            alt=""
-            className="h-full w-full object-cover object-center"
-            style={{ opacity: isDark ? 0.5 : 0.2, filter: isDark ? 'none' : 'saturate(0.5) brightness(1.1)' }}
-          />
-          <div className="absolute inset-0" style={{
-            background: isDark
-              ? 'linear-gradient(180deg, rgba(6,9,24,0.15) 0%, rgba(6,9,24,0.5) 40%, rgba(6,9,24,0.85) 70%, var(--color-canvas) 100%)'
-              : 'linear-gradient(180deg, rgba(240,237,232,0.6) 0%, rgba(240,237,232,0.82) 40%, rgba(240,237,232,0.95) 70%, var(--color-canvas) 100%)'
-          }} />
+      <div className="fixed inset-0 z-0">
+        <img
+          src={isDark ? '/dark-theme-bg.png' : '/light-theme-bg.png'}
+          alt=""
+          className="h-full w-full object-cover object-center"
+          style={{ opacity: isDark ? 0.5 : 0.2, filter: isDark ? 'none' : 'saturate(0.5) brightness(1.1)' }}
+        />
+        <div className="absolute inset-0" style={{
+          background: isDark
+            ? 'linear-gradient(180deg, rgba(6,9,24,0.15) 0%, rgba(6,9,24,0.5) 40%, rgba(6,9,24,0.85) 70%, var(--color-canvas) 100%)'
+            : 'linear-gradient(180deg, rgba(240,237,232,0.6) 0%, rgba(240,237,232,0.82) 40%, rgba(240,237,232,0.95) 70%, var(--color-canvas) 100%)'
+        }} />
       </div>
 
       <div className="relative" style={{ zIndex: 1 }}>
@@ -86,7 +85,7 @@ export function LandingPage() {
             </motion.div>
           </section>
 
-          {/* ═══ CINEMATIC STORY — See Eduvance in Action ═══ */}
+          {/* ═══ CINEMATIC STORY ═══ */}
           <section className="relative px-4 py-20 sm:px-6 lg:px-10">
             <ScrollReveal>
               <div className="mx-auto max-w-4xl text-center">
@@ -102,9 +101,7 @@ export function LandingPage() {
               </div>
             </ScrollReveal>
 
-            {/* Story timeline */}
             <div className="relative mx-auto mt-16 max-w-3xl">
-              {/* Vertical line */}
               <div className="absolute left-6 top-0 bottom-0 w-px sm:left-1/2 sm:-translate-x-px"
                 style={{ background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(26,29,46,0.08)' }} />
 
@@ -113,7 +110,6 @@ export function LandingPage() {
                 return (
                   <ScrollReveal key={step.title} preset={isLeft ? 'slideLeft' : 'slideRight'} delay={i * 0.05}>
                     <div className={`relative mb-12 flex items-start gap-4 sm:gap-0 ${isLeft ? 'sm:flex-row' : 'sm:flex-row-reverse'}`}>
-                      {/* Timeline dot */}
                       <div className="absolute left-6 top-4 -translate-x-1/2 sm:left-1/2 z-10">
                         <motion.div
                           className="flex h-10 w-10 items-center justify-center rounded-full text-lg"
@@ -128,7 +124,6 @@ export function LandingPage() {
                         </motion.div>
                       </div>
 
-                      {/* Content card */}
                       <div className={`ml-14 sm:ml-0 sm:w-[calc(50%-2.5rem)] ${isLeft ? 'sm:pr-8 sm:text-right' : 'sm:pl-8'}`}>
                         <div className="rounded-2xl p-4 sm:p-5"
                           style={{
@@ -151,170 +146,25 @@ export function LandingPage() {
             </div>
           </section>
 
-          {/* ═══ VIDEO DEMO ═══ */}
+          {/* ═══ PRODUCT DEMO — Animated walkthrough ═══ */}
           <section className="relative px-4 py-20 sm:px-6 lg:px-10">
             <ScrollReveal>
               <div className="mx-auto max-w-4xl text-center">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-accent-2">
                   See it in action
                 </p>
-                <h2 className="mt-4 font-serif text-3xl text-ink sm:text-4xl">\                  Meet <span className="gradient-text">Octo</span>, your study companion
+                <h2 className="mt-4 font-serif text-3xl text-ink sm:text-4xl">
+                  Meet <span className="gradient-text">Octo</span>, your study companion
                 </h2>
-                <p className="mt-3 text-sm text-ink-2 sm:text-base">\                  Watch how Eduvance analyzes your syllabus, builds a smart plan, and adapts as you learn.
+                <p className="mt-3 text-sm text-ink-2 sm:text-base">
+                  Watch how Eduvance analyzes your syllabus, builds a smart plan, and adapts as you learn.
                 </p>
               </div>
             </ScrollReveal>
 
-            <ScrollReveal preset="scaleIn" delay={0.15}>                <div className="mx-auto mt-12 max-w-4xl overflow-hidden rounded-2xl"
-                style={{
-                  background: isDark ? 'rgba(17,22,49,0.6)' : '#ffffff',
-                  backdropFilter: 'blur(20px)',
-                  border: `1px solid ${isDark ? 'rgba(148,163,184,0.1)' : 'rgba(0,0,0,0.08)'}`,
-                  boxShadow: isDark
-                    ? '0 8px 40px rgba(99,102,241,0.12), 0 0 80px rgba(99,102,241,0.05)'
-                    : '0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)',
-                }}>
-                {/* Video player container */}
-                <div className="relative aspect-video w-full overflow-hidden" style={{
-                  background: isDark
-                    ? 'linear-gradient(135deg, #0f1629 0%, #1a1040 50%, #0d1f3c 100%)'
-                    : 'linear-gradient(135deg, #f8f7ff 0%, #eef1ff 50%, #f0f4ff 100%)',
-                }}>
-                  {/* Simulated Eduvance UI inside video */}
-                  <div className="absolute inset-0 flex">
-                    {/* Mini sidebar */}
-                    <div className="hidden w-[18%] flex-col gap-2 p-3 sm:flex" style={{
-                      background: isDark ? 'rgba(10,14,40,0.6)' : 'rgba(255,255,255,0.8)',
-                      borderRight: `1px solid ${isDark ? 'rgba(148,163,184,0.08)' : 'rgba(0,0,0,0.04)'}`,
-                    }}>
-                      <div className="mb-2 flex items-center gap-1.5">
-                        <div className="flex h-5 w-5 items-center justify-center rounded-md text-[8px] font-bold" style={{ background: '#6366f1', color: '#fff' }}>Ev</div>
-                        <span className="text-[9px] font-semibold text-ink">Eduvance</span>
-                      </div>
-                      {['Dashboard', 'Syllabus', 'Planner', 'Quiz', 'Analytics'].map((item, i) => (
-                        <div key={item} className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[8px] text-ink-2" style={{
-                          background: i === 0 ? (isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)') : 'transparent',
-                          color: i === 0 ? '#6366f1' : undefined,
-                        }}>
-                          <span>{['📊', '📚', '🗓', '🎯', '📈'][i]}</span>
-                          {item}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Main content area */}
-                    <div className="flex flex-1 flex-col p-3 sm:p-4">
-                      {/* Top bar */}
-                      <div className="mb-3 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="h-4 w-4 rounded-full" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }} />
-                          <span className="text-[9px] font-medium text-ink">Dashboard</span>
-                        </div>
-                        <div className="text-[8px] text-ink-3">3h / day</div>
-                      </div>
-
-                      {/* Metric cards */}
-                      <div className="mb-3 grid grid-cols-3 gap-2">
-                        {[
-                          { label: 'Exam in', value: '12 days', color: '#ef4444' },
-                          { label: 'Progress', value: '68%', color: '#10b981' },
-                          { label: 'Streak', value: '🔥 5', color: '#f97316' },
-                        ].map((m) => (
-                          <div key={m.label} className="rounded-lg p-2" style={{
-                            background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
-                          }}>
-                            <div className="text-[7px] text-ink-3">{m.label}</div>
-                            <div className="mt-0.5 text-[11px] font-bold" style={{ color: m.color }}>{m.value}</div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Priority list */}
-                      <div className="flex-1 rounded-lg p-2" style={{
-                        background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                      }}>
-                        <div className="mb-1.5 text-[8px] font-semibold uppercase tracking-wider text-accent-2">Today's Priority</div>
-                        {[
-                          { topic: 'DBMS — Normalization', time: '45 min', priority: 'HIGH', color: '#ef4444' },
-                          { topic: 'CN — Routing', time: '30 min', priority: 'MED', color: '#f97316' },
-                          { topic: 'Java — Collections', time: '25 min', priority: 'LOW', color: '#10b981' },
-                        ].map((t) => (
-                          <div key={t.topic} className="mb-1 flex items-center justify-between rounded-md px-2 py-1" style={{
-                            background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-                          }}>
-                            <span className="text-[8px] text-ink">{t.topic}</span>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-[7px] text-ink-3">{t.time}</span>
-                              <span className="rounded px-1 py-0.5 text-[6px] font-bold" style={{
-                                background: `${t.color}20`, color: t.color,
-                              }}>{t.priority}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Octo mascot overlay — bottom right */}
-                  <motion.div
-                    className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6"
-                    animate={{ y: [0, -6, 0] }}
-                    transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                  >
-                    <div className="relative">
-                      <img src="/mascot/octo-main.png" alt="Octo" className="h-16 w-16 sm:h-24 sm:w-24" style={{ filter: 'drop-shadow(0 4px 12px rgba(109,76,216,0.4))' }} />
-                      {/* Speech bubble */}
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.8, x: 10 }}
-                        animate={{ opacity: 1, scale: 1, x: 0 }}
-                        transition={{ delay: 0.8, duration: 0.4 }}
-                        className="absolute -left-32 bottom-2 w-28 rounded-xl px-3 py-2 text-[9px] leading-tight sm:-left-40 sm:bottom-4 sm:w-36 sm:text-[11px]"
-                        style={{
-                          background: isDark ? 'rgba(17,22,49,0.9)' : 'rgba(255,255,255,0.95)',
-                          border: `1px solid ${isDark ? 'rgba(148,163,184,0.12)' : 'rgba(0,0,0,0.08)'}`,
-                          color: isDark ? '#e2e8f0' : '#1e293b',
-                          boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
-                        }}
-                      >
-                        <span className="font-medium">Octo:</span> Let me show you how I plan your studies! 🐙
-                        {/* Triangle pointer */}
-                        <div className="absolute -right-1.5 bottom-3 h-0 w-0" style={{
-                          borderTop: '5px solid transparent',
-                          borderBottom: '5px solid transparent',
-                          borderLeft: `6px solid ${isDark ? 'rgba(17,22,49,0.9)' : 'rgba(255,255,255,0.95)'}`,
-                        }} />
-                      </motion.div>
-                    </div>
-                  </motion.div>
-
-                  {/* Play button overlay */}
-                  <motion.div
-                    className="absolute inset-0 flex items-center justify-center"
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    <motion.div
-                      className="flex h-16 w-16 cursor-pointer items-center justify-center rounded-full sm:h-20 sm:w-20"
-                      style={{
-                        background: 'rgba(99,102,241,0.85)',
-                        backdropFilter: 'blur(8px)',
-                        boxShadow: '0 0 40px rgba(99,102,241,0.4)',
-                      }}
-                      animate={{ scale: [1, 1.06, 1] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                    >
-                      <svg className="ml-1 h-7 w-7 text-white sm:h-8 sm:w-8" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
-                    </motion.div>
-                  </motion.div>
-
-                  {/* Bottom gradient overlay */}
-                  <div className="absolute bottom-0 left-0 right-0 h-16" style={{
-                    background: isDark
-                      ? 'linear-gradient(transparent, rgba(6,9,24,0.4))'
-                      : 'linear-gradient(transparent, rgba(244,242,238,0.3))',
-                  }} />
-                </div>
+            <ScrollReveal preset="scaleIn" delay={0.15}>
+              <div className="mt-12">
+                <ProductDemo />
               </div>
             </ScrollReveal>
           </section>
@@ -323,7 +173,6 @@ export function LandingPage() {
         <footer className="relative border-t py-10" style={{ borderColor: isDark ? 'rgba(148,163,184,0.08)' : 'rgba(0,0,0,0.04)' }}>
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <div className="flex flex-col gap-6 sm:flex-row sm:justify-between">
-              {/* Brand */}
               <div>
                 <div className="flex items-center gap-2">
                   <div className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold" style={{ background: '#6366f1', color: '#fff' }}>Ev</div>
@@ -334,7 +183,6 @@ export function LandingPage() {
                 </p>
               </div>
 
-              {/* Links */}
               <div className="flex gap-12">
                 <div>
                   <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-ink-3">Product</p>
@@ -363,7 +211,6 @@ export function LandingPage() {
               </div>
             </div>
 
-            {/* Bottom bar */}
             <div className="mt-8 flex flex-col items-center justify-between gap-2 border-t pt-6 sm:flex-row" style={{ borderColor: isDark ? 'rgba(148,163,184,0.06)' : 'rgba(0,0,0,0.04)' }}>
               <p className="text-[11px] text-ink-3">
                 © 2026 Eduvance. All rights reserved. Built with 🧠 for students who refuse to guess.
