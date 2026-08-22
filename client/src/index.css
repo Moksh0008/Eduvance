@@ -68,8 +68,13 @@
 }
 
 /* === Theme transition === */
-html {
-  transition: background-color 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+html, body, #root {
+  transition: background-color 0.7s cubic-bezier(0.22, 1, 0.36, 1), color 0.5s ease;
+}
+
+/* Smooth color transitions for theme-aware properties */
+.card, .glass, [style*="background"], [style*="color"] {
+  transition: background-color 0.5s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
 }
 
 @layer base {
@@ -263,4 +268,44 @@ a.bg-success {
   height: 100vh;
   z-index: 50;
   pointer-events: none;
+}
+
+/* Button ripple effect */
+@keyframes ripple-expand {
+  0% { transform: scale(0); opacity: 0.5; }
+  100% { transform: scale(4); opacity: 0; }
+}
+
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+.btn-ripple::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+  transform: scale(0);
+  opacity: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+.btn-ripple:active::after {
+  animation: ripple-expand 0.5s ease-out;
+}
+
+/* Card glow on hover */
+@keyframes card-glow-pulse {
+  0%, 100% { box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03); }
+  50% { box-shadow: 0 4px 24px rgba(0,0,0,0.06), 0 8px 40px var(--color-glow); }
+}
+
+/* Icon breathing animation */
+@keyframes icon-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.icon-breathe {
+  animation: icon-breathe 3s ease-in-out infinite;
 }

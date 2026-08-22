@@ -13,6 +13,7 @@ import { DemoBanner } from '../components/domain/ModeBanners'
 import { StudyRecommendation } from '../components/domain/StudyRecommendation'
 import { ScrollReveal, StaggerChildren, StaggerItem } from '../components/ui/ScrollReveal'
 import { StreakDisplay, StreakReminder } from '../components/ui/StreakDisplay'
+import { CountUp } from '../components/ui/CountUp'
 import { useAppData } from '../hooks/useAppData'
 import { useAppState } from '../context/AppState'
 
@@ -266,6 +267,11 @@ export function DashboardPage() {
 }
 
 function MetricCard({ emoji, label, value, unit = '', hint }) {
+  // Parse numeric value for count-up animation
+  const numericValue = parseFloat(String(value).replace(/[^0-9.]/g, ''))
+  const isNumeric = !isNaN(numericValue) && !String(value).includes('/')
+  const prefix = String(value).startsWith('-') ? '-' : ''
+
   return (
     <motion.div
       whileHover={{ y: -3, scale: 1.01 }}
@@ -277,11 +283,21 @@ function MetricCard({ emoji, label, value, unit = '', hint }) {
         boxShadow: '0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03), 0 0 40px var(--color-glow)',
       }}
     >
-      <div className="flex items-start justify-between">
+      {/* Hover glow overlay */}
+      <div className="absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        style={{ background: 'var(--color-accent-glow)', pointerEvents: 'none' }} />
+      <div className="relative flex items-start justify-between">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-3">{label}</p>
           <p className="mt-2 tabular text-3xl font-semibold text-ink">
-            {value}<span className="text-lg text-ink-2">{unit}</span>
+            {isNumeric ? (
+              <>
+                {prefix}<CountUp to={numericValue} duration={1200} />
+                <span className="text-lg text-ink-2">{unit}</span>
+              </>
+            ) : (
+              <>{value}<span className="text-lg text-ink-2">{unit}</span></>
+            )}
           </p>
           {hint && <p className="mt-1 text-xs text-ink-3">{hint}</p>}
         </div>
