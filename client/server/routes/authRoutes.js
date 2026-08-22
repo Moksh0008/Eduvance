@@ -18,13 +18,28 @@ authRoutes.post('/verify-otp', verifyOTP)
 authRoutes.post('/resend-otp', resendOTP)
 authRoutes.post('/refresh', authMiddleware, refreshToken)
 
+// Helper to get the correct redirect URI (must match Google Cloud Console exactly)
+function getGoogleRedirectUri() {
+  // Use explicit env var if set (RECOMMENDED for production)
+  if (process.env.GOOGLE_REDIRECT_URI) {
+    return process.env.GOOGLE_REDIRECT_URI
+  }
+  // Fallback to Render URL
+  if (process.env.RENDER_EXTERNAL_URL) {
+    return `${process.env.RENDER_EXTERNAL_URL}/api/auth/google/callback`
+  }
+  // Fallback for local development
+  return 'http://localhost:5000/api/auth/google/callback'
+}
+
 // Google OAuth — redirects to Google login
 authRoutes.get('/google', (req, res) => {
   const clientId = process.env.GOOGLE_CLIENT_ID
   if (!clientId) {
     return res.status(503).json({ success: false, message: 'Google sign-in not configured' })
   }
-  const redirectUri = `${req.protocol}://${req.get('host')}/api/auth/google/callback`
+  const redirectUri = getGoogleRedirectUri()
+  console.log('Google OAuth redirect_uri:', redirectUri)
   const scope = 'email profile'
   const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=${encodeURIComponent(scope)}&access_type=offline`
   res.redirect(url)
@@ -43,6 +58,8 @@ authRoutes.get('/google/callback', asyncHandler(async (req, res) => {
     return res.redirect('/login?error=not_configured')
   }
 
+  const redirectUri = getGoogleRedirectUri()
+
   // Exchange code for tokens
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
@@ -51,7 +68,7 @@ authRoutes.get('/google/callback', asyncHandler(async (req, res) => {
       code,
       client_id: clientId,
       client_secret: clientSecret,
-      redirect_uri: `${req.protocol}://${req.get('host')}/api/auth/google/callback`,
+      redirect_uri: redirectUri,
       grant_type: 'authorization_code',
     }),
   })
