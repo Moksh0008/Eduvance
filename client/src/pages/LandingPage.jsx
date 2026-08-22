@@ -36,7 +36,7 @@ function SlideShow() {
   return (
     <div className="relative w-full max-w-md">
       <div className="relative h-[200px] flex items-center justify-center overflow-hidden rounded-2xl"
-           style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+           style={{ background: 'rgba(10,14,40,0.5)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
         <AnimatePresence mode="wait">
           <motion.div key={active}
             initial={{ opacity: 0, scale: 0.9, y: 10 }}
@@ -120,7 +120,7 @@ export function LandingPage() {
                 {features.map((f) => (
                   <motion.span key={f.text} whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.97 }}
                     className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-ink-2"
-                    style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    style={{ background: 'rgba(10,14,40,0.5)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.1)' }}>
                     <span>{f.emoji}</span>{f.text}
                   </motion.span>
                 ))}
@@ -181,7 +181,7 @@ export function LandingPage() {
                     viewport={{ once: true }} transition={{ delay: i * 0.05 }}
                     whileHover={{ y: -4, scale: 1.02 }}
                     className="group flex flex-col items-center gap-2 rounded-2xl p-5 text-center transition-all"
-                    style={{ background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    style={{ background: 'rgba(10,14,40,0.55)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 8px 32px rgba(0,0,0,0.2)' }}>
                     <motion.span className="text-3xl"
                       whileHover={{ scale: 1.2, rotate: [0, -8, 8, 0] }}
                       transition={{ duration: 0.4 }}>{f.emoji}</motion.span>
