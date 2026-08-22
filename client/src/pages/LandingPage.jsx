@@ -5,6 +5,7 @@ import { StudyMascot } from '../components/ui/StudyMascot'
 import { StartPreparingButton } from '../components/auth/StartPreparingButton'
 import { Button } from '../components/ui/Button'
 import { CinematicScroll } from '../components/domain/CinematicScroll'
+import { StudyWatermark } from '../components/ui/StudyWatermark'
 import { Link } from 'react-router-dom'
 
 /* ═══ SLIDESHOW DATA ═══ */
@@ -55,11 +56,7 @@ function SlideShow() {
             </div>
           </motion.div>
         </AnimatePresence>
-        <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: 'var(--color-line-2)' }}>
-          <motion.div className="h-full rounded-full" style={{ background: slides[active].color }}
-            key={active} initial={{ width: '0%' }} animate={{ width: '100%' }}
-            transition={{ duration: 3, ease: 'linear' }} />
-        </div>
+
       </div>
       <div className="mt-4 flex justify-center gap-2">
         {slides.map((_, i) => (
@@ -76,6 +73,9 @@ function SlideShow() {
 export function LandingPage() {
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-canvas)' }}>
+      {/* Study watermark background — only on landing */}
+      <StudyWatermark />
+
       {/* Cinematic scroll as FIXED background — plays as you scroll the page */}
       <CinematicScroll />
 
@@ -97,26 +97,20 @@ export function LandingPage() {
 
               <motion.h1 initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 0.5 }}
-                className="mt-8 max-w-2xl font-serif text-4xl leading-[1.1] text-ink sm:text-5xl lg:text-6xl">
+                className="mt-6 max-w-xl font-serif text-4xl leading-[1.1] text-ink sm:text-5xl lg:text-6xl">
                 Stop guessing<br /><span className="gradient-text">what to study.</span>
               </motion.h1>
 
-              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                transition={{ delay: 0.35, duration: 0.4 }}
-                className="mt-4 max-w-lg text-sm text-ink-2 sm:text-base">
-                Eduvance decides what, when, and how long — then replans when your performance changes.
-              </motion.p>
-
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.45, duration: 0.4 }}
-                className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                transition={{ delay: 0.35, duration: 0.4 }}
+                className="mt-6 flex flex-wrap items-center justify-center gap-3">
                 <StartPreparingButton size="lg" continueLabel="Continue Preparing" />
                 <Button as={Link} to="/login?next=/dashboard" variant="secondary" size="lg">Open dashboard</Button>
               </motion.div>
 
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                transition={{ delay: 0.6, duration: 0.4 }}
-                className="mt-8 flex flex-wrap justify-center gap-2">
+                transition={{ delay: 0.5, duration: 0.4 }}
+                className="mt-6 flex flex-wrap justify-center gap-2">
                 {features.map((f) => (
                   <motion.span key={f.text} whileHover={{ scale: 1.05, y: -2 }} whileTap={{ scale: 0.97 }}
                     className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-ink-2"
@@ -132,7 +126,7 @@ export function LandingPage() {
           <div style={{ height: '80vh' }} />
 
           {/* ── SEE IT IN ACTION ── */}
-          <section className="relative px-4 py-20 sm:px-6">
+          <section className="relative px-4 py-16 sm:px-6">
             <div className="mx-auto flex max-w-6xl flex-col items-center gap-10 lg:flex-row lg:items-center lg:gap-16">
               <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }} className="flex-1 text-center lg:text-left">
@@ -158,7 +152,7 @@ export function LandingPage() {
           </section>
 
           {/* ── FEATURE GRID ── */}
-          <section className="px-4 py-20 sm:px-6">
+          <section className="px-4 py-16 sm:px-6">
             <div className="mx-auto max-w-4xl">
               <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }} className="text-center">
@@ -194,7 +188,7 @@ export function LandingPage() {
           </section>
 
           {/* ── FINAL CTA ── */}
-          <section className="relative px-4 py-20 text-center sm:px-6">
+          <section className="relative px-4 py-16 text-center sm:px-6">
             <div className="pointer-events-none absolute inset-0">
               <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[300px] w-[500px] rounded-full bg-accent/[0.04] blur-[120px]" />
             </div>

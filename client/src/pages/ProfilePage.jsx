@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import { PageHeader } from '../components/ui/PageHeader'
 import { Button } from '../components/ui/Button'
+import { AvatarDisplay, AvatarPicker } from '../components/ui/AvatarPicker'
 import { useAuth } from '../context/AppState'
 import { useAppData } from '../hooks/useAppData'
 import { DemoBanner } from '../components/domain/ModeBanners'
@@ -10,15 +13,42 @@ export function ProfilePage() {
   const data = useAppData()
   const navigate = useNavigate()
   const student = data.student
+  const [showPicker, setShowPicker] = useState(false)
+  const [avatarId, setAvatarId] = useState(() => {
+    try { return localStorage.getItem('edu-avatar') || null } catch { return null }
+  })
+
+  function handleAvatarSelect(id) {
+    setAvatarId(id)
+    try { localStorage.setItem('edu-avatar', id) } catch {}
+    // Force navbar to re-render by reloading
+    window.dispatchEvent(new Event('avatar-changed'))
+  }
 
   return (
     <div>
       <DemoBanner />
-      <PageHeader
-        eyebrow="Profile"
-        title={user?.name || student.name}
-        description="Signed in with a JWT session. Preparation is stored per account in MongoDB."
-      />
+
+      {/* Avatar + Name header */}
+      <div className="mb-8 flex items-center gap-5">
+        <motion.button
+          whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}
+          onClick={() => setShowPicker(true)}
+          className="relative group"
+          title="Change avatar"
+        >
+          <AvatarDisplay avatarId={avatarId} size={72} />
+          <div className="absolute inset-0 rounded-full flex items-center justify-center bg-canvas/60 opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="text-lg">✏️</span>
+          </div>
+        </motion.button>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-accent-2">Profile</p>
+          <h1 className="font-serif text-3xl text-ink">{user?.name || student.name}</h1>
+          <p className="mt-1 text-sm text-ink-3">Signed in with a JWT session</p>
+        </div>
+      </div>
+
       <div className="card max-w-lg p-6">
         <dl className="text-sm">
           <Row label="Email" value={user?.email || student.email} />
@@ -43,6 +73,14 @@ export function ProfilePage() {
           Log out
         </Button>
       </div>
+
+      {showPicker && (
+        <AvatarPicker
+          currentAvatar={avatarId}
+          onSelect={handleAvatarSelect}
+          onClose={() => setShowPicker(false)}
+        />
+      )}
     </div>
   )
 }

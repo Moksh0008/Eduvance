@@ -6,7 +6,6 @@ import { Sidebar } from './Sidebar'
 import { Navbar } from './Navbar'
 import { ParticleBackground } from '../ui/ParticleBackground'
 import { FloatingSymbols } from '../ui/FloatingSymbols'
-import { StudyWatermark } from '../ui/StudyWatermark'
 import { EdgeScrollbar } from '../ui/EdgeScrollbar'
 import { PageMascot } from '../ui/PageMascot'
 import { useTheme } from '../../context/ThemeContext'
@@ -52,8 +51,7 @@ export function AppShell() {
       {/* Particle background */}
       <ParticleBackground />
 
-      {/* Study watermark background */}
-      <StudyWatermark />
+
 
       {/* Floating educational symbols */}
       <FloatingSymbols />

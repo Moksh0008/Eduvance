@@ -5,6 +5,7 @@ import './index.css'
 import App from './App.jsx'
 import { AppStateProvider } from './context/AppState.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
+import { FontSizeProvider } from './context/FontSizeContext.jsx'
 import { Cursor } from './components/cursor/Cursor.jsx'
 
 createRoot(document.getElementById('root')).render(
@@ -12,8 +13,10 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <ThemeProvider>
         <AppStateProvider>
-          <Cursor />
-          <App />
+          <FontSizeProvider>
+            <Cursor />
+            <App />
+          </FontSizeProvider>
         </AppStateProvider>
       </ThemeProvider>
     </BrowserRouter>
