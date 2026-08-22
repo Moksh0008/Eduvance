@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useTheme } from '../../context/ThemeContext'
 
 const OCTO_IMG = '/mascot/octo-140.webp'
@@ -67,6 +67,60 @@ function OctoGuide({ message, position = 'right', delay = 0.5 }) {
   )
 }
 
+/* ═══ BACKGROUND DOODLES ═══ */
+function Doodles({ items }) {
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      {items.map((d, i) => (
+        <motion.div key={i}
+          style={{ position: 'absolute', left: d.x, top: d.y, fontSize: d.size || 24, opacity: 0.08, color: 'white' }}
+          animate={{ y: [0, -10, 0], rotate: [0, d.rot || 5, 0] }}
+          transition={{ duration: d.dur || 6, delay: i * 0.4, repeat: Infinity, ease: 'easeInOut' }}
+        >{d.icon}</motion.div>
+      ))}
+    </div>
+  )
+}
+
+/* Per-scene doodle sets */
+const DOODLES = {
+  problem: [
+    { icon: '📖', x: '8%', y: '15%', size: 30 }, { icon: '📚', x: '85%', y: '20%', size: 28 },
+    { icon: '😰', x: '5%', y: '70%', size: 22 }, { icon: '⏰', x: '90%', y: '65%', size: 26 },
+    { icon: '📝', x: '15%', y: '85%', size: 20 }, { icon: '💀', x: '80%', y: '80%', size: 24 },
+  ],
+  'octo-helps': [
+    { icon: '🐙', x: '5%', y: '10%', size: 32 }, { icon: '✨', x: '90%', y: '15%', size: 22 },
+    { icon: '💪', x: '10%', y: '80%', size: 24 }, { icon: '🤝', x: '85%', y: '75%', size: 26 },
+    { icon: '🫂', x: '50%', y: '8%', size: 20 }, { icon: '💜', x: '75%', y: '85%', size: 22 },
+  ],
+  analyzing: [
+    { icon: '🧠', x: '8%', y: '12%', size: 30 }, { icon: '📄', x: '88%', y: '18%', size: 24 },
+    { icon: '🔍', x: '5%', y: '75%', size: 26 }, { icon: '📊', x: '92%', y: '70%', size: 22 },
+    { icon: '🧩', x: '20%', y: '88%', size: 20 }, { icon: '💡', x: '78%', y: '85%', size: 24 },
+  ],
+  planning: [
+    { icon: '📅', x: '8%', y: '10%', size: 28 }, { icon: '🗓', x: '88%', y: '15%', size: 26 },
+    { icon: '⏱', x: '5%', y: '78%', size: 24 }, { icon: '✅', x: '90%', y: '72%', size: 22 },
+    { icon: '📋', x: '15%', y: '88%', size: 20 }, { icon: '🎯', x: '82%', y: '85%', size: 24 },
+  ],
+  quizzing: [
+    { icon: '🎯', x: '8%', y: '12%', size: 28 }, { icon: '❓', x: '88%', y: '18%', size: 26 },
+    { icon: '✅', x: '5%', y: '75%', size: 24 }, { icon: '❌', x: '92%', y: '70%', size: 22 },
+    { icon: '🧮', x: '18%', y: '88%', size: 20 }, { icon: '📝', x: '80%', y: '85%', size: 24 },
+  ],
+  adapting: [
+    { icon: '⚡', x: '8%', y: '10%', size: 28 }, { icon: '🔄', x: '88%', y: '15%', size: 26 },
+    { icon: '📈', x: '5%', y: '78%', size: 24 }, { icon: '📉', x: '90%', y: '72%', size: 22 },
+    { icon: '🔧', x: '15%', y: '88%', size: 20 }, { icon: '🎯', x: '82%', y: '85%', size: 24 },
+  ],
+  success: [
+    { icon: '🎉', x: '8%', y: '10%', size: 30 }, { icon: '🏆', x: '88%', y: '15%', size: 28 },
+    { icon: '⭐', x: '5%', y: '78%', size: 26 }, { icon: '🎊', x: '92%', y: '72%', size: 24 },
+    { icon: '💯', x: '18%', y: '88%', size: 22 }, { icon: '🎓', x: '80%', y: '85%', size: 26 },
+  ],
+}
+
 /* ═══ CHARACTER WRAPPER ═══ */
 function Char({ src, size = 180, style = {}, anim = {} }) {
   return (
@@ -84,7 +138,8 @@ function Char({ src, size = 180, style = {}, anim = {} }) {
 /* ═══ SCENE 1: PROBLEM — tensed student ═══ */
 function SceneProblem() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 20px', minHeight: 450 }}>
+    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 20px', minHeight: 450 }}>
+      <Doodles items={DOODLES.problem} />
       {/* Floating subject books */}
       <div style={{ position: 'relative', width: '100%', maxWidth: 500, height: 70, marginBottom: 8 }}>
         {[
@@ -120,6 +175,7 @@ function SceneProblem() {
 function SceneOctoHelps() {
   return (
     <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 20px', minHeight: 450 }}>
+      <Doodles items={DOODLES['octo-helps']} />
       <OctoGuide message="Hey! Don't worry — I'm Octo, your AI study buddy! Let me help you 🐙" position="right" delay={0.3} />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap', justifyContent: 'center', marginTop: 40 }}>
@@ -154,6 +210,7 @@ function SceneOctoHelps() {
 function SceneAnalyzing() {
   return (
     <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 20px', minHeight: 450 }}>
+      <Doodles items={DOODLES.analyzing} />
       <OctoGuide message="I read your syllabus & notes — every topic, every gap! 📄" position="left" delay={0.4} />
 
       {/* Brain icon */}
@@ -196,6 +253,7 @@ function ScenePlanning() {
   ]
   return (
     <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 20px', minHeight: 450 }}>
+      <Doodles items={DOODLES.planning} />
       <OctoGuide message="Here's your personalized study plan — optimized just for you! 📅" position="right" delay={0.4} />
 
       <motion.div style={{
@@ -234,6 +292,7 @@ function SceneQuizzing() {
   }, [])
   return (
     <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 20px', minHeight: 450 }}>
+      <Doodles items={DOODLES.quizzing} />
       <OctoGuide message="I pick questions from YOUR notes — not random stuff! 🎯" position="left" delay={0.4} />
 
       <motion.div style={{
@@ -270,6 +329,7 @@ function SceneQuizzing() {
 function SceneAdapting() {
   return (
     <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 20px', minHeight: 450 }}>
+      <Doodles items={DOODLES.adapting} />
       <OctoGuide message="Oops — weak topic found? I'm adjusting your plan now! ⚡" position="right" delay={0.4} />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap', justifyContent: 'center', marginTop: 30 }}>
@@ -317,6 +377,7 @@ function SceneAdapting() {
 function SceneSuccess() {
   return (
     <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 20px', minHeight: 450 }}>
+      <Doodles items={DOODLES.success} />
       {/* Confetti */}
       {Array.from({ length: 14 }).map((_, i) => (
         <motion.div key={i} style={{
@@ -387,12 +448,9 @@ export function ProductDemo() {
 
   return (
     <div ref={ref} style={{ maxWidth: 900, margin: '0 auto', borderRadius: 24, overflow: 'hidden', boxShadow: isDark ? '0 20px 80px rgba(99,102,241,0.2)' : '0 20px 60px rgba(0,0,0,0.15)' }}>
-      <AnimatePresence mode="wait">
-        <motion.div key={scene} style={{ background: cur.bg, minHeight: 480, position: 'relative' }}
-          initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 1.02 }} transition={{ duration: 0.5 }}>
-          <Comp />
-        </motion.div>
-      </AnimatePresence>
+      <div style={{ background: cur.bg, minHeight: 480, position: 'relative' }}>
+        <Comp />
+      </div>
 
       {/* Controls */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 24px', background: isDark ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)' }}>
