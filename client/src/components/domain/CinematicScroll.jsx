@@ -523,6 +523,7 @@ export function CinematicScroll({ scrollHeight = 600 }) {
           position: absolute; inset: 0; width: 100%; height: 100%;
           display: flex; align-items: center; justify-content: center;
           overflow: hidden; background: ${theme.stageBg};
+          opacity: 0.35;
         }
         .cs-stage {
           position: relative; width: min(92vw, 158vh); height: min(80vh, 90vw * 0.625);
