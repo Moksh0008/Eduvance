@@ -26,6 +26,7 @@ import { HowItWorksPage } from './pages/HowItWorksPage'
 import { WhyEduvancePage } from './pages/WhyEduvancePage'
 import { PageTransition } from './components/ui/PageTransition'
 import { RequireAuth } from './components/auth/RequireAuth'
+import { EduvanceMascot } from './components/mascot/EduvanceMascot'
 
 function AnimatedPage({ children }) {
   return <PageTransition>{children}</PageTransition>
@@ -51,6 +52,7 @@ export default function App() {
   const location = useLocation()
 
   return (
+    <>
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<LandingPage />} />
@@ -82,5 +84,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AnimatePresence>
+    <EduvanceMascot />
+    </>
   )
 }
