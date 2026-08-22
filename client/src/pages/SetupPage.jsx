@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { SetupShell } from '../components/layout/SetupShell'
@@ -9,6 +9,7 @@ import { AdaptiveLoop } from '../components/domain/AdaptiveLoop'
 import { runStages } from '../services/simulate'
 import { fileMeta, HOUR_PRESETS } from '../services/workspace'
 import { useAppState } from '../context/AppState'
+import { aiApi } from '../services/aiApi'
 
 const TOTAL = 4
 const UPLOAD_STAGES = [
@@ -166,6 +167,29 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile }) {
     setPhase('run')
     setDone(false)
     setCurrent(0)
+    // Try to extract exam dates from timetable PDF via AI
+    try {
+      const text = await file.text()
+      if (text && text.trim().length > 20) {
+        const result = await aiApi.analyzeSyllabus(text, 'timetable')
+        if (result?.subjects?.length) {
+          // Try to extract exam dates from the analyzed data
+          const extracted = result.subjects.map(s => ({
+            id: `sub_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+            name: s.name || '',
+            date: s.examDate || '',
+            time: s.examTime || '10:00',
+            marks: s.marks || 100,
+          })).filter(s => s.name)
+          if (extracted.length > 0) {
+            setExams(extracted)
+            syncSubjectsFromExams(extracted)
+          }
+        }
+      }
+    } catch {
+      // AI extraction is best-effort — student can enter manually
+    }
     await runStages(UPLOAD_STAGES, (i) => setCurrent(i), 520)
     setTimetableFile(fileMeta(file))
     setDone(true)
@@ -299,14 +323,95 @@ function SubjectSyllabus({ subject, onChange }) {
   const [phase, setPhase] = useState(subject.syllabusFile ? 'stored' : 'idle')
   const [current, setCurrent] = useState(0)
   const [done, setDone] = useState(Boolean(subject.syllabusFile))
+  const [aiAnalyzing, setAiAnalyzing] = useState(false)
+  const [aiError, setAiError] = useState('')
+  const [syllabusText, setSyllabusText] = useState('')
+  const [showTextMode, setShowTextMode] = useState(false)
 
   async function onFile(file) {
     setPhase('run')
     setDone(false)
+    setAiError('')
+    // Upload file for RAG storage
+    try {
+      await aiApi.uploadMaterial(file, subject.name)
+    } catch {
+      // RAG upload is best-effort — continue with local storage
+    }
+    // Also try to extract text and analyze with AI
+    setAiAnalyzing(true)
+    try {
+      let text = ''
+      if (file.type === 'application/pdf') {
+        // Read PDF as text for analysis
+        text = await file.text()
+      } else {
+        text = await file.text()
+      }
+      if (text && text.trim().length > 50) {
+        const result = await aiApi.analyzeSyllabus(text, subject.name)
+        if (result?.subjects?.[0]?.units) {
+          applyAiTopics(result.subjects[0].units)
+          setDone(true)
+          setPhase('stored')
+          setAiAnalyzing(false)
+          onChange({ ...subject, syllabusFile: fileMeta(file) })
+          return
+        }
+      }
+    } catch (err) {
+      setAiError(err.message || 'AI analysis failed — you can add topics manually below')
+    }
+    // Fallback: just store the file metadata
     await runStages(UPLOAD_STAGES, (i) => setCurrent(i), 480)
     onChange({ ...subject, syllabusFile: fileMeta(file) })
     setDone(true)
     setPhase('stored')
+    setAiAnalyzing(false)
+  }
+
+  async function analyzeText() {
+    if (!syllabusText.trim()) return
+    setAiAnalyzing(true)
+    setAiError('')
+    try {
+      const result = await aiApi.analyzeSyllabus(syllabusText, subject.name)
+      if (result?.subjects?.[0]?.units) {
+        applyAiTopics(result.subjects[0].units)
+      } else if (result?.subjects?.length) {
+        // Fallback: flat topic list
+        const flatUnits = [{
+          id: `u_${Date.now()}`,
+          name: 'Syllabus',
+          topics: (result.subjects[0]?.units?.flatMap(u => u.topics || []) || []).map((t, i) => ({
+            id: `t_${Date.now()}_${i}`,
+            name: t.name || '',
+            difficulty: t.difficulty || 'medium',
+            importance: t.importance || 'medium',
+          })),
+        }]
+        applyAiTopics(flatUnits)
+      }
+    } catch (err) {
+      setAiError(err.message || 'AI analysis failed — add topics manually')
+    }
+    setAiAnalyzing(false)
+  }
+
+  function applyAiTopics(units) {
+    const mapped = units.map((u, i) => ({
+      id: `u_ai_${Date.now()}_${i}`,
+      name: u.name || `Unit ${i + 1}`,
+      topics: (u.topics || []).map((t, j) => ({
+        id: `t_ai_${Date.now()}_${i}_${j}`,
+        name: t.name || '',
+        difficulty: t.difficulty || 'medium',
+        importance: t.importance || 'medium',
+        estimatedMinutes: t.estimatedMinutes || 60,
+        prerequisites: t.prerequisites || [],
+      })),
+    }))
+    onChange({ ...subject, units: mapped })
   }
 
   function addTopic() {
@@ -339,24 +444,85 @@ function SubjectSyllabus({ subject, onChange }) {
     })
   }
 
+  const topicCount = (subject.units || []).reduce((n, u) => n + (u.topics || []).filter(t => t.name).length, 0)
+
   return (
     <article className="border-t border-line pt-6">
       <h2 className="text-xl font-semibold">{subject.name}</h2>
       <p className="text-xs text-ink-3">
         {subject.examDate || 'Date TBD'} · {subject.marks} marks
+        {topicCount > 0 && <span className="ml-2 text-green-500">· {topicCount} topics extracted</span>}
       </p>
+
+      {/* Upload or paste syllabus */}
       <div className="mt-4">
-        <FileDrop label={`Upload syllabus for ${subject.name}`} hint="PDF / notes / document" onFile={onFile} disabled={phase === 'run'} />
-        {phase !== 'idle' ? <StageList stages={UPLOAD_STAGES} current={current} complete={done} /> : null}
-        {subject.syllabusFile ? (
+        <div className="flex gap-2 mb-3">
+          <Button variant="secondary" size="sm" onClick={() => setShowTextMode(false)}>
+            📄 Upload PDF
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setShowTextMode(true)}>
+            ✏️ Paste syllabus text
+          </Button>
+        </div>
+
+        {!showTextMode ? (
+          <>
+            <FileDrop label={`Upload syllabus for ${subject.name}`} hint="PDF / notes / document — AI will extract topics automatically" onFile={onFile} disabled={phase === 'run' || aiAnalyzing} />
+            {phase !== 'idle' && !aiAnalyzing ? <StageList stages={UPLOAD_STAGES} current={current} complete={done} /> : null}
+          </>
+        ) : (
+          <div>
+            <textarea
+              className="w-full border border-line bg-surface px-3 py-2 text-sm" rows={6}
+              placeholder={`Paste your ${subject.name} syllabus here...\n\nExample:\nUnit 1: Normalization\n- 1NF, 2NF, 3NF, BCNF\n- Functional Dependencies\n- Decomposition\n\nUnit 2: SQL\n- SELECT queries\n- JOINs\n- Subqueries\n- Views`}
+              value={syllabusText}
+              onChange={(e) => setSyllabusText(e.target.value)}
+            />
+            <Button
+              variant="accent"
+              size="sm"
+              className="mt-2"
+              onClick={analyzeText}
+              disabled={aiAnalyzing || !syllabusText.trim()}
+            >
+              {aiAnalyzing ? '🔄 Analyzing with AI...' : '🧠 Analyze syllabus with AI'}
+            </Button>
+          </div>
+        )}
+
+        {/* AI analyzing spinner */}
+        {aiAnalyzing && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 flex items-center gap-3 rounded-lg bg-accent/[0.06] px-4 py-3">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+            <span className="text-sm text-accent-2">AI is analyzing your syllabus and extracting topics...</span>
+          </motion.div>
+        )}
+
+        {/* AI error */}
+        {aiError && (
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3 text-xs text-red-500">
+            {aiError}
+          </motion.p>
+        )}
+
+        {/* Uploaded file info */}
+        {subject.syllabusFile && !aiAnalyzing && (
           <p className="mt-3 text-sm text-ink-2">
-            <span className="font-medium text-ink">{subject.syllabusFile.name}</span> · Uploaded. Topic extraction waits
-            for the analysis engine.
+            <span className="font-medium text-ink">{subject.syllabusFile.name}</span> · Uploaded & indexed for RAG.
           </p>
-        ) : null}
+        )}
       </div>
+
+      {/* Topics editor */}
       <div className="mt-5">
-        <p className="text-xs font-semibold uppercase tracking-wider text-ink-3">Topics (used by Quiz and Planner)</p>
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold uppercase tracking-wider text-ink-3">
+            Topics (used by Quiz and Planner)
+          </p>
+          {topicCount > 0 && (
+            <span className="text-[10px] text-accent-2">AI-extracted — edit freely</span>
+          )}
+        </div>
         <div className="mt-2 flex flex-wrap gap-2">
           <Button variant="secondary" size="sm" onClick={addTopic}>
             Add topic
@@ -375,17 +541,27 @@ function SubjectSyllabus({ subject, onChange }) {
             />
             <div className="mt-2 space-y-2">
               {(unit.topics || []).map((topic) => (
-                <input
-                  key={topic.id}
-                  className="h-9 w-full max-w-md border border-line bg-surface px-2 text-sm"
-                  placeholder="Topic"
-                  value={topic.name}
-                  onChange={(e) =>
-                    patchUnit(unit.id, {
-                      topics: unit.topics.map((t) => (t.id === topic.id ? { ...t, name: e.target.value } : t)),
-                    })
-                  }
-                />
+                <div key={topic.id} className="flex items-center gap-2">
+                  <input
+                    className="h-9 flex-1 max-w-md border border-line bg-surface px-2 text-sm"
+                    placeholder="Topic"
+                    value={topic.name}
+                    onChange={(e) =>
+                      patchUnit(unit.id, {
+                        topics: unit.topics.map((t) => (t.id === topic.id ? { ...t, name: e.target.value } : t)),
+                      })
+                    }
+                  />
+                  {topic.difficulty && (
+                    <span className={`text-[9px] font-bold uppercase px-1.5 py-0.5 rounded ${
+                      topic.difficulty === 'hard' ? 'bg-red-100 text-red-600' :
+                      topic.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-600' :
+                      'bg-green-100 text-green-600'
+                    }`}>
+                      {topic.difficulty}
+                    </span>
+                  )}
+                </div>
               ))}
             </div>
             <Button
