@@ -1,0 +1,25 @@
+# Keep Render free tier alive by pinging every 10 minutes
+name: Keep Alive
+
+on:
+  schedule:
+    # Run every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend
+        run: |
+          echo "Pinging Render backend to keep it alive..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 https://eduvance-cbqy.onrender.com/api/health || echo "000")
+          echo "Response code: $response"
+          if [ "$response" = "200" ]; then
+            echo "✅ Server is alive"
+          elif [ "$response" = "503" ]; then
+            echo "⚠️ Server responded but degraded (might be cold starting)"
+          else
+            echo "❌ Server unreachable (code: $response)"
+          fi
