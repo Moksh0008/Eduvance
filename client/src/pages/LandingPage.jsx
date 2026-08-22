@@ -2,9 +2,7 @@ import { motion } from 'framer-motion'
 import { MarketingNav } from '../components/layout/MarketingNav'
 import { StudyMascot } from '../components/ui/OctoMascot'
 import { StartPreparingButton } from '../components/auth/StartPreparingButton'
-import { Button } from '../components/ui/Button'
 import { useTheme } from '../context/ThemeContext'
-import { Link } from 'react-router-dom'
 
 const features = [
   { emoji: '⚡', text: 'Priority engine' },
@@ -59,9 +57,8 @@ export function LandingPage() {
 
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.4 }}
-                className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                <StartPreparingButton size="lg" continueLabel="Continue Preparing" />
-                <Button as={Link} to="/login?next=/dashboard" variant="secondary" size="lg">Open dashboard</Button>
+                className="mt-8">
+                <StartPreparingButton size="lg" continueLabel="Get Started" />
               </motion.div>
 
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -85,9 +82,8 @@ export function LandingPage() {
               <span className="text-5xl">🎓</span>
               <h2 className="mt-4 font-serif text-3xl text-ink sm:text-4xl">Ready to stop guessing?</h2>
               <p className="mx-auto mt-3 max-w-md text-sm text-ink-2">Build your preparation strategy in minutes.</p>
-              <div className="mt-8 flex justify-center gap-3">
-                <StartPreparingButton size="lg" continueLabel="Continue Preparing" />
-                <Button as={Link} to="/login?next=/dashboard" variant="secondary" size="lg">Open dashboard</Button>
+              <div className="mt-8">
+                <StartPreparingButton size="lg" continueLabel="Get Started" />
               </div>
             </motion.div>
           </section>
