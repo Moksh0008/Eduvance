@@ -101,10 +101,10 @@ const PAGE_MESSAGES = {
     "Repetition is how memories get stronger.",
   ],
   '/quiz': [
-    "Ready? Let's see what you remember.",
-    "Don't worry about getting everything right.",
-    "Every wrong answer gives us useful information.",
-    "This is how we find your weak spots.",
+    "Ready? Let's crush this quiz! 💪",
+    "You've been studying hard — show what you know! 🎯",
+    "Time to prove yourself. You've got this! ✨",
+    "Let's see how much you've mastered! 🚀",
   ],
   '/quiz/play': [
     "Take your time.",

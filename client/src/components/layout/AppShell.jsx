@@ -6,7 +6,7 @@ import { Sidebar } from './Sidebar'
 import { Navbar } from './Navbar'
 import { ParticleBackground } from '../ui/ParticleBackground'
 import { FloatingSymbols } from '../ui/FloatingSymbols'
-import { EdgeScrollbar } from '../ui/EdgeScrollbar'
+
 import { useTheme } from '../../context/ThemeContext'
 
 /* Page-specific ambient glow colors */
@@ -102,8 +102,7 @@ export function AppShell() {
         Skip to content
       </a>
 
-      {/* Edge scrollbar */}
-      <EdgeScrollbar />
+
 
       <div className="relative z-10 flex min-h-screen">
         {/* Desktop sidebar — borderless, floating feel */}
