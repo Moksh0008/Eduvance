@@ -55,7 +55,7 @@ export function createApp() {
     }
 
     // Check Grok API key
-    checks.grok = process.env.XAI_API_KEY ? 'configured' : 'missing'
+    checks.grok = process.env.GROQ_API_KEY ? 'groq-ready' : (process.env.XAI_API_KEY ? 'xai-configured' : 'missing')
 
     // Server uptime
     checks.uptime = Math.round(process.uptime()) + 's'

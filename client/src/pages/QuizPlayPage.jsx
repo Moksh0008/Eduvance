@@ -68,7 +68,9 @@ export function QuizPlayPage() {
         })))
       })
       .catch((err) => {
-        setAiError(`AI quiz unavailable: ${err.message || 'Backend may be starting up'}. Using local questions.`)
+        const msg = err.message || err.toString() || 'Backend may be starting up'
+        console.error('[Quiz] AI generation failed:', msg)
+        setAiError(`AI quiz error: ${msg}. Using local questions as fallback.`)
       })
       .finally(() => setLoadingAi(false))
     return () => { cancelled = true }

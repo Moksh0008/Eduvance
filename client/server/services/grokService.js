@@ -1,34 +1,52 @@
 /* ═══════════════════════════════════════════════════
-   GROK SERVICE — Server-side AI integration via xAI API
+   AI SERVICE — Server-side AI integration
+   Supports xAI Grok and Groq (fallback)
    All AI calls happen here, never exposed to frontend
    ═══════════════════════════════════════════════════ */
 
-const GROK_BASE_URL = 'https://api.x.ai/v1'
+// Provider priority: Groq (free) → xAI (paid)
+const PROVIDERS = [
+  {
+    name: 'Groq',
+    baseUrl: 'https://api.groq.com/openai/v1',
+    getKey: () => process.env.GROQ_API_KEY,
+    model: 'llama-3.3-70b-versatile',
+  },
+  {
+    name: 'xAI',
+    baseUrl: 'https://api.x.ai/v1',
+    getKey: () => process.env.XAI_API_KEY,
+    model: 'grok-2-1212',
+  },
+]
 
-function getApiKey() {
-  const key = process.env.XAI_API_KEY
-  if (!key) throw new Error('XAI_API_KEY is missing. Add it to server/.env')
-  return key
+function getActiveProvider() {
+  for (const p of PROVIDERS) {
+    if (p.getKey()) return p
+  }
+  throw new Error('No AI provider configured. Add GROQ_API_KEY or XAI_API_KEY to server/.env')
 }
 
 /**
- * Call Grok API with a prompt and optional system instruction
+ * Call AI API with a prompt and optional system instruction
+ * Tries Groq first (free), falls back to xAI
  * @param {string} systemPrompt - System context/instruction
  * @param {string} userPrompt - User message
  * @param {object} options - Additional options
- * @returns {string} Raw text response from Grok
+ * @returns {string} Raw text response
  */
 export async function callGrok(systemPrompt, userPrompt, options = {}) {
-  const { temperature = 0.7, maxTokens = 2000, model = 'grok-2-1212' } = options
+  const { temperature = 0.7, maxTokens = 2000 } = options
+  const provider = getActiveProvider()
 
-  const response = await fetch(`${GROK_BASE_URL}/chat/completions`, {
+  const response = await fetch(`${provider.baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getApiKey()}`,
+      'Authorization': `Bearer ${provider.getKey()}`,
     },
     body: JSON.stringify({
-      model,
+      model: provider.model,
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt },
@@ -40,8 +58,8 @@ export async function callGrok(systemPrompt, userPrompt, options = {}) {
 
   if (!response.ok) {
     const err = await response.text()
-    console.error('Grok API error:', response.status, err)
-    throw new Error(`Grok API error (${response.status}): ${err}`)
+    console.error(`[${provider.name}] API error:`, response.status, err)
+    throw new Error(`${provider.name} API error (${response.status}): ${err}`)
   }
 
   const data = await response.json()
