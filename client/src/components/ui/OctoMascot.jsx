@@ -167,11 +167,41 @@ const EXPRESSIONS = {
   sleepy: { eyeType: 'closed', mouthType: 'yawn', blush: 0.3, brows: 'normal' },
 }
 
-function OctoSVG({ expression = 'happy', size = 80 }) {
+function OctoSVG({ expression = 'happy', size = 80, enable3D = true }) {
   const expr = EXPRESSIONS[expression] || EXPRESSIONS.happy
+  const [tilt, setTilt] = useState({ x: 0, y: 0 })
+  const [isHovered, setIsHovered] = useState(false)
+
+  function handleMouseMove(e) {
+    if (!enable3D) return
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = (e.clientX - rect.left) / rect.width - 0.5
+    const y = (e.clientY - rect.top) / rect.height - 0.5
+    setTilt({ x: y * -15, y: x * 15 })
+  }
+
+  function handleMouseLeave() {
+    setTilt({ x: 0, y: 0 })
+    setIsHovered(false)
+  }
 
   return (
-    <svg width={size} height={size} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <div
+      style={{
+        perspective: '600px',
+        perspectiveOrigin: '50% 50%',
+      }}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={handleMouseLeave}
+    >
+    <div style={{
+      transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) ${isHovered ? 'scale(1.08)' : 'scale(1)'}`,
+      transformStyle: 'preserve-3d',
+      transition: isHovered ? 'transform 0.1s ease-out' : 'transform 0.5s cubic-bezier(0.22,1,0.36,1)',
+      filter: isHovered ? `drop-shadow(0 ${8 + tilt.x}px ${16 + Math.abs(tilt.y)}px rgba(109,76,216,0.35))` : 'drop-shadow(0 4px 8px rgba(109,76,216,0.2))',
+    }}>
+    <svg width={size} height={size} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
       {/* Tentacles */}
       {[0, 1, 2, 3, 4, 5, 6, 7].map(i => {
         const angle = (i * 45 - 90) * Math.PI / 180
@@ -201,11 +231,12 @@ function OctoSVG({ expression = 'happy', size = 80 }) {
         return <circle key={`s${i}`} cx={x} cy={y} r="2" fill={C.bodyLight} opacity="0.5" />
       })}
 
-      {/* Body */}
+      {/* Body — base layer */}
       <ellipse cx="60" cy="68" rx="32" ry="28" fill={C.body} />
       <ellipse cx="60" cy="65" rx="30" ry="26" fill={C.bodyLight} />
 
-      {/* Face area */}
+      {/* Face area — raised layer */}
+      <g style={{ transform: 'translateZ(4px)' }}>
       <ellipse cx="60" cy="58" rx="24" ry="22" fill={C.eyeWhite} opacity="0.95" />
 
       {/* Glasses */}
@@ -309,8 +340,10 @@ function OctoSVG({ expression = 'happy', size = 80 }) {
       {/* Bow tie */}
       <path d="M54 78 L60 82 L66 78 L60 86Z" fill={C.bow} />
       <circle cx="60" cy="82" r="2" fill={C.highlight} />
+      </g>
 
-      {/* Graduation cap */}
+      {/* Graduation cap — topmost layer for 3D depth */}
+      <g style={{ transform: 'translateZ(8px)' }}>
       <polygon points="60,18 35,30 60,38 85,30" fill={C.cap} />
       <rect x="57" y="30" width="6" height="5" fill={C.capDark} />
       <circle cx="60" cy="18" r="3" fill={C.star} />
@@ -318,7 +351,10 @@ function OctoSVG({ expression = 'happy', size = 80 }) {
         animate={{ rotate: [0, 8, -8, 0] }} transition={{ duration: 2.5, repeat: Infinity }}
         style={{ transformOrigin: '60px 18px' }} />
       <circle cx="68" cy="12" r="2.5" fill={C.star} />
+      </g>
     </svg>
+    </div>
+    </div>
   )
 }
 
