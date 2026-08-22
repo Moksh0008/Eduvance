@@ -13,4 +13,10 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    // Inline assets smaller than 4KB
+    assetsInlineLimit: 4096,
+    // Warn on large chunks
+    chunkSizeWarningLimit: 300,
+  },
 })
