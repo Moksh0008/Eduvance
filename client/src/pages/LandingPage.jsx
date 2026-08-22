@@ -73,21 +73,7 @@ export function LandingPage() {
                 ))}
               </motion.div>
             </motion.div>
-          </section>
-
-          {/* ── FINAL CTA ── */}
-          <section className="relative px-4 py-24 text-center sm:px-6">
-            <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} className="relative">
-              <span className="text-5xl">🎓</span>
-              <h2 className="mt-4 font-serif text-3xl text-ink sm:text-4xl">Ready to stop guessing?</h2>
-              <p className="mx-auto mt-3 max-w-md text-sm text-ink-2">Build your preparation strategy in minutes.</p>
-              <div className="mt-8">
-                <StartPreparingButton size="lg" continueLabel="Get Started" />
-              </div>
-            </motion.div>
-          </section>
-        </main>
+          </section>        </main>
 
         <footer className="py-8">
           <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 text-xs text-ink-3 sm:flex-row sm:justify-between sm:px-6">

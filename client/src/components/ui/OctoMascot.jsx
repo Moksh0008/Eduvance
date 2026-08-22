@@ -3,31 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAppData } from '../../hooks/useAppData'
 import { getStreak } from '../../utils/streaks'
 
-/* ═══════════════════════════════════════════════════
-   OCTO — Curious mind, Happy learner
-   Purple octopus mascot with graduation cap & glasses
-   ═══════════════════════════════════════════════════ */
-
-// Color palette from the character sheet
 const C = {
-  body: '#6D4CD8',
-  bodyLight: '#9B72FF',
-  bodyDark: '#5A3DB8',
-  head: '#9B72FF',
-  eye: '#34495E',
-  eyeWhite: '#F7F9FC',
-  cap: '#2ECC71',
-  capDark: '#1a8a4a',
-  bow: '#FFD164',
-  cheek: '#FFB6B9',
-  cheekLight: '#FFD4D6',
-  highlight: '#FF8A3D',
-  beaker: '#00B4DB',
-  book: '#FF8A3D',
-  star: '#FFD164',
+  body: '#6D4CD8', bodyLight: '#9B72FF', bodyDark: '#5A3DB8',
+  eye: '#34495E', eyeWhite: '#F7F9FC',
+  cap: '#2ECC71', capDark: '#1a8a4a',
+  bow: '#FFD164', cheek: '#FFB6B9', highlight: '#FF8A3D', star: '#FFD164',
 }
 
-// ── Contextual messages with personality ──
 const octoMessages = {
   welcome: [
     "Hi! I'm Octo! 🐙 Let's learn together!",
@@ -107,25 +89,10 @@ const octoMessages = {
     "Your brain loves revisiting old topics! 🧠",
     "Spaced repetition is your superpower! ⚡",
   ],
-  profile: [
-    "Looking good! 🎓",
-    "Your avatar says a lot about you! 🐙",
-    "Keep your profile updated! ✏️",
-  ],
-  settings: [
-    "Make Eduvance yours! ⚙️",
-    "Customize everything! I don't mind! 🐙",
-  ],
-  'study-session': [
-    "Deep work starts NOW! 🎯",
-    "Timer's running! Stay focused! ⏱️",
-    "You're in the zone! Don't break it! 🔥",
-  ],
-  'question-papers': [
-    "Past papers = future success! 🏆",
-    "Try a timed session — I dare you! 😏",
-    "Practice makes permanent! 📝",
-  ],
+  profile: ["Looking good! 🎓", "Your avatar says a lot about you! 🐙", "Keep your profile updated! ✏️"],
+  settings: ["Make Eduvance yours! ⚙️", "Customize everything! I don't mind! 🐙"],
+  'study-session': ["Deep work starts NOW! 🎯", "Timer's running! Stay focused! ⏱️", "You're in the zone! Don't break it! 🔥"],
+  'question-papers': ["Past papers = future success! 🏆", "Try a timed session — I dare you! 😏", "Practice makes permanent! 📝"],
   idle: [
     "What should we study next? 🤔",
     "I'm bored! Let's learn something! 🐙",
@@ -138,6 +105,12 @@ const octoMessages = {
     "Remember: every expert was once a beginner! 🌟",
     "I'm not just cute — I'm also smart! Let me help you! 🧠",
   ],
+  streak: [
+    "🔥 Your streak is INCREDIBLE! Keep it going!",
+    "🔥 I love seeing those fire emojis! You're on a roll!",
+    "🔥 Streak power! You're building an unstoppable habit!",
+    "🔥 That streak makes me so happy! Don't stop now!",
+  ],
   examNear: [
     "⚠️ Your exam is getting close! Let's prioritize! ⏰",
     "Exam alert! Time to focus on weak topics! 🎯",
@@ -148,32 +121,24 @@ const octoMessages = {
     "Hey... we need to talk about your progress 😬",
     "Your preparation needs attention! Let's fix it! 🔧",
     "Don't panic! We still have time! Let's plan! 📋",
-    "I'm worried about your readiness! Let's study! 📚",
   ],
   highProgress: [
     "WOW! You're doing amazing! 🌟🎉",
     "Your preparation score is incredible! 📈",
     "Keep this up and you'll ACE the exam! 🏆",
-    "I'm so proud of you! You're crushing it! 💜",
-  ],
-  streak: [
-    "🔥 Your streak is INCREDIBLE! Keep it going!",
-    "🔥 I love seeing those fire emojis! You're on a roll!",
-    "🔥 Streak power! You're building an unstoppable habit!",
-    "🔥 That streak makes me so happy! Don't stop now!",
   ],
 }
 
-// ── Expression configs ──
 const EXPRESSIONS = {
-  happy: { eyeType: 'normal', mouthType: 'smile', blush: 0.5, brows: 'normal' },
-  excited: { eyeType: 'sparkle', mouthType: 'wide', blush: 0.7, brows: 'raised' },
-  thinking: { eyeType: 'lookUp', mouthType: 'hmm', blush: 0.3, brows: 'furrowed' },
-  surprised: { eyeType: 'wide', mouthType: 'oh', blush: 0.6, brows: 'raised' },
-  curious: { eyeType: 'lookSide', mouthType: 'smile', blush: 0.4, brows: 'raised' },
-  sleepy: { eyeType: 'closed', mouthType: 'yawn', blush: 0.3, brows: 'normal' },
+  happy: { eyeType: 'normal', mouthType: 'smile', blush: 0.5 },
+  excited: { eyeType: 'sparkle', mouthType: 'wide', blush: 0.7 },
+  thinking: { eyeType: 'lookUp', mouthType: 'hmm', blush: 0.3 },
+  surprised: { eyeType: 'wide', mouthType: 'oh', blush: 0.6 },
+  curious: { eyeType: 'lookSide', mouthType: 'smile', blush: 0.4 },
+  sleepy: { eyeType: 'closed', mouthType: 'yawn', blush: 0.3 },
 }
 
+/* ═══ OCTO SVG — Matches exact character sheet ═══ */
 function OctoSVG({ expression = 'happy', size = 80, enable3D = true }) {
   const expr = EXPRESSIONS[expression] || EXPRESSIONS.happy
   const [tilt, setTilt] = useState({ x: 0, y: 0 })
@@ -184,213 +149,191 @@ function OctoSVG({ expression = 'happy', size = 80, enable3D = true }) {
     const rect = e.currentTarget.getBoundingClientRect()
     const x = (e.clientX - rect.left) / rect.width - 0.5
     const y = (e.clientY - rect.top) / rect.height - 0.5
-    setTilt({ x: y * -15, y: x * 15 })
-  }
-
-  function handleMouseLeave() {
-    setTilt({ x: 0, y: 0 })
-    setIsHovered(false)
+    setTilt({ x: y * -12, y: x * 12 })
   }
 
   return (
-    <div
-      style={{
-        perspective: '600px',
-        perspectiveOrigin: '50% 50%',
-      }}
+    <div style={{ perspective: '500px' }}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={handleMouseLeave}
-    >
+      onMouseLeave={() => { setTilt({ x: 0, y: 0 }); setIsHovered(false) }}>
     <div style={{
-      transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) ${isHovered ? 'scale(1.08)' : 'scale(1)'}`,
+      transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) ${isHovered ? 'scale(1.06)' : 'scale(1)'}`,
       transformStyle: 'preserve-3d',
       transition: isHovered ? 'transform 0.1s ease-out' : 'transform 0.5s cubic-bezier(0.22,1,0.36,1)',
-      filter: isHovered ? `drop-shadow(0 ${8 + tilt.x}px ${16 + Math.abs(tilt.y)}px rgba(109,76,216,0.35))` : 'drop-shadow(0 4px 8px rgba(109,76,216,0.2))',
+      filter: isHovered ? `drop-shadow(0 ${6 + tilt.x}px ${12 + Math.abs(tilt.y)}px rgba(109,76,216,0.3))` : 'drop-shadow(0 3px 6px rgba(109,76,216,0.15))',
     }}>
-    <svg width={size} height={size} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
-      {/* Tentacles */}
-      {[0, 1, 2, 3, 4, 5, 6, 7].map(i => {
-        const angle = (i * 45 - 90) * Math.PI / 180
-        const baseX = 60 + Math.cos(angle) * 30
-        const baseY = 78 + Math.sin(angle) * 15
-        const tipX = 60 + Math.cos(angle) * 42
-        const tipY = 95 + Math.sin(angle) * 20
-        const midX = 60 + Math.cos(angle) * 36
-        const midY = 88 + Math.sin(angle) * 22
-        return (
-          <motion.path key={i}
-            d={`M${baseX} ${baseY} Q${midX} ${midY} ${tipX} ${tipY}`}
-            stroke={C.body} strokeWidth="6" strokeLinecap="round" fill="none"
-            animate={{ d: [`M${baseX} ${baseY} Q${midX} ${midY} ${tipX} ${tipY}`,
-                           `M${baseX} ${baseY} Q${midX + (i % 2 ? 3 : -3)} ${midY + 2} ${tipX + (i % 2 ? 4 : -4)} ${tipY + 3}`,
-                           `M${baseX} ${baseY} Q${midX} ${midY} ${tipX} ${tipY}`] }}
-            transition={{ duration: 2 + i * 0.3, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        )
-      })}
+    <svg width={size} height={size} viewBox="0 0 200 220" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
+
+      {/* ── TENTACLES (8 stubby, round-tipped) ── */}
+      {[
+        { x: 55, y: 155, tx: 30, ty: 195, mx: 40, my: 175 },
+        { x: 75, y: 165, tx: 55, ty: 205, mx: 60, my: 188 },
+        { x: 100, y: 170, tx: 90, ty: 210, mx: 95, my: 195 },
+        { x: 125, y: 165, tx: 140, ty: 205, mx: 135, my: 188 },
+        { x: 145, y: 155, tx: 170, ty: 195, mx: 160, my: 175 },
+        { x: 150, y: 140, tx: 180, ty: 170, mx: 168, my: 158 },
+        { x: 100, y: 175, tx: 100, ty: 215, mx: 100, my: 198 },
+        { x: 50, y: 140, tx: 20, ty: 170, mx: 32, my: 158 },
+      ].map((t, i) => (
+        <motion.path key={i}
+          d={`M${t.x} ${t.y} Q${t.mx} ${t.my} ${t.tx} ${t.ty}`}
+          stroke={C.body} strokeWidth="14" strokeLinecap="round" fill="none"
+          animate={{
+            d: [
+              `M${t.x} ${t.y} Q${t.mx} ${t.my} ${t.tx} ${t.ty}`,
+              `M${t.x} ${t.y} Q${t.mx + (i % 2 ? 4 : -4)} ${t.my + 3} ${t.tx + (i % 2 ? 5 : -5)} ${t.ty + 4}`,
+              `M${t.x} ${t.y} Q${t.mx} ${t.my} ${t.tx} ${t.ty}`,
+            ]
+          }}
+          transition={{ duration: 2.5 + i * 0.4, repeat: Infinity, ease: 'easeInOut' }}
+        />
+      ))}
 
       {/* Suction cups on tentacles */}
-      {[0, 2, 4, 6].map(i => {
-        const angle = (i * 45 - 90) * Math.PI / 180
-        const x = 60 + Math.cos(angle) * 36
-        const y = 90 + Math.sin(angle) * 18
-        return <circle key={`s${i}`} cx={x} cy={y} r="2" fill={C.bodyLight} opacity="0.5" />
-      })}
+      {[
+        { x: 35, y: 180 }, { x: 60, y: 195 }, { x: 95, y: 200 },
+        { x: 135, y: 195 }, { x: 165, y: 180 }, { x: 175, y: 162 },
+        { x: 100, y: 205 }, { x: 25, y: 162 },
+      ].map((s, i) => (
+        <circle key={`s${i}`} cx={s.x} cy={s.y} r="4" fill={C.bodyLight} opacity="0.4" />
+      ))}
 
-      {/* Body — base layer */}
-      <ellipse cx="60" cy="68" rx="32" ry="28" fill={C.body} />
-      <ellipse cx="60" cy="65" rx="30" ry="26" fill={C.bodyLight} />
+      {/* ── BODY (round, matching character sheet) ── */}
+      <ellipse cx="100" cy="115" rx="62" ry="58" fill={C.body} />
+      <ellipse cx="100" cy="110" rx="58" ry="54" fill={C.bodyLight} />
+      {/* Body highlight */}
+      <ellipse cx="85" cy="95" rx="25" ry="20" fill="white" opacity="0.08" />
 
-      {/* Face area — raised layer */}
-      <g style={{ transform: 'translateZ(4px)' }}>
-      <ellipse cx="60" cy="58" rx="24" ry="22" fill={C.eyeWhite} opacity="0.95" />
+      {/* ── FACE (round, friendly) ── */}
+      <ellipse cx="100" cy="100" rx="44" ry="42" fill={C.eyeWhite} opacity="0.95" />
 
-      {/* Glasses */}
-      <rect x="36" y="48" width="18" height="14" rx="4" fill="none" stroke={C.eye} strokeWidth="2" opacity="0.6" />
-      <rect x="66" y="48" width="18" height="14" rx="4" fill="none" stroke={C.eye} strokeWidth="2" opacity="0.6" />
-      <line x1="54" y1="55" x2="66" y2="55" stroke={C.eye} strokeWidth="1.5" opacity="0.5" />
-      <line x1="36" y1="55" x2="32" y2="52" stroke={C.eye} strokeWidth="1.5" opacity="0.5" />
-      <line x1="84" y1="55" x2="88" y2="52" stroke={C.eye} strokeWidth="1.5" opacity="0.5" />
+      {/* ── GLASSES (round frames, matching character sheet) ── */}
+      <circle cx="78" cy="96" r="18" fill="none" stroke={C.eye} strokeWidth="3" opacity="0.5" />
+      <circle cx="122" cy="96" r="18" fill="none" stroke={C.eye} strokeWidth="3" opacity="0.5" />
+      {/* Bridge */}
+      <path d="M96 96 Q100 92 104 96" stroke={C.eye} strokeWidth="2.5" fill="none" opacity="0.4" />
+      {/* Temple arms */}
+      <path d="M60 96 Q50 90 42 88" stroke={C.eye} strokeWidth="2" fill="none" opacity="0.35" strokeLinecap="round" />
+      <path d="M140 96 Q150 90 158 88" stroke={C.eye} strokeWidth="2" fill="none" opacity="0.35" strokeLinecap="round" />
 
-      {/* Eyes */}
+      {/* ── EYES (big, round, expressive) ── */}
       {expr.eyeType === 'closed' ? (
         <>
-          <path d="M42 55 Q46 58 50 55" stroke={C.eye} strokeWidth="2" fill="none" strokeLinecap="round" />
-          <path d="M70 55 Q74 58 78 55" stroke={C.eye} strokeWidth="2" fill="none" strokeLinecap="round" />
+          <path d="M68 96 Q78 106 88 96" stroke={C.eye} strokeWidth="3" fill="none" strokeLinecap="round" />
+          <path d="M112 96 Q122 106 132 96" stroke={C.eye} strokeWidth="3" fill="none" strokeLinecap="round" />
         </>
       ) : expr.eyeType === 'wide' ? (
         <>
-          <circle cx="45" cy="55" r="5" fill={C.eye} />
-          <circle cx="75" cy="55" r="5" fill={C.eye} />
-          <circle cx="46.5" cy="53.5" r="2" fill="white" />
-          <circle cx="76.5" cy="53.5" r="2" fill="white" />
+          <circle cx="78" cy="96" r="10" fill={C.eyeWhite} />
+          <circle cx="122" cy="96" r="10" fill={C.eyeWhite} />
+          <circle cx="78" cy="96" r="7" fill={C.eye} />
+          <circle cx="122" cy="96" r="7" fill={C.eye} />
+          <circle cx="80" cy="93" r="3" fill="white" />
+          <circle cx="124" cy="93" r="3" fill="white" />
         </>
       ) : expr.eyeType === 'sparkle' ? (
         <>
-          <circle cx="45" cy="54" r="5" fill={C.eye} />
-          <circle cx="75" cy="54" r="5" fill={C.eye} />
-          <circle cx="47" cy="52" r="2" fill="white" />
-          <circle cx="77" cy="52" r="2" fill="white" />
-          <circle cx="43" cy="56" r="1" fill="white" opacity="0.6" />
-          <circle cx="73" cy="56" r="1" fill="white" opacity="0.6" />
-          {/* Star sparkles */}
-          <motion.text x="38" y="46" fontSize="6" fill={C.star}
-            animate={{ opacity: [0, 1, 0], scale: [0.5, 1, 0.5] }}
-            transition={{ duration: 1.5, repeat: Infinity }}>✦</motion.text>
-          <motion.text x="78" y="46" fontSize="6" fill={C.star}
-            animate={{ opacity: [0, 1, 0], scale: [0.5, 1, 0.5] }}
-            transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}>✦</motion.text>
+          <circle cx="78" cy="96" r="10" fill={C.eyeWhite} />
+          <circle cx="122" cy="96" r="10" fill={C.eyeWhite} />
+          <circle cx="78" cy="96" r="7" fill={C.eye} />
+          <circle cx="122" cy="96" r="7" fill={C.eye} />
+          <circle cx="81" cy="93" r="3.5" fill="white" />
+          <circle cx="125" cy="93" r="3.5" fill="white" />
+          <circle cx="75" cy="99" r="1.5" fill="white" opacity="0.6" />
+          <circle cx="119" cy="99" r="1.5" fill="white" opacity="0.6" />
+          <motion.text x="60" y="80" fontSize="10" fill={C.star}
+            animate={{ opacity: [0, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>✦</motion.text>
+          <motion.text x="135" y="80" fontSize="10" fill={C.star}
+            animate={{ opacity: [0, 1, 0] }} transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}>✦</motion.text>
         </>
       ) : expr.eyeType === 'lookUp' ? (
         <>
-          <circle cx="45" cy="53" r="5" fill={C.eyeWhite} />
-          <circle cx="75" cy="53" r="5" fill={C.eyeWhite} />
-          <circle cx="45" cy="51" r="3" fill={C.eye} />
-          <circle cx="75" cy="51" r="3" fill={C.eye} />
-          <circle cx="46" cy="50" r="1" fill="white" />
-          <circle cx="76" cy="50" r="1" fill="white" />
+          <circle cx="78" cy="96" r="10" fill={C.eyeWhite} />
+          <circle cx="122" cy="96" r="10" fill={C.eyeWhite} />
+          <circle cx="78" cy="92" r="6" fill={C.eye} />
+          <circle cx="122" cy="92" r="6" fill={C.eye} />
+          <circle cx="80" cy="90" r="2.5" fill="white" />
+          <circle cx="124" cy="90" r="2.5" fill="white" />
         </>
       ) : expr.eyeType === 'lookSide' ? (
         <>
-          <circle cx="45" cy="55" r="5" fill={C.eyeWhite} />
-          <circle cx="75" cy="55" r="5" fill={C.eyeWhite} />
-          <circle cx="43" cy="55" r="3" fill={C.eye} />
-          <circle cx="73" cy="55" r="3" fill={C.eye} />
-          <circle cx="42" cy="54" r="1" fill="white" />
-          <circle cx="72" cy="54" r="1" fill="white" />
+          <circle cx="78" cy="96" r="10" fill={C.eyeWhite} />
+          <circle cx="122" cy="96" r="10" fill={C.eyeWhite} />
+          <circle cx="74" cy="96" r="6" fill={C.eye} />
+          <circle cx="118" cy="96" r="6" fill={C.eye} />
+          <circle cx="72" cy="94" r="2.5" fill="white" />
+          <circle cx="116" cy="94" r="2.5" fill="white" />
         </>
       ) : (
         <>
-          <circle cx="45" cy="55" r="5" fill={C.eye} />
-          <circle cx="75" cy="55" r="5" fill={C.eye} />
-          <circle cx="47" cy="53" r="2" fill="white" />
-          <circle cx="77" cy="53" r="2" fill="white" />
+          <circle cx="78" cy="96" r="10" fill={C.eyeWhite} />
+          <circle cx="122" cy="96" r="10" fill={C.eyeWhite} />
+          <circle cx="78" cy="96" r="7" fill={C.eye} />
+          <circle cx="122" cy="96" r="7" fill={C.eye} />
+          <circle cx="81" cy="93" r="3" fill="white" />
+          <circle cx="125" cy="93" r="3" fill="white" />
         </>
       )}
 
-      {/* Brows */}
-      {expr.brows === 'raised' && (
-        <>
-          <line x1="40" y1="45" x2="50" y2="44" stroke={C.eye} strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
-          <line x1="70" y1="44" x2="80" y2="45" stroke={C.eye} strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
-        </>
-      )}
-      {expr.brows === 'furrowed' && (
-        <>
-          <line x1="40" y1="46" x2="50" y2="48" stroke={C.eye} strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
-          <line x1="70" y1="48" x2="80" y2="46" stroke={C.eye} strokeWidth="1.5" strokeLinecap="round" opacity="0.4" />
-        </>
-      )}
-
-      {/* Mouth */}
+      {/* ── MOUTH ── */}
       {expr.mouthType === 'smile' && (
-        <path d="M50 68 Q60 76 70 68" stroke={C.eye} strokeWidth="2" fill="none" strokeLinecap="round" />
+        <path d="M82 120 Q100 136 118 120" stroke={C.eye} strokeWidth="3" fill="none" strokeLinecap="round" />
       )}
       {expr.mouthType === 'wide' && (
-        <path d="M48 67 Q60 80 72 67" stroke={C.eye} strokeWidth="2" fill={C.highlight} opacity="0.3" strokeLinecap="round" />
+        <path d="M78 118 Q100 142 122 118" stroke={C.eye} strokeWidth="3" fill={C.highlight} opacity="0.25" strokeLinecap="round" />
       )}
       {expr.mouthType === 'hmm' && (
-        <path d="M52 70 Q58 68 68 70" stroke={C.eye} strokeWidth="2" fill="none" strokeLinecap="round" />
+        <path d="M86 124 Q96 120 114 124" stroke={C.eye} strokeWidth="2.5" fill="none" strokeLinecap="round" />
       )}
       {expr.mouthType === 'oh' && (
-        <ellipse cx="60" cy="72" rx="4" ry="5" fill={C.eye} opacity="0.7" />
+        <ellipse cx="100" cy="126" rx="6" ry="8" fill={C.eye} opacity="0.6" />
       )}
       {expr.mouthType === 'yawn' && (
-        <ellipse cx="60" cy="70" rx="5" ry="4" fill={C.eye} opacity="0.5" />
+        <ellipse cx="100" cy="124" rx="8" ry="6" fill={C.eye} opacity="0.4" />
       )}
 
-      {/* Blush */}
-      <ellipse cx="36" cy="64" rx="5" ry="3" fill={C.cheek} opacity={expr.blush} />
-      <ellipse cx="84" cy="64" rx="5" ry="3" fill={C.cheek} opacity={expr.blush} />
+      {/* ── CHEEK BLUSH ── */}
+      <ellipse cx="58" cy="114" rx="8" ry="5" fill={C.cheek} opacity={expr.blush} />
+      <ellipse cx="142" cy="114" rx="8" ry="5" fill={C.cheek} opacity={expr.blush} />
 
-      {/* Bow tie */}
-      <path d="M54 78 L60 82 L66 78 L60 86Z" fill={C.bow} />
-      <circle cx="60" cy="82" r="2" fill={C.highlight} />
-      </g>
+      {/* ── BOW TIE (yellow, matching character sheet) ── */}
+      <path d="M88 145 L100 152 L112 145 L100 158Z" fill={C.bow} />
+      <circle cx="100" cy="152" r="3.5" fill={C.highlight} />
 
-      {/* Graduation cap — topmost layer for 3D depth */}
-      <g style={{ transform: 'translateZ(8px)' }}>
-      <polygon points="60,18 35,30 60,38 85,30" fill={C.cap} />
-      <rect x="57" y="30" width="6" height="5" fill={C.capDark} />
-      <circle cx="60" cy="18" r="3" fill={C.star} />
-      <motion.line x1="60" y1="18" x2="68" y2="12" stroke={C.star} strokeWidth="2" strokeLinecap="round"
+      {/* ── GRADUATION CAP (dark green, gold tassel) ── */}
+      <polygon points="100,28 55,48 100,60 145,48" fill={C.cap} />
+      <rect x="95" y="48" width="10" height="8" fill={C.capDark} rx="1" />
+      <circle cx="100" cy="28" r="5" fill={C.star} />
+      <motion.line x1="100" y1="28" x2="115" y2="18" stroke={C.star} strokeWidth="3" strokeLinecap="round"
         animate={{ rotate: [0, 8, -8, 0] }} transition={{ duration: 2.5, repeat: Infinity }}
-        style={{ transformOrigin: '60px 18px' }} />
-      <circle cx="68" cy="12" r="2.5" fill={C.star} />
-      </g>
+        style={{ transformOrigin: '100px 28px' }} />
+      <circle cx="115" cy="18" r="4" fill={C.star} />
+
     </svg>
     </div>
     </div>
   )
 }
 
-// ── Reminder generator ──
 function getReminder(data) {
   if (!data) return null
-  const subjects = data.subjects || []
   const examDate = data.preferences?.examDate
-  const totalTopics = subjects.reduce((a, s) => a + (s.topics?.length || 0), 0)
   const daysLeft = examDate ? Math.max(0, Math.ceil((new Date(examDate) - new Date()) / 86400000)) : null
-
   if (daysLeft !== null && daysLeft <= 14) return 'examNear'
-  if (daysLeft !== null && daysLeft <= 3) return 'examNear'
   return null
 }
 
-/* ═══ STUDY MASCOT (landing page / large) ═══ */
+/* ═══ STUDY MASCOT (landing page) ═══ */
 export function StudyMascot({ context = 'welcome', compact = false, className = '' }) {
   const [msgIndex, setMsgIndex] = useState(0)
-  const data = useAppData()
   const msgs = octoMessages[context] || octoMessages.idle
   const currentMsg = msgs[msgIndex % msgs.length]
 
-  // Determine expression from context
   const expression = useMemo(() => {
     if (['correct', 'progress', 'highProgress', 'welcome'].includes(context)) return 'excited'
     if (['incorrect', 'lowProgress'].includes(context)) return 'thinking'
     if (['quiz', 'study', 'study-session'].includes(context)) return 'curious'
-    if (['idle', 'settings'].includes(context)) return 'happy'
     return 'happy'
   }, [context])
 
@@ -403,7 +346,7 @@ export function StudyMascot({ context = 'welcome', compact = false, className = 
     return (
       <div className={`inline-flex items-center gap-3 ${className}`}>
         <motion.div animate={{ y: [0, -4, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}>
-          <OctoSVG expression={expression} size={48} />
+          <OctoSVG expression={expression} size={56} />
         </motion.div>
         <AnimatePresence mode="wait">
           <motion.div key={msgIndex} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
@@ -431,20 +374,19 @@ export function StudyMascot({ context = 'welcome', compact = false, className = 
         </motion.div>
       </AnimatePresence>
       <motion.div animate={{ y: [0, -4, 0] }} transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}>
-        <OctoSVG expression={expression} size={80} />
+        <OctoSVG expression={expression} size={120} />
       </motion.div>
     </div>
   )
 }
 
-/* ═══ PAGE MASCOT (floating corner assistant) ═══ */
+/* ═══ PAGE MASCOT (floating corner) ═══ */
 export function PageMascot({ pagePath }) {
   const [msgIndex, setMsgIndex] = useState(0)
   const [isExpanded, setIsExpanded] = useState(false)
   const data = useAppData()
   const reminder = getReminder(data)
 
-  // Build message list: page messages + possible reminder + streak
   const msgs = useMemo(() => {
     const base = octoMessages[pagePath] || octoMessages.idle
     const extra = reminder ? octoMessages[reminder] : []
@@ -492,7 +434,7 @@ export function PageMascot({ pagePath }) {
         animate={{ y: [0, -3, 0] }}
         transition={{ y: { duration: 2.5, repeat: Infinity, ease: 'easeInOut' } }}
         aria-label="Toggle Octo mascot">
-        <OctoSVG expression={expression} size={52} />
+        <OctoSVG expression={expression} size={64} />
         {!isExpanded && (
           <motion.div className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full"
             style={{ background: reminder ? C.highlight : C.cap }}
