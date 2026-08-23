@@ -283,7 +283,7 @@ aiRoutes.post('/generate-quiz', asyncHandler(async (req, res) => {
     subject,
     topic,
     difficulty,
-    count: Math.min(count, 8),
+    count: Math.min(count, 5),
     preparation,
   })
 
