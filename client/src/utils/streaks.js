@@ -126,10 +126,19 @@ export function getStreakMilestone(streakCount) {
 
 /**
  * Check if a given streak count just hit a new milestone.
+ * Only returns true once per milestone — tracks seen milestones in localStorage.
  */
 export function isNewMilestone(streakCount) {
   const milestones = [1, 3, 5, 7, 10, 14, 21, 30]
-  return milestones.includes(streakCount)
+  if (!milestones.includes(streakCount)) return false
+  
+  const seen = JSON.parse(localStorage.getItem('eduvance.streak.seen') || '[]')
+  if (seen.includes(streakCount)) return false
+  
+  // Mark this milestone as seen
+  seen.push(streakCount)
+  localStorage.setItem('eduvance.streak.seen', JSON.stringify(seen))
+  return true
 }
 
 /**
