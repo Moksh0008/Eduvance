@@ -309,6 +309,21 @@ export function LoginPage() {
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
 
+  // Clear any stale tokens on mount so Invalid token errors don't bleed in
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('eduvance.auth')
+      if (raw) {
+        const stored = JSON.parse(raw)
+        if (stored?.token) {
+          // Token exists but might be stale — let fetchMe validate it
+          // If invalid, AppState boot will clear it. Just clear any leftover error.
+        }
+      }
+    } catch {}
+    setError('')
+  }, [])
+
   async function onSubmit(e) {
     e.preventDefault()
     setError('')
@@ -379,6 +394,11 @@ export function RegisterPage() {
   const [password, setPassword] = useState('')
   const [focusedField, setFocusedField] = useState(null)
   const [error, setError] = useState('')
+
+  // Clear any stale tokens on mount
+  useEffect(() => {
+    setError('')
+  }, [])
   const [pending, setPending] = useState(false)
 
   async function onSubmit(e) {

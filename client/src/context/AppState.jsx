@@ -75,17 +75,29 @@ export function AppStateProvider({ children }) {
   const login = useCallback(async ({ email, password }) => {
     const next = await loginAccount({ email, password })
     setSession(next)
-    const prep = await pullPreparation()
-    dispatch({ type: PrepAction.HYDRATE, payload: prep })
-    return { session: next, workspace: prep }
+    try {
+      const prep = await pullPreparation()
+      dispatch({ type: PrepAction.HYDRATE, payload: prep })
+      return { session: next, workspace: prep }
+    } catch {
+      // pullPreparation failed — proceed with empty workspace
+      dispatch({ type: PrepAction.HYDRATE, payload: emptyWorkspace() })
+      return { session: next, workspace: emptyWorkspace() }
+    }
   }, [])
 
   const register = useCallback(async ({ name, email, password }) => {
     const next = await registerAccount({ name, email, password })
     setSession(next)
-    const prep = await pullPreparation()
-    dispatch({ type: PrepAction.HYDRATE, payload: prep })
-    return { session: next, workspace: prep }
+    try {
+      const prep = await pullPreparation()
+      dispatch({ type: PrepAction.HYDRATE, payload: prep })
+      return { session: next, workspace: prep }
+    } catch {
+      // pullPreparation failed — proceed with empty workspace
+      dispatch({ type: PrepAction.HYDRATE, payload: emptyWorkspace() })
+      return { session: next, workspace: emptyWorkspace() }
+    }
   }, [])
 
   const logout = useCallback(() => {
