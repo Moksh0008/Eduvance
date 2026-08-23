@@ -384,6 +384,37 @@ function StepSyllabus({ subjects, setSubjects, onAnalyzingChange }) {
         ))}
       </div>
 
+      {/* Add more subjects */}
+      <div className="mt-6 border-t border-line pt-6">
+        <p className="text-xs font-medium uppercase tracking-wider text-ink-3 mb-3">Add another subject</p>
+        <div className="flex gap-2">
+          <input
+            type="text"
+            placeholder="e.g. Information Retrieval Systems"
+            value={newSubjectName}
+            onChange={(e) => setNewSubjectName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addSubject()}
+            className="input flex-1"
+          />
+          <Button onClick={addSubject} disabled={!newSubjectName.trim()} size="sm">Add</Button>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {['IRS', 'CN', 'CSE'].filter(n => !subjects.some(s => s.name === n)).map(name => (
+            <button
+              key={name}
+              type="button"
+              onClick={() => {
+                const id = `sub_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`
+                setSubjects([...subjects, { id, name, examDate: '', examTime: '10:00', marks: 100, syllabusFile: null, units: [] }])
+              }}
+              className="rounded-lg border border-line-2 bg-surface/50 px-3 py-1.5 text-xs text-ink-2 hover:border-accent hover:text-accent transition-colors"
+            >
+              + {name}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Study Materials Upload */}
       <div className="mt-10 border-t border-line pt-8">
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">Study Materials</p>
