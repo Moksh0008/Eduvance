@@ -8,21 +8,26 @@ export function StreakDisplay({ compact = false, className = '' }) {
   const [streak, setStreak] = useState(() => getStreak())
   const [showMilestone, setShowMilestone] = useState(false)
   const [milestone, setMilestone] = useState(null)
+  const checkedRef = useState({})[0] // Track which milestones we've already checked
 
   useEffect(() => {
     setStreak(getStreak())
   }, [])
 
-  // Check for milestone on mount
+  // Check for milestone on mount — only once per component lifecycle
   useEffect(() => {
-    if (streak.current > 0 && isNewMilestone(streak.current)) {
-      const m = getStreakMilestone(streak.current)
-      if (m) {
-        setMilestone(m)
-        setShowMilestone(true)
-        // Auto-dismiss after 5 seconds
-        const timer = setTimeout(() => setShowMilestone(false), 5000)
-        return () => clearTimeout(timer)
+    const count = streak.current
+    if (count > 0 && !checkedRef[count]) {
+      checkedRef[count] = true // Mark as checked BEFORE calling isNewMilestone
+      if (isNewMilestone(count)) {
+        const m = getStreakMilestone(count)
+        if (m) {
+          setMilestone(m)
+          setShowMilestone(true)
+          // Auto-dismiss after 5 seconds
+          const timer = setTimeout(() => setShowMilestone(false), 5000)
+          return () => clearTimeout(timer)
+        }
       }
     }
   }, [streak.current])
