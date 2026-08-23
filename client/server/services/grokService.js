@@ -82,6 +82,38 @@ export async function callGrok(systemPrompt, userPrompt, options = {}) {
       })
       clearTimeout(timer)
 
+      if (response.status === 429) {
+        // Rate limit — parse retry-after and wait, then retry same model
+        const errBody = await response.json().catch(() => ({}))
+        const retryAfter = errBody.error?.message?.match(/try again in ([\d.]+)s/)?.[1]
+        const waitMs = retryAfter ? parseFloat(retryAfter) * 1000 : 20000
+        console.warn(`[Grok] Rate limited on ${model}, waiting ${Math.round(waitMs / 1000)}s...`)
+        clearTimeout(timer)
+        await new Promise(r => setTimeout(r, Math.min(waitMs, 30000)))
+        // Retry the same model once more
+        try {
+          const retryController = new AbortController()
+          const retryTimer = setTimeout(() => retryController.abort(), timeoutMs)
+          const retryRes = await fetch(`${provider.baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${provider.getKey()}` },
+            body: JSON.stringify({ model, messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ], temperature, max_tokens: maxTokens }),
+            signal: retryController.signal,
+          })
+          clearTimeout(retryTimer)
+          if (retryRes.ok) {
+            const data = await retryRes.json()
+            const content = data.choices?.[0]?.message?.content || ''
+            console.log(`[Grok] Retry succeeded with ${model}: ${content.length} chars`)
+            return content
+          }
+        } catch {}
+        continue // try next model
+      }
+
       if (response.status === 404 || response.status === 400) {
         const errText = await response.text()
         console.warn(`[Grok] ${provider.name} model ${model} unavailable (${response.status}):`, errText.slice(0, 100))
