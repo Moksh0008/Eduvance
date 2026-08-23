@@ -317,35 +317,38 @@ aiRoutes.post('/complete-quiz', asyncHandler(async (req, res) => {
 
   const result = await agent.completeQuiz(req.user.userId, quizId)
 
-  // Trigger replanning
-  const preparation = await Preparation.findOne({ userId: req.user.userId })
-  const replan = await agent.replanAfterQuiz(req.user.userId, preparation, result)
-
-  // Update preparation with new plan
-  await Preparation.findOneAndUpdate(
-    { userId: req.user.userId },
-    {
-      $set: {
-        studyPlan: replan.schedule,
-        weakTopics: replan.weakTopics,
-      },
-      $push: {
-        quizResults: {
-          $each: [{
-            subject: result.subject,
-            topic: result.topic,
-            score: result.score,
-            total: result.totalQuestions,
-            correct: result.correctCount,
-            accuracy: result.score,
-            date: new Date().toISOString(),
-            at: new Date().toISOString(),
-          }],
-          $slice: -50,
+  // Save quiz result + replan — wrap in try/catch so quiz result is never lost
+  let replan = null
+  try {
+    const preparation = await Preparation.findOne({ userId: req.user.userId })
+    replan = await agent.replanAfterQuiz(req.user.userId, preparation, result)
+    await Preparation.findOneAndUpdate(
+      { userId: req.user.userId },
+      {
+        $set: {
+          studyPlan: replan.schedule,
+          weakTopics: replan.weakTopics,
         },
-      },
-    }
-  )
+        $push: {
+          quizResults: {
+            $each: [{
+              subject: result.subject,
+              topic: result.topic,
+              score: result.score,
+              total: result.totalQuestions,
+              correct: result.correctCount,
+              accuracy: result.score,
+              date: new Date().toISOString(),
+              at: new Date().toISOString(),
+            }],
+            $slice: -50,
+          },
+        },
+      }
+    )
+  } catch (replanErr) {
+    console.error('[CompleteQuiz] Replan/save failed (quiz result still saved):', replanErr.message)
+  }
 
   return res.json({ success: true, data: { ...result, replan } })
 }))

@@ -180,6 +180,17 @@ export function QuizPlayPage() {
     )
   }
 
+  // Edge case: no questions available at all
+  if (!questions || questions.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <p className="text-lg text-ink">No questions available for this topic.</p>
+        <p className="mt-2 text-sm text-ink-3">Try selecting a different topic or uploading study material.</p>
+        <Button as="a" href="/quiz" className="mt-4">Back to Quiz</Button>
+      </div>
+    )
+  }
+
   return (
     <div>
       {/* Mentor area */}
