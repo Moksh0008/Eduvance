@@ -420,3 +420,4 @@ Rules:
 
   return callGrok(systemPrompt, `Student context: ${JSON.stringify(context)}`, { maxTokens: 150, temperature: 0.8 })
 }
+// force redeploy 1787491781
