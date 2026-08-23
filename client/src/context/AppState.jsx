@@ -52,7 +52,11 @@ export function AppStateProvider({ children }) {
           .then((prep) => {
             if (!cancelled) dispatch({ type: PrepAction.HYDRATE, payload: prep })
           })
-          .catch(() => {})
+          .catch(() => {
+            // Token invalid or server unreachable — clear stale auth
+            clearAuth()
+            setSession(null)
+          })
       } catch {
         if (cancelled) return
         // Backend unreachable — use cached session data
