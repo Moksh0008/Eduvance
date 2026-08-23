@@ -36,34 +36,36 @@ aiRoutes.post('/analyze-file', upload.single('file'), asyncHandler(async (req, r
   if (file.mimetype === 'application/pdf') {
     try {
       const pdfParse = (await import('pdf-parse')).default
-      const data = await pdfParse(file.buffer, {
-        max: 20, // limit to first 20 pages to avoid memory issues
-      })
-      text = data.text
+      // pdf-parse v1.x: pass {pagerender: fn} only, no 'max' option
+      const data = await pdfParse(file.buffer)
+      text = data.text || ''
+      console.log(`[AnalyzeFile] PDF parsed: ${text.length} chars from ${file.originalname}`)
     } catch (pdfErr) {
       console.error('[AnalyzeFile] PDF parse error:', pdfErr.message)
-      // Try reading as UTF-8 fallback for non-standard PDFs
+      // Fallback: try reading buffer as UTF-8 text
       try {
         text = file.buffer.toString('utf-8')
-        // If it looks like binary garbage, give up
-        if (text.includes('\u0000') && text.indexOf('\u0000') < 100) {
-          return res.status(400).json({ success: false, message: 'Failed to parse PDF. The file may be scanned/image-based. Try a text-based PDF or paste the syllabus text instead.' })
+        // Strip binary characters
+        text = text.replace(/[\x00-\x08\x0E-\x1F]/g, ' ').trim()
+        if (text.length < 20) {
+          return res.status(400).json({ success: false, message: 'Failed to parse PDF. It may be image-based or corrupted. Use Paste syllabus text instead.' })
         }
       } catch {
-        return res.status(400).json({ success: false, message: 'Failed to parse PDF. Try a different file or paste the syllabus text instead.' })
+        return res.status(400).json({ success: false, message: 'Failed to parse PDF. Use the Paste syllabus text option instead.' })
       }
     }
   } else if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || file.originalname?.endsWith('.docx')) {
-    // DOCX files — extract text from the buffer
+    // DOCX files — extract text from XML inside
     try {
-      text = file.buffer.toString('utf-8')
-      // DOCX is XML inside — try to extract text between tags
-      const textMatches = text.match(/<w:t[^>]*>([^<]+)<\/w:t>/g)
+      const raw = file.buffer.toString('utf-8')
+      const textMatches = raw.match(/<w:t[^>]*>([^<]+)<\/w:t>/g)
       if (textMatches && textMatches.length > 0) {
         text = textMatches.map(m => m.replace(/<[^>]+>/g, '')).join(' ')
+      } else {
+        text = raw.replace(/[\x00-\x08\x0E-\x1F]/g, ' ').trim()
       }
+      console.log(`[AnalyzeFile] DOCX parsed: ${text.length} chars from ${file.originalname}`)
     } catch {
-      // fallback: raw buffer
       text = file.buffer.toString('utf-8')
     }
   } else {
@@ -467,4 +469,34 @@ aiRoutes.get('/syllabus-topics', asyncHandler(async (req, res) => {
     }
   }
   return res.json({ success: true, data: { subjects, topics } })
+}))
+
+// ═══ AUTO-GENERATE TOPICS FOR A SUBJECT (no syllabus needed) ═══
+aiRoutes.post('/generate-topics', asyncHandler(async (req, res) => {
+  const { subject } = req.body
+  if (!subject) {
+    return res.status(400).json({ success: false, message: 'subject name is required' })
+  }
+
+  try {
+    const result = await callGrokJSON(
+      `You are a CS exam topic generator. Generate a list of standard academic topics for the subject: ${subject}.\n\nReturn JSON:\n{\n  "topics": [\n    { "name": "Topic Name", "difficulty": "easy|medium|hard", "importance": "high|medium|low" }\n  ]\n}\n\nGenerate 8-15 topics that a typical university course on ${subject} would cover. Return ONLY valid JSON.`,
+      `Generate standard exam topics for ${subject}.`,
+      { temperature: 0.4 }
+    )
+    const topicList = (result?.topics || []).map((t, i) => ({
+      id: `ai_${Date.now()}_${i}`,
+      name: t.name,
+      subjectId: `s_${subject.toLowerCase().replace(/[^a-z0-9]/g, '_')}`,
+      subjectName: subject,
+      unitId: 'auto',
+      unitName: 'Auto-generated',
+      difficulty: t.difficulty || 'medium',
+      importance: t.importance || 'medium',
+    }))
+    return res.json({ success: true, data: { topics: topicList, subject } })
+  } catch (err) {
+    console.error('[GenerateTopics] AI error:', err.message)
+    return res.status(500).json({ success: false, message: 'AI topic generation failed. Add GROQ_API_KEY to Render.' })
+  }
 }))
