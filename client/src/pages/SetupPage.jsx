@@ -338,7 +338,7 @@ function StepSyllabus({ subjects, setSubjects, onAnalyzingChange }) {
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">Step 2 · Syllabus</p>
         <h1 className="mt-2 font-serif text-4xl text-ink">What do you need to prepare?</h1>
-        <p className="mt-3 text-sm text-ink-2">Add your subjects below, then paste or upload your syllabus for each.</p>
+        <p className="mt-3 text-sm text-ink-2">        Add your subjects below, then paste your syllabus topics for each.</p>
         <div className="mt-6 flex gap-2">
           <input
             type="text"
@@ -631,41 +631,25 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
         {topicCount > 0 && <span className="ml-2 text-green-500">· {topicCount} topics extracted</span>}
       </p>
 
-      {/* Upload or paste syllabus */}
+      {/* Paste syllabus topics */}
       <div className="mt-4">
-        <div className="flex gap-2 mb-3">
-          <Button variant="secondary" size="sm" onClick={() => setShowTextMode(false)}>
-            📄 Upload PDF
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => setShowTextMode(true)}>
-            ✏️ Paste syllabus text
+        <div>
+          <textarea
+            className="w-full border border-line bg-surface px-3 py-2 text-sm" rows={6}
+            placeholder={`Paste your ${subject.name} syllabus topics here...\n\nExample:\nUnit 1: Normalization\n- 1NF, 2NF, 3NF, BCNF\n- Functional Dependencies\n- Decomposition\n\nUnit 2: SQL\n- SELECT queries\n- JOINs\n- Subqueries\n- Views`}
+            value={syllabusText}
+            onChange={(e) => setSyllabusText(e.target.value)}
+          />
+          <Button
+            variant="accent"
+            size="sm"
+            className="mt-2"
+            onClick={analyzeText}
+            disabled={aiAnalyzing || !syllabusText.trim()}
+          >
+            {aiAnalyzing ? '🔄 Analyzing with AI...' : '🧠 Analyze syllabus with AI'}
           </Button>
         </div>
-
-        {!showTextMode ? (
-          <>
-            <FileDrop label={`Upload syllabus for ${subject.name}`} hint="PDF / notes / document — AI will extract topics automatically" onFile={onFile} disabled={phase === 'run' || aiAnalyzing} />
-            {phase !== 'idle' && !aiAnalyzing ? <StageList stages={UPLOAD_STAGES} current={current} complete={done} /> : null}
-          </>
-        ) : (
-          <div>
-            <textarea
-              className="w-full border border-line bg-surface px-3 py-2 text-sm" rows={6}
-              placeholder={`Paste your ${subject.name} syllabus here...\n\nExample:\nUnit 1: Normalization\n- 1NF, 2NF, 3NF, BCNF\n- Functional Dependencies\n- Decomposition\n\nUnit 2: SQL\n- SELECT queries\n- JOINs\n- Subqueries\n- Views`}
-              value={syllabusText}
-              onChange={(e) => setSyllabusText(e.target.value)}
-            />
-            <Button
-              variant="accent"
-              size="sm"
-              className="mt-2"
-              onClick={analyzeText}
-              disabled={aiAnalyzing || !syllabusText.trim()}
-            >
-              {aiAnalyzing ? '🔄 Analyzing with AI...' : '🧠 Analyze syllabus with AI'}
-            </Button>
-          </div>
-        )}
 
         {/* AI analyzing spinner with timer */}
         {aiAnalyzing && (
