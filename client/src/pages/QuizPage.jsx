@@ -5,23 +5,57 @@ import { Button } from '../components/ui/Button'
 import { EmptyState } from '../components/ui/EmptyState'
 import { DemoBanner } from '../components/domain/ModeBanners'
 import { AdaptiveLoop } from '../components/domain/AdaptiveLoop'
-import { SubjectSelector } from '../components/domain/SubjectSelector'
-import { TopicSelector } from '../components/domain/TopicSelector'
 import { AdaptiveInsight } from '../components/domain/AdaptiveInsight'
 import { getQuizBank, hasRealQuestions } from '../services/quiz'
 import { useAppData } from '../hooks/useAppData'
 import { useAppState } from '../context/AppState'
+import { api } from '../services/api'
 
 export function QuizPage() {
   const data = useAppData()
-  const { setupCompleted } = useAppState()
+  const { setupCompleted, session } = useAppState()
   const bank = getQuizBank()
-  const subjects = data.subjects || []
-  const topics = data.topics || []
   const navigate = useNavigate()
-  const [subjectId, setSubjectId] = useState(subjects[0]?.id || '')
-  const topicOptions = topics.filter((t) => !subjectId || t.subjectId === subjectId)
+  
+  // Backend-loaded topics
+  const [backendSubjects, setBackendSubjects] = useState([])
+  const [backendTopics, setBackendTopics] = useState([])
+  const [loadingTopics, setLoadingTopics] = useState(true)
+  const [topicError, setTopicError] = useState('')
+  
+  const [subjectId, setSubjectId] = useState('')
   const [topicId, setTopicId] = useState('')
+  const [questionCount, setQuestionCount] = useState(10)
+  const [generating, setGenerating] = useState(false)
+  const [generationStatus, setGenerationStatus] = useState('')
+
+  // Load topics from backend on mount
+  useEffect(() => {
+    async function loadTopics() {
+      setLoadingTopics(true)
+      setTopicError('')
+      try {
+        const result = await api.get('/ai/syllabus-topics')
+        if (result.data?.success) {
+          setBackendSubjects(result.data.data.subjects || [])
+          setBackendTopics(result.data.data.topics || [])
+        }
+      } catch (err) {
+        // Fallback to local data
+        setBackendSubjects([])
+        setBackendTopics([])
+        setTopicError('Could not load topics from server. Using local data.')
+      }
+      setLoadingTopics(false)
+    }
+    loadTopics()
+  }, [session?.token])
+
+  // Use backend topics if available, fallback to local
+  const subjects = backendSubjects.length > 0 ? backendSubjects : (data.subjects || [])
+  const topics = backendTopics.length > 0 ? backendTopics : (data.topics || [])
+  
+  const topicOptions = topics.filter((t) => !subjectId || t.subjectId === subjectId)
 
   useEffect(() => {
     if (!subjectId && subjects[0]?.id) setSubjectId(subjects[0].id)
@@ -34,6 +68,7 @@ export function QuizPage() {
   }, [topicOptions, topicId])
 
   const selectedTopic = topics.find((t) => t.id === topicId) || topicOptions[0]
+  const selectedSubject = subjects.find((s) => s.id === subjectId)
 
   function startDemo() {
     sessionStorage.setItem(
@@ -55,11 +90,61 @@ export function QuizPage() {
         subjectId: topic.subjectId,
         topic: topic.name,
         topicId: topic.id,
-        count: 10,
-        minutes: 15,
+        count: questionCount,
+        minutes: Math.max(15, questionCount * 1.5),
       }),
     )
     navigate('/quiz/play')
+  }
+
+  async function startBatchQuiz() {
+    const topic = selectedTopic
+    if (!topic) return
+    const subjectName = topic.subjectName || topic.subject || subjects.find(s => s.id === topic.subjectId)?.name || ''
+    
+    setGenerating(true)
+    setGenerationStatus(`Generating ${questionCount} questions about ${topic.name}...`)
+    
+    try {
+      // Use batch endpoint for larger counts
+      if (questionCount > 15) {
+        const result = await api.post('/ai/generate-quiz-batch', {
+          subject: subjectName,
+          topic: topic.name,
+          difficulty: 'medium',
+          totalQuestions: questionCount,
+          batchSize: 10,
+        })
+        
+        if (result.data?.success && result.data.data?.questions?.length > 0) {
+          setGenerationStatus(`Generated ${result.data.data.totalGenerated} questions!`)
+          // Store and navigate to quiz
+          sessionStorage.setItem(
+            'eduvance.quiz.config',
+            JSON.stringify({
+              kind: 'check',
+              subject: subjectName,
+              subjectId: topic.subjectId,
+              topic: topic.name,
+              topicId: topic.id,
+              count: result.data.data.totalGenerated,
+              minutes: Math.max(15, result.data.data.totalGenerated * 1.5),
+              useBackendQuestions: true,
+            }),
+          )
+          navigate('/quiz/play')
+        } else {
+          setGenerationStatus('Generation failed. Using local questions.')
+          startCheck()
+        }
+      } else {
+        startCheck()
+      }
+    } catch (err) {
+      setGenerationStatus('AI unavailable. Using local questions.')
+      startCheck()
+    }
+    setGenerating(false)
   }
 
   const hasBankQuestions = selectedTopic && (() => {
@@ -81,91 +166,147 @@ export function QuizPage() {
     )
   }
 
-  return (
-    <div>
-      <DemoBanner />
-      <PageHeader
-        eyebrow="Practice"
-        title="Study → quiz → evaluate → replan"
-        description="Eduvance already knows your subjects. A quiz writes evidence into the same preparation state."
-      />
-      <div className="mb-8">
-        <AdaptiveLoop compact />
-      </div>
-
-      {data.isDemo ? (
-        <div className="mb-10 rounded-xl border border-accent/20 bg-gradient-to-br from-accent/[0.12] via-surface to-surface px-6 py-6">
-          <p className="text-[11px] uppercase tracking-wider text-accent-2">Demo quiz</p>
-          <h2 className="mt-2 font-serif text-3xl text-ink">
-            {bank.subject} → {bank.topic}
-          </h2>
-          <p className="mt-2 text-sm text-ink-2">10 questions · sample item bank — separate from your workspace.</p>
-          <Button variant="accent" className="mt-5" onClick={startDemo}>
-            Start demo quiz
+  if (!data.isDemo && subjects.length === 0 && !loadingTopics) {
+    return (
+      <EmptyState
+        title="No topics extracted yet."
+        body="Upload a syllabus PDF in Edit Preparation and click '🧠 Analyze syllabus with AI' to auto-extract topics. Make sure GROQ_API_KEY is configured on Render."
+        action={
+          <Button as={Link} to="/setup" variant="secondary">
+            Edit preparation
           </Button>
-        </div>
-      ) : null}
+        }
+      />
+    )
+  }
 
-      {!data.isDemo && !data.wantsQuiz ? (
-        <AdaptiveInsight>
-          You asked for a study plan only. You can still run a self-check on your topics, or{' '}
-          <Link to="/setup" className="font-medium text-accent-2 hover:text-accent transition-colors">
-            edit preparation
-          </Link>{' '}
-          to include quizzes.
-        </AdaptiveInsight>
-      ) : null}
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Study → quiz → evaluate → replan"
+        subtitle="Eduvance already knows your subjects. A quiz writes evidence into the same preparation state."
+      />
 
-      {!data.isDemo && subjects.length && !topics.length ? (
-        <EmptyState
-          title="No topics extracted yet."
-          body="Upload a syllabus PDF in Edit Preparation and click '🧠 Analyze syllabus with AI' to auto-extract topics. Make sure your AI backend is configured (GROQ_API_KEY on Render)."
+      <AdaptiveLoop compact />
+
+      {data.isDemo && (
+        <DemoBanner
+          body="You're exploring Eduvance without an account. Sign up to unlock personalized quizzes."
           action={
-            <Button as={Link} to="/setup" variant="secondary">
-              Edit preparation
+            <Button as={Link} to="/register?intent=prepare" size="sm">
+              Create account
             </Button>
           }
         />
-      ) : null}
+      )}
 
-      {!data.isDemo && subjects.length && topics.length ? (
+      {/* Topic selector */}
+      {!data.isDemo && subjects.length > 0 && (
         <div className="mt-8 max-w-xl space-y-4">
           <h2 className="font-medium text-ink">Quiz from your preparation</h2>
-          <p className="text-sm text-ink-2">No timetable upload. Subjects and topics come from setup.</p>
-          <SubjectSelector
-            subjects={subjects}
-            value={subjectId}
-            onChange={(id) => {
-              setSubjectId(id)
-              const next = topics.find((t) => t.subjectId === id)
-              if (next) setTopicId(next.id)
-            }}
-          />
-          <TopicSelector topics={topicOptions} value={topicId} onChange={setTopicId} />
-          <div className="flex items-center gap-3">
-            <Button className="mt-2" onClick={startCheck} disabled={!selectedTopic}>
-              Start quiz
-            </Button>
-            {selectedTopic && (
-              <span className="mt-2 text-xs text-ink-3">
-                {hasBankQuestions ? '✅ Real MCQ questions available' : '📝 Self-assessment mode'}
-              </span>
+          <p className="text-sm text-ink-2">
+            {backendSubjects.length > 0 
+              ? 'Topics loaded from your uploaded syllabus.' 
+              : 'Subjects and topics come from your setup.'}
+          </p>
+
+          {loadingTopics && (
+            <div className="flex items-center gap-2 text-sm text-ink-3">
+              <span className="animate-spin">⏳</span> Loading topics from syllabus...
+            </div>
+          )}
+
+          {topicError && (
+            <p className="text-xs text-amber-600">{topicError}</p>
+          )}
+
+          {/* Subject selector */}
+          <div>
+            <label className="block text-xs font-medium uppercase tracking-wider text-ink-3 mb-1">
+              Choose subject
+            </label>
+            <select
+              value={subjectId}
+              onChange={(e) => setSubjectId(e.target.value)}
+              className="input w-full"
+            >
+              {subjects.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name} ({s.topicCount || topicOptions.filter(t => t.subjectId === s.id).length} topics)
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Topic selector */}
+          <div>
+            <label className="block text-xs font-medium uppercase tracking-wider text-ink-3 mb-1">
+              Choose topic
+            </label>
+            <select
+              value={topicId}
+              onChange={(e) => setTopicId(e.target.value)}
+              className="input w-full"
+            >
+              {topicOptions.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name} {t.difficulty ? `(${t.difficulty})` : ''}
+                </option>
+              ))}
+            </select>
+            {topicOptions.length > 0 && (
+              <p className="mt-1 text-[10px] text-ink-3">
+                {topicOptions.length} topic{topicOptions.length !== 1 ? 's' : ''} available for {selectedSubject?.name || 'this subject'}
+              </p>
             )}
           </div>
-        </div>
-      ) : null}
 
-      {!data.isDemo && !subjects.length ? (
-        <EmptyState
-          title="No subjects in this workspace"
-          body="Complete preparation once, then every quiz uses that list."
-          action={
-            <Button as={Link} to="/setup" variant="secondary">
-              Edit preparation
+          {/* Question count */}
+          <div>
+            <label className="block text-xs font-medium uppercase tracking-wider text-ink-3 mb-1">
+              Number of questions
+            </label>
+            <select
+              value={questionCount}
+              onChange={(e) => setQuestionCount(Number(e.target.value))}
+              className="input w-full"
+            >
+              <option value={5}>5 questions (quick check)</option>
+              <option value={10}>10 questions (standard)</option>
+              <option value={20}>20 questions (thorough)</option>
+              <option value={50}>50 questions (comprehensive)</option>
+              <option value={100}>100 questions (full bank)</option>
+            </select>
+          </div>
+
+          {/* Start quiz button */}
+          <div className="flex items-center gap-3">
+            <Button
+              onClick={questionCount > 15 ? startBatchQuiz : startCheck}
+              disabled={!selectedTopic || generating}
+            >
+              {generating ? 'Generating...' : `Start quiz →`}
             </Button>
-          }
-        />
-      ) : null}
+            <span className="text-[11px] text-ink-3">
+              🎯 AI-generated from your syllabus
+            </span>
+          </div>
+
+          {generationStatus && (
+            <p className="text-xs text-accent-2">{generationStatus}</p>
+          )}
+        </div>
+      )}
+
+      {/* Adaptive loop */}
+      {!data.isDemo && (
+        <div className="mt-12">
+          <AdaptiveInsight
+            title="How Eduvance adapts"
+            body="Your quiz performance feeds the priority engine. Weak topics rise; mastered topics step back."
+          />
+        </div>
+      )}
     </div>
   )
 }

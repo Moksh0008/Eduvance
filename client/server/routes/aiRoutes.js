@@ -354,3 +354,92 @@ aiRoutes.post('/replan', asyncHandler(async (req, res) => {
 
   return res.json({ success: true, data: { schedule, rankings: rankings.slice(0, 10) } })
 }))
+
+// ═══ BATCH GENERATE QUIZ (100 questions in batches) ═══
+aiRoutes.post('/generate-quiz-batch', asyncHandler(async (req, res) => {
+  const { subject, topic, difficulty, totalQuestions = 100, batchSize = 10 } = req.body
+  if (!subject || !topic) {
+    return res.status(400).json({ success: false, message: 'subject and topic are required' })
+  }
+
+  const preparation = await Preparation.findOne({ userId: req.user.userId })
+  const batchesNeeded = Math.ceil(totalQuestions / batchSize)
+  const allQuestions = []
+  const errors = []
+
+  for (let batch = 0; batch < batchesNeeded; batch++) {
+    try {
+      const result = await agent.generateQuiz({
+        userId: req.user.userId,
+        subject,
+        topic,
+        difficulty,
+        count: batchSize,
+        preparation,
+      })
+      if (result?.questions?.length) {
+        allQuestions.push(...result.questions)
+      }
+    } catch (err) {
+      errors.push({ batch: batch + 1, error: err.message })
+      // Continue with next batch even if one fails
+    }
+    // Small delay between batches to avoid rate limits
+    if (batch < batchesNeeded - 1) {
+      await new Promise(r => setTimeout(r, 1000))
+    }
+  }
+
+  return res.json({
+    success: true,
+    data: {
+      totalGenerated: allQuestions.length,
+      totalRequested: totalQuestions,
+      questions: allQuestions,
+      errors: errors.length ? errors : undefined,
+      quiz: allQuestions.length > 0 ? {
+        id: `batch_${Date.now()}`,
+        subject,
+        topic,
+        difficulty,
+        totalQuestions: allQuestions.length,
+      } : null,
+    },
+  })
+}))
+
+// ═══ GET SYLLABUS TOPICS (for quiz page) ═══
+aiRoutes.get('/syllabus-topics', asyncHandler(async (req, res) => {
+  const prep = await Preparation.findOne({ userId: req.user.userId })
+  if (!prep || !prep.subjects?.length) {
+    return res.json({ success: true, data: { subjects: [], topics: [] } })
+  }
+  
+  const subjects = []
+  const topics = []
+  for (const subj of prep.subjects) {
+    const subjectTopics = []
+    for (const unit of (subj.units || [])) {
+      for (const topic of (unit.topics || [])) {
+        if (topic.name?.trim()) {
+          const t = {
+            id: topic.id || `t_${subj.id}_${unit.id}_${topic.name}`,
+            name: topic.name,
+            subjectId: subj.id,
+            subjectName: subj.name,
+            unitId: unit.id,
+            unitName: unit.name,
+            difficulty: topic.difficulty || 'medium',
+            importance: topic.importance || 'medium',
+          }
+          subjectTopics.push(t)
+          topics.push(t)
+        }
+      }
+    }
+    if (subjectTopics.length > 0) {
+      subjects.push({ id: subj.id, name: subj.name, topicCount: subjectTopics.length })
+    }
+  }
+  return res.json({ success: true, data: { subjects, topics } })
+}))
