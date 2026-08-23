@@ -51,7 +51,7 @@ function getActiveProvider() {
  * @returns {string} Raw text response
  */
 export async function callGrok(systemPrompt, userPrompt, options = {}) {
-  const { temperature = 0.7, maxTokens = 1500, timeoutMs = 60000 } = options
+  const { temperature = 0.7, maxTokens = 2500, timeoutMs = 60000 } = options
   const provider = getActiveProvider()
   const models = provider.models || [provider.model]
   let lastError = null
@@ -176,7 +176,19 @@ export async function callGrokJSON(systemPrompt, userPrompt, options = {}) {
   try {
     return JSON.parse(jsonStr)
   } catch {
-    throw new Error(`Failed to parse Grok response as JSON: ${raw.slice(0, 200)}`)
+    // Repair truncated JSON (response hit max_tokens)
+    try {
+      let fixed = jsonStr.replace(/,\s*$/, '').replace(/"[^"]*$/, '"')
+      // Try closing open brackets
+      const opens = (fixed.match(/\[/g) || []).length - (fixed.match(/\]/g) || []).length
+      const curlyOpens = (fixed.match(/\{/g) || []).length - (fixed.match(/\}/g) || []).length
+      fixed += ']'.repeat(Math.max(0, opens)) + '}'.repeat(Math.max(0, curlyOpens))
+      const parsed = JSON.parse(fixed)
+      console.warn('[Grok] Repaired truncated JSON response')
+      return parsed
+    } catch {
+      throw new Error(`Failed to parse Grok response as JSON: ${raw.slice(0, 300)}`)
+    }
   }
 }
 
