@@ -147,19 +147,6 @@ export function LandingPage() {
         <ProductDemo />
       </section>
 
-      {/* CTA */}
-      <section className="px-4 py-20 text-center">
-        <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-          <h2 className="font-serif text-3xl text-ink">Ready to study smarter?</h2>
-          <p className="mt-2 text-sm text-ink-2">Your AI-powered study companion is waiting.</p>
-          <Link to={isAuthenticated ? '/dashboard' : '/register?intent=prepare'} className="mt-6 inline-block">
-            <button className="px-8 py-3 rounded-xl font-medium text-sm text-white transition-all hover:shadow-lg hover:shadow-accent/25" style={{ background: 'var(--color-accent)' }}>
-              Get started — it's free
-            </button>
-          </Link>
-        </motion.div>
-      </section>
-
       {/* Footer */}
       <footer className="border-t border-line-2 py-8 px-4 text-center text-[11px] text-ink-3" style={{ borderColor: 'rgba(0,0,0,0.04)' }}>
         <p>© 2026 Eduvance. All rights reserved. Built with 🧠 for students who refuse to guess.</p>
