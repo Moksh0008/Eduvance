@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { SetupShell } from '../components/layout/SetupShell'
@@ -398,6 +398,23 @@ function StepSyllabus({ subjects, setSubjects }) {
   )
 }
 
+function AnalyzingSpinner() {
+  const [elapsed, setElapsed] = useState(0)
+  useEffect(() => {
+    const start = Date.now()
+    const timer = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 1000)
+    return () => clearInterval(timer)
+  }, [])
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 flex items-center gap-3 rounded-lg bg-accent/[0.06] px-4 py-3">
+      <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+      <span className="text-sm text-accent-2">
+        AI analyzing{elapsed > 0 ? ` (${elapsed}s)` : ''} — extracting topics from your text...
+      </span>
+    </motion.div>
+  )
+}
+
 function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
   const [phase, setPhase] = useState(subject.syllabusFile ? 'stored' : 'idle')
   const [current, setCurrent] = useState(0)
@@ -567,12 +584,9 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
           </div>
         )}
 
-        {/* AI analyzing spinner */}
+        {/* AI analyzing spinner with timer */}
         {aiAnalyzing && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 flex items-center gap-3 rounded-lg bg-accent/[0.06] px-4 py-3">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-accent border-t-transparent" />
-            <span className="text-sm text-accent-2">AI is analyzing your syllabus and extracting topics...</span>
-          </motion.div>
+          <AnalyzingSpinner />
         )}
 
         {/* AI error / warning */}

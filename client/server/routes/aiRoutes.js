@@ -180,14 +180,19 @@ aiRoutes.post('/analyze-syllabus', asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: 'syllabusText is required' })
   }
 
-  const result = await agent.analyzeSyllabus(req.user.userId, syllabusText, {
+  // Trim syllabus text to 4000 chars max — shorter = faster Grok response
+  const trimmedText = syllabusText.length > 4000 ? syllabusText.slice(0, 4000) + '\n...(truncated)' : syllabusText
+  const t0 = Date.now()
+  const result = await agent.analyzeSyllabus(req.user.userId, trimmedText, {
     analyzeSyllabus: async (text) => callGrokJSON(
-      `You are an academic syllabus analyzer. Extract structured topics.
-Return JSON: { "subjects": [{ "name": "string", "units": [{ "name": "string", "topics": [{ "name": "string", "difficulty": "easy|medium|hard", "importance": "high|medium|low", "estimatedMinutes": 60 }] }] }] }
-Extract ALL subjects, units, topics. Estimate difficulty and importance. Return ONLY valid JSON.`,
-      `Syllabus:\n${syllabusText}`
+      `You are a fast syllabus analyzer. Extract topics from this text.
+Return JSON: { "subjects": [{ "name": "string", "units": [{ "name": "string", "topics": [{ "name": "string", "difficulty": "easy|medium|hard", "importance": "high|medium|low" }] }] }] }
+Return ONLY valid JSON. Be concise.`,
+      `Syllabus:\n${text}`,
+      { temperature: 0.2 }
     ),
   })
+  console.log(`[AnalyzeSyllabus] Grok took ${Date.now() - t0}ms for ${trimmedText.length} chars`)
 
   // Store the analyzed syllabus in preparation
   const updateData = {}
