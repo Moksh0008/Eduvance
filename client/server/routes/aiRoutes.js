@@ -202,10 +202,12 @@ aiRoutes.post('/analyze-syllabus', asyncHandler(async (req, res) => {
   console.log(`[Syllabus] Grok completed in ${Date.now() - t0}ms`)
   console.log(`[Syllabus] Topics extracted:`, JSON.stringify(result?.subjects?.map(s => ({ name: s.name, topicCount: s.units?.reduce((n, u) => n + (u.topics?.length || 0), 0) }))))
 
-  // Store the analyzed syllabus in preparation
-  const updateData = {}
-  if (result.subjects) {
-    updateData.subjects = result.subjects.map(s => ({
+  // Store the analyzed syllabus — MERGE with existing subjects (don't replace)
+  if (result.subjects?.length) {
+    const prep = await Preparation.findOne({ userId: req.user.userId })
+    const existingSubjects = prep?.subjects || []
+
+    const newSubjects = result.subjects.map(s => ({
       id: `subj_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
       name: s.name,
       units: (s.units || []).map(u => ({
@@ -221,13 +223,21 @@ aiRoutes.post('/analyze-syllabus', asyncHandler(async (req, res) => {
         })),
       })),
     }))
-  }
 
-  await Preparation.findOneAndUpdate(
-    { userId: req.user.userId },
-    { $set: updateData },
-    { new: true }
-  )
+    // Merge: keep existing subjects not in new result, update/replace matching ones
+    const mergedSubjects = [
+      ...existingSubjects.filter(existing =>
+        !newSubjects.some(ns => ns.name.toLowerCase() === existing.name.toLowerCase())
+      ),
+      ...newSubjects,
+    ]
+
+    await Preparation.findOneAndUpdate(
+      { userId: req.user.userId },
+      { $set: { subjects: mergedSubjects } },
+      { new: true }
+    )
+  }
 
   return res.json({ success: true, data: result })
 }))
@@ -487,18 +497,19 @@ aiRoutes.get('/syllabus-topics', asyncHandler(async (req, res) => {
   
   const subjects = []
   const topics = []
-  for (const subj of prep.subjects) {
+  for (const subj of (prep.subjects || [])) {
+    if (!subj.name?.trim()) continue
     const subjectTopics = []
     for (const unit of (subj.units || [])) {
       for (const topic of (unit.topics || [])) {
         if (topic.name?.trim()) {
           const t = {
-            id: topic.id || `t_${subj.id}_${unit.id}_${topic.name}`,
-            name: topic.name,
+            id: topic.id || `t_${subj.id}_${unit.id || 'u'}_${topic.name.replace(/\s+/g, '_')}`,
+            name: topic.name.trim(),
             subjectId: subj.id,
             subjectName: subj.name,
-            unitId: unit.id,
-            unitName: unit.name,
+            unitId: unit.id || 'default',
+            unitName: unit.name || 'General',
             difficulty: topic.difficulty || 'medium',
             importance: topic.importance || 'medium',
           }
@@ -507,10 +518,9 @@ aiRoutes.get('/syllabus-topics', asyncHandler(async (req, res) => {
         }
       }
     }
-    if (subjectTopics.length > 0) {
-      subjects.push({ id: subj.id, name: subj.name, topicCount: subjectTopics.length })
-    }
+    subjects.push({ id: subj.id, name: subj.name.trim(), topicCount: subjectTopics.length })
   }
+  console.log(`[QuizTopics] Returning ${subjects.length} subjects, ${topics.length} topics`) 
   return res.json({ success: true, data: { subjects, topics } })
 }))
 
