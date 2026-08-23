@@ -4,18 +4,33 @@
    All AI calls happen here, never exposed to frontend
    ═══════════════════════════════════════════════════ */
 
-// Provider priority: Groq (free) → xAI (paid)
+// Provider priority: Groq → xAI (fallback)
+// Model list: tried in order until one works (handles deprecations gracefully)
+const GROQ_MODELS = [
+  'llama-3.1-8b-instant',
+  'llama-3.3-70b-versatile',
+  'llama3-70b-8192',
+  'llama3-8b-8192',
+  'mixtral-8x7b-32768',
+  'gemma2-9b-it',
+  'openai/gpt-oss-20b',
+  'openai/gpt-oss-120b',
+  'qwen/qwen3.6-27b',
+]
+
 const PROVIDERS = [
   {
     name: 'Groq',
     baseUrl: 'https://api.groq.com/openai/v1',
     getKey: () => process.env.GROQ_API_KEY,
-    model: 'llama-3.3-70b-versatile',
+    models: GROQ_MODELS,
+    model: process.env.GROQ_MODEL || GROQ_MODELS[0],
   },
   {
     name: 'xAI',
     baseUrl: 'https://api.x.ai/v1',
     getKey: () => process.env.XAI_API_KEY,
+    models: ['grok-2-1212', 'grok-beta'],
     model: 'grok-2-1212',
   },
 ]
@@ -38,50 +53,64 @@ function getActiveProvider() {
 export async function callGrok(systemPrompt, userPrompt, options = {}) {
   const { temperature = 0.7, maxTokens = 2000, timeoutMs = 30000 } = options
   const provider = getActiveProvider()
-  console.log(`[Grok] Calling ${provider.name} (${provider.model}) with ${timeoutMs}ms timeout`)
+  const models = provider.models || [provider.model]
+  let lastError = null
 
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  // Try each model until one works
+  for (const model of models) {
+    console.log(`[Grok] Trying ${provider.name} (${model})...`)
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), timeoutMs)
 
-  try {
-    const response = await fetch(`${provider.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${provider.getKey()}`,
-      },
-      body: JSON.stringify({
-        model: provider.model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature,
-        max_tokens: maxTokens,
-      }),
-      signal: controller.signal,
-    })
+    try {
+      const response = await fetch(`${provider.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${provider.getKey()}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          temperature,
+          max_tokens: maxTokens,
+        }),
+        signal: controller.signal,
+      })
+      clearTimeout(timer)
 
-    clearTimeout(timer)
+      if (response.status === 404 || response.status === 400) {
+        const errText = await response.text()
+        console.warn(`[Grok] ${provider.name} model ${model} unavailable (${response.status}):`, errText.slice(0, 100))
+        lastError = new Error(`Model ${model} unavailable`)
+        continue // try next model
+      }
 
-    if (!response.ok) {
-      const err = await response.text()
-      console.error(`[${provider.name}] API error:`, response.status, err)
-      throw new Error(`${provider.name} API error (${response.status}): ${err}`)
+      if (!response.ok) {
+        const errText = await response.text()
+        console.error(`[${provider.name}] API error:`, response.status, errText)
+        throw new Error(`${provider.name} API error (${response.status}): ${errText}`)
+      }
+
+      const data = await response.json()
+      const content = data.choices?.[0]?.message?.content || ''
+      console.log(`[Grok] ${provider.name} responded with ${model}: ${content.length} chars`)
+      return content
+    } catch (err) {
+      clearTimeout(timer)
+      if (err.name === 'AbortError') {
+        console.warn(`[Grok] ${provider.name} model ${model} timed out after ${timeoutMs}ms — trying next`)
+        lastError = new Error(`${provider.name} timed out`)
+        continue
+      }
+      throw err
     }
-
-    const data = await response.json()
-    const content = data.choices?.[0]?.message?.content || ''
-    console.log(`[Grok] ${provider.name} responded: ${content.length} chars`)
-    return content
-  } catch (err) {
-    clearTimeout(timer)
-    if (err.name === 'AbortError') {
-      console.error(`[Grok] ${provider.name} timed out after ${timeoutMs}ms`)
-      throw new Error(`${provider.name} timed out after ${timeoutMs / 1000}s. The AI service may be overloaded.`)
-    }
-    throw err
   }
+
+  throw new Error(`All ${provider.name} models failed. Last error: ${lastError?.message || 'unknown'}`)
 }
 
 /**
