@@ -57,29 +57,13 @@ export async function generateQuiz({ userId, subject, topic, difficulty, count, 
   let questions
   try {
     questions = await callGrokJSON(
-      `You are an expert CS exam question generator. Generate ${count} MCQ questions about ${subject} → ${topic} at ${finalDifficulty} difficulty.
-
-Return a JSON array:
-[{
-  "prompt": "question text?",
-  "options": ["A", "B", "C", "D"],
-  "correctAnswer": 0,
-  "explanation": "why this is correct",
-  "difficulty": "${finalDifficulty}",
-  "sourceContext": "which material this is based on"
-}]
-
-Rules:
-- Questions must be specific to ${topic}
-- 4 options each
-- correctAnswer is 0-based index
-- No repeats from: ${previousQuestions.map(q => q.prompt.slice(0, 50)).join('; ')}
-- ${context ? 'Base questions on the provided study material' : 'Generate based on standard CS curriculum'}
-- Return ONLY valid JSON array`,
+      `Generate ${count} MCQ questions about ${topic} in ${subject}. Return ONLY a JSON array, no markdown:
+[{"prompt":"question?","options":["A","B","C","D"],"correctAnswer":0,"explanation":"why","difficulty":"${finalDifficulty}"}]
+Each question: 4 options, correctAnswer is 0-3, specific to ${topic}.`,
       context
-        ? `Study material context:\n${context}\n\nGenerate ${count} ${finalDifficulty} questions about ${topic}.`
-        : `Generate ${count} ${finalDifficulty} questions about ${topic} in ${subject}.`,
-      { temperature: 0.4, maxTokens: 1500 }
+        ? `Material:\n${context.slice(0, 1000)}\n\nGenerate ${count} ${finalDifficulty} questions about ${topic}.`
+        : `Generate ${count} ${finalDifficulty} MCQ questions about ${topic} in ${subject}.`,
+      { temperature: 0.4, maxTokens: 2500 }
     )
     console.log(`[QuizGen] Grok returned ${questions?.length || 0} questions`)
   } catch (err) {

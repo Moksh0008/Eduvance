@@ -161,17 +161,23 @@ export async function callGrokJSON(systemPrompt, userPrompt, options = {}) {
 
   // Extract JSON from response (may be wrapped in markdown code blocks)
   let jsonStr = raw
+  // Try markdown code blocks (with closing backticks)
   const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/)
   if (jsonMatch) {
     jsonStr = jsonMatch[1]
+  } else {
+    // Truncated response — no closing backticks. Strip ```json prefix
+    jsonStr = raw.replace(/^```(?:json)?\s*/m, '')
   }
 
-  // Try to find JSON object or array in the response
-  const objMatch = jsonStr.match(/(\{[\s\S]*\})/)
-  const arrMatch = jsonStr.match(/(\[[\s\S]*\])/)
-
-  if (objMatch) jsonStr = objMatch[1]
-  else if (arrMatch) jsonStr = arrMatch[1]
+  // Try to find JSON array or object in the response
+  const arrStart = jsonStr.indexOf('[')
+  const objStart = jsonStr.indexOf('{')
+  if (arrStart >= 0 && (objStart < 0 || arrStart < objStart)) {
+    jsonStr = jsonStr.slice(arrStart)
+  } else if (objStart >= 0) {
+    jsonStr = jsonStr.slice(objStart)
+  }
 
   try {
     return JSON.parse(jsonStr)
