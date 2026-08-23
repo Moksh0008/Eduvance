@@ -180,7 +180,6 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile, onAna
     setDone(false)
     setCurrent(0)
     onAnalyzingChange?.(true)
-    // Send PDF to backend for server-side parsing + AI extraction
     try {
       const result = await aiApi.analyzeTimetable(file)
       if (result?.exams?.length) {
@@ -197,13 +196,14 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile, onAna
         }
       }
     } catch {
-      // AI extraction is best-effort — student can enter manually
+      // AI extraction is best-effort
+    } finally {
+      await runStages(UPLOAD_STAGES, (i) => setCurrent(i), 520)
+      setTimetableFile(fileMeta(file))
+      setDone(true)
+      setPhase('stored')
+      onAnalyzingChange?.(false)
     }
-    await runStages(UPLOAD_STAGES, (i) => setCurrent(i), 520)
-    setTimetableFile(fileMeta(file))
-    setDone(true)
-    setPhase('stored')
-    onAnalyzingChange?.(false)
   }
 
   function remove(id) {
