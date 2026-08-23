@@ -57,10 +57,11 @@ export function AppStateProvider({ children }) {
             clearAuth()
             setSession(null)
           })
-      } catch {
+      } catch (err) {
         if (cancelled) return
-        // Backend unreachable — use cached session data
-        // Dashboard will show with last-known data
+        // Token invalid or backend unreachable — clear stale auth so login/register pages show clean
+        clearAuth()
+        setSession(null)
       } finally {
         if (!cancelled) setBootstrapped(true)
       }
