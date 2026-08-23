@@ -8,7 +8,7 @@
 // xAI is primary (configured via XAI_API_KEY + XAI_MODEL)
 // Groq is fallback (configured via GROQ_API_KEY + GROQ_MODEL)
 const XAI_MODEL = (process.env.XAI_MODEL && !process.env.XAI_MODEL.includes('beta')) ? process.env.XAI_MODEL : 'grok-4.6'
-const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.1-8b-instant'
+const GROQ_MODEL = process.env.GROQ_MODEL || 'openai/gpt-oss-20b'
 
 const PROVIDERS = [
   {

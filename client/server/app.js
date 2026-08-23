@@ -55,7 +55,7 @@ export function createApp() {
     }
 
     // Check AI provider status
-    checks.grok = process.env.XAI_API_KEY ? `xai:${process.env.XAI_MODEL || 'grok-4.6'}` : (process.env.GROQ_API_KEY ? `groq:${process.env.GROQ_MODEL || 'llama-3.1-8b-instant'}` : 'missing')
+    checks.grok = process.env.XAI_API_KEY ? `xai:${process.env.XAI_MODEL || 'grok-4.6'}` : (process.env.GROQ_API_KEY ? `groq:${process.env.GROQ_MODEL || 'openai/gpt-oss-20b'}` : 'missing')
 
     // Server uptime
     checks.uptime = Math.round(process.uptime()) + 's'
