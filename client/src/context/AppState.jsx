@@ -121,9 +121,18 @@ export function AppStateProvider({ children }) {
         },
         { persist: false },
       )
-      // pushPreparation is best-effort — don't block navigation if backend is slow
+      // Save to MongoDB with retry — never silently lose data
       if (session?.token) {
-        pushPreparation(next).catch(() => {})
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            await pushPreparation(next)
+            console.log('[Setup] Preparation saved to server successfully')
+            break
+          } catch (err) {
+            console.error(`[Setup] Save attempt ${attempt + 1} failed:`, err.message)
+            if (attempt < 2) await new Promise(r => setTimeout(r, 2000 * (attempt + 1)))
+          }
+        }
       }
       return next
     },
