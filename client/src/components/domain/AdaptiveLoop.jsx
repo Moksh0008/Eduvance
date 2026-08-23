@@ -41,6 +41,16 @@ function getStepPosition(index, total, radius) {
   }
 }
 
+/* Generate a smooth arc path between two points on the circle */
+function getArcPath(p1, p2, center) {
+  // Quadratic bezier that follows the circle edge
+  const mid = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 }
+  // Pull control point slightly toward center for smooth curve
+  const cx = mid.x + (center.x - mid.x) * 0.2
+  const cy = mid.y + (center.y - mid.y) * 0.2
+  return `M ${center.x + p1.x} ${center.y + p1.y} Q ${cx} ${cy} ${center.x + p2.x} ${center.y + p2.y}`
+}
+
 export function AdaptiveLoop({ compact = false }) {
   const { isDark } = useTheme()
   const reduce = useReducedMotion()
@@ -56,7 +66,7 @@ export function AdaptiveLoop({ compact = false }) {
 
   const radius = isMobile ? RADIUS_MOBILE : RADIUS_DESKTOP
   const size = isMobile ? 220 : 340
-  const center = size / 2
+  const center = { x: size / 2, y: size / 2 }
 
   /* ── Compact mode: simple horizontal flow ── */
   if (compact) {
@@ -104,7 +114,7 @@ export function AdaptiveLoop({ compact = false }) {
       <div className="relative shrink-0" style={{ width: size, height: size }}>
         {/* Center hub */}
         <motion.div
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center rounded-full"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center rounded-full z-10"
           style={{
             width: isMobile ? 80 : 110,
             height: isMobile ? 80 : 110,
@@ -158,6 +168,43 @@ export function AdaptiveLoop({ compact = false }) {
           />
         )}
 
+        {/* Connecting lines between nodes — clean arcs */}
+        <svg
+          className="absolute inset-0 pointer-events-none"
+          width={size}
+          height={size}
+          aria-hidden="true"
+        >
+          <defs>
+            {STEPS.map((step, i) => (
+              <linearGradient key={`grad-${i}`} id={`lineGrad-${i}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={step.color} stopOpacity={i === activeStep ? 0.6 : 0.1} />
+                <stop offset="100%" stopColor={STEPS[(i + 1) % STEPS.length].color} stopOpacity={i === activeStep ? 0.6 : 0.1} />
+              </linearGradient>
+            ))}
+          </defs>
+          {STEPS.map((step, i) => {
+            const next = (i + 1) % STEPS.length
+            const p1 = getStepPosition(i, STEPS.length, radius)
+            const p2 = getStepPosition(next, STEPS.length, radius)
+            const isActive = i === activeStep
+            const d = getArcPath(p1, p2, center)
+            return (
+              <motion.path
+                key={`line-${i}`}
+                d={d}
+                fill="none"
+                stroke={isActive ? `url(#lineGrad-${i})` : isDark ? 'rgba(148,163,184,0.08)' : 'rgba(26,29,46,0.06)'}
+                strokeWidth={isActive ? 2.5 : 1}
+                strokeLinecap="round"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 0.8, delay: i * 0.1 }}
+              />
+            )
+          })}
+        </svg>
+
         {/* Step nodes */}
         {STEPS.map((step, i) => {
           const pos = getStepPosition(i, STEPS.length, radius)
@@ -165,10 +212,10 @@ export function AdaptiveLoop({ compact = false }) {
           return (
             <motion.div
               key={step.label}
-              className="absolute flex flex-col items-center"
+              className="absolute flex flex-col items-center z-10"
               style={{
-                left: center + pos.x,
-                top: center + pos.y,
+                left: center.x + pos.x,
+                top: center.y + pos.y,
                 transform: 'translate(-50%, -50%)',
               }}
               initial={{ opacity: 0, scale: 0 }}
@@ -217,42 +264,6 @@ export function AdaptiveLoop({ compact = false }) {
             </motion.div>
           )
         })}
-
-        {/* Connecting lines between nodes */}
-        <svg
-          className="absolute inset-0 pointer-events-none"
-          width={size}
-          height={size}
-          aria-hidden="true"
-        >
-          {STEPS.map((step, i) => {
-            const next = (i + 1) % STEPS.length
-            const p1 = getStepPosition(i, STEPS.length, radius)
-            const p2 = getStepPosition(next, STEPS.length, radius)
-            const isActive = i === activeStep
-            // Curved arc path between nodes
-            const mx = center + (p1.x + p2.x) / 2
-            const my = center + (p1.y + p2.y) / 2
-            // Control point pulled slightly toward center for curve
-            const cx = mx + (center - mx) * 0.15
-            const cy = my + (center - my) * 0.15
-            const d = `M ${center + p1.x} ${center + p1.y} Q ${cx} ${cy} ${center + p2.x} ${center + p2.y}`
-            return (
-              <motion.path
-                key={`line-${i}`}
-                d={d}
-                fill="none"
-                stroke={isActive ? step.color : isDark ? 'rgba(148,163,184,0.08)' : 'rgba(26,29,46,0.06)'}
-                strokeWidth={isActive ? 2 : 1}
-                strokeDasharray={isActive ? 'none' : '4 4'}
-                strokeLinecap="round"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 0.8, delay: i * 0.1 }}
-              />
-            )
-          })}
-        </svg>
       </div>
 
       {/* Description panel */}

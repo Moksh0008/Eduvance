@@ -406,7 +406,14 @@ function SubjectSyllabus({ subject, onChange }) {
         return
       }
     } catch (err) {
-      setAiError(err.message || 'AI analysis failed — you can add topics manually below')
+      const msg = err.message || ''
+      if (msg.includes('waking up') || msg.includes('starting up')) {
+        setAiError('Server is waking up — topics will be extracted on retry. You can also add topics manually below.')
+      } else if (msg.includes('No AI provider') || msg.includes('credits')) {
+        setAiError('AI service unavailable — please add topics manually below. The PDF is uploaded and indexed for quiz generation.')
+      } else {
+        setAiError(msg || 'AI analysis failed — you can add topics manually below')
+      }
     }
     // Fallback: just store the file metadata
     await runStages(UPLOAD_STAGES, (i) => setCurrent(i), 480)
@@ -544,11 +551,27 @@ function SubjectSyllabus({ subject, onChange }) {
           </motion.div>
         )}
 
-        {/* AI error */}
+        {/* AI error / warning */}
         {aiError && (
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3 text-xs text-red-500">
-            {aiError}
-          </motion.p>
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3">
+            <p className={`text-xs ${aiError.includes('waking up') || aiError.includes('starting up') ? 'text-amber-600' : 'text-red-500'}`}>
+              {aiError.includes('waking up') || aiError.includes('starting up') ? '⏳ ' : '⚠️ '}{aiError}
+            </p>
+            {subject.syllabusFile && (
+              <button
+                type="button"
+                onClick={() => {
+                  setAiError('')
+                  const file = new File([new Blob()], subject.syllabusFile.name, { type: 'application/pdf' })
+                  // Re-trigger with the stored file reference
+                  onFile(subject.syllabusFile.raw || subject.syllabusFile)
+                }}
+                className="mt-2 text-[11px] font-medium text-accent-2 hover:text-accent transition-colors underline"
+              >
+                🔄 Retry AI Analysis
+              </button>
+            )}
+          </motion.div>
         )}
 
         {/* Uploaded file info */}
