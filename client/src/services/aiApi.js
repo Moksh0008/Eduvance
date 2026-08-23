@@ -21,7 +21,7 @@ export const aiApi = {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 15000)
+        const timeout = setTimeout(() => controller.abort(), 90000)
         const res = await fetch('/api/ai/analyze-file', {
           method: 'POST',
           headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -58,7 +58,7 @@ export const aiApi = {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 15000)
+        const timeout = setTimeout(() => controller.abort(), 90000)
         const res = await fetch('/api/ai/analyze-timetable', {
           method: 'POST',
           headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -101,7 +101,7 @@ export const aiApi = {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const controller = new AbortController()
-        const timeout = setTimeout(() => controller.abort(), 15000)
+        const timeout = setTimeout(() => controller.abort(), 90000)
         const res = await fetch('/api/ai/upload-material', {
           method: 'POST',
           headers: token ? { Authorization: `Bearer ${token}` } : {},

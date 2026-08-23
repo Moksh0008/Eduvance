@@ -121,7 +121,10 @@ export function AppStateProvider({ children }) {
         },
         { persist: false },
       )
-      if (session?.token) await pushPreparation(next)
+      // pushPreparation is best-effort — don't block navigation if backend is slow
+      if (session?.token) {
+        pushPreparation(next).catch(() => {})
+      }
       return next
     },
     [apply, session],

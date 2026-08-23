@@ -61,6 +61,7 @@ export function SetupPage() {
   }
 
   async function finish() {
+    try {
     const named = exams.filter((e) => e.name.trim())
     await completeOnboarding({
       timetableFile,
@@ -86,6 +87,10 @@ export function SetupPage() {
         generateQuizzes: prefs.generate === 'both' || prefs.generate === 'quizzes',
       },
     })
+    } catch (err) {
+      console.error('[Setup] finish error:', err)
+    }
+    // Always navigate to dashboard even if save fails
     navigate('/dashboard')
   }
 

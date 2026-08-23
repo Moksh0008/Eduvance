@@ -36,17 +36,42 @@ aiRoutes.post('/analyze-file', upload.single('file'), asyncHandler(async (req, r
   if (file.mimetype === 'application/pdf') {
     try {
       const pdfParse = (await import('pdf-parse')).default
-      const data = await pdfParse(file.buffer)
+      const data = await pdfParse(file.buffer, {
+        max: 20, // limit to first 20 pages to avoid memory issues
+      })
       text = data.text
+    } catch (pdfErr) {
+      console.error('[AnalyzeFile] PDF parse error:', pdfErr.message)
+      // Try reading as UTF-8 fallback for non-standard PDFs
+      try {
+        text = file.buffer.toString('utf-8')
+        // If it looks like binary garbage, give up
+        if (text.includes('\u0000') && text.indexOf('\u0000') < 100) {
+          return res.status(400).json({ success: false, message: 'Failed to parse PDF. The file may be scanned/image-based. Try a text-based PDF or paste the syllabus text instead.' })
+        }
+      } catch {
+        return res.status(400).json({ success: false, message: 'Failed to parse PDF. Try a different file or paste the syllabus text instead.' })
+      }
+    }
+  } else if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || file.originalname?.endsWith('.docx')) {
+    // DOCX files — extract text from the buffer
+    try {
+      text = file.buffer.toString('utf-8')
+      // DOCX is XML inside — try to extract text between tags
+      const textMatches = text.match(/<w:t[^>]*>([^<]+)<\/w:t>/g)
+      if (textMatches && textMatches.length > 0) {
+        text = textMatches.map(m => m.replace(/<[^>]+>/g, '')).join(' ')
+      }
     } catch {
-      return res.status(400).json({ success: false, message: 'Failed to parse PDF.' })
+      // fallback: raw buffer
+      text = file.buffer.toString('utf-8')
     }
   } else {
     text = file.buffer.toString('utf-8')
   }
 
   if (!text || text.trim().length < 20) {
-    return res.status(400).json({ success: false, message: 'File content is too short or empty.' })
+    return res.status(400).json({ success: false, message: 'File content is too short or empty. Try a different file or paste the text manually.' })
   }
 
   const subject = req.body.subject || ''
