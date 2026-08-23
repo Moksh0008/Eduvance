@@ -156,7 +156,7 @@ export function SetupPage() {
               if (step === 1) syncSubjectsFromExams(exams)
               setStep((s) => s + 1)
             }}
-            disabled={(step === 1 && !exams.some((e) => e.name.trim())) || anyAnalyzing}
+            disabled={anyAnalyzing}
           >
             {anyAnalyzing ? 'Analyzing…' : 'Continue'}
           </Button>
