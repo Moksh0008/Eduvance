@@ -36,9 +36,10 @@ export function QuizPage() {
       setTopicError('')
       try {
         const result = await api.get('/ai/syllabus-topics')
-        if (result.data?.success) {
-          setBackendSubjects(result.data.data.subjects || [])
-          setBackendTopics(result.data.data.topics || [])
+        // api.get returns json.data directly
+        if (result?.subjects) {
+          setBackendSubjects(result.subjects || [])
+          setBackendTopics(result.topics || [])
         }
       } catch (err) {
         // Fallback to local data
