@@ -10,7 +10,7 @@ const PROVIDERS = [
     name: 'xAI',
     baseUrl: 'https://api.x.ai/v1',
     getKey: () => process.env.XAI_API_KEY,
-    models: ['grok-4-0716', 'grok-3', 'grok-3-mini'],
+    models: ['grok-4.6', 'grok-4.5', 'grok-3'],
     model: 'grok-4-0716',
   },
   {
