@@ -63,20 +63,30 @@ export function QuizPage() {
   // Use backend topics if available, fallback to workspace subjects
   const subjects = backendSubjects.length > 0 ? backendSubjects : (data.subjects || [])
   const topics = backendTopics.length > 0 ? backendTopics : (data.topics || [])
-  
+
+  // Debug: log data state
+  useEffect(() => {
+    console.log('[Quiz] subjects:', subjects.length, subjects.map(s => `${s.name}(${s.id})`))
+    console.log('[Quiz] topics:', topics.length, topics.map(t => `${t.name}[subjectId=${t.subjectId}]`))
+  }, [subjects, topics])
+
   const topicOptions = topics.filter((t) => !subjectId || t.subjectId === subjectId)
+
+  // Also check workspace data for topics that backend might not have returned
+  const fallbackTopics = (data.topics || []).filter((t) => !subjectId || t.subjectId === subjectId)
+  const effectiveTopicOptions = topicOptions.length > 0 ? topicOptions : fallbackTopics
 
   useEffect(() => {
     if (!subjectId && subjects[0]?.id) setSubjectId(subjects[0].id)
   }, [subjects, subjectId])
 
   useEffect(() => {
-    if (!topicOptions.some((t) => t.id === topicId)) {
-      setTopicId(topicOptions[0]?.id || '')
+    if (!effectiveTopicOptions.some((t) => t.id === topicId)) {
+      setTopicId(effectiveTopicOptions[0]?.id || '')
     }
-  }, [topicOptions, topicId])
+  }, [effectiveTopicOptions, topicId])
 
-  const selectedTopic = topics.find((t) => t.id === topicId) || topicOptions[0]
+  const selectedTopic = topics.find((t) => t.id === topicId) || effectiveTopicOptions[0]
   const selectedSubject = subjects.find((s) => s.id === subjectId)
 
   function startDemo() {
@@ -276,7 +286,7 @@ export function QuizPage() {
             >
               {subjects.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {s.name} ({s.topicCount || topicOptions.filter(t => t.subjectId === s.id).length} topics)
+                  {s.name} ({s.topicCount || effectiveTopicOptions.filter(t => t.subjectId === s.id).length} topics)
                 </option>
               ))}
             </select>
@@ -292,15 +302,15 @@ export function QuizPage() {
               onChange={(e) => setTopicId(e.target.value)}
               className="input w-full"
             >
-              {topicOptions.map((t) => (
+              {effectiveTopicOptions.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.name} {t.difficulty ? `(${t.difficulty})` : ''}
                 </option>
               ))}
             </select>
-            {topicOptions.length > 0 && (
+            {effectiveTopicOptions.length > 0 && (
               <p className="mt-1 text-[10px] text-ink-3">
-                {topicOptions.length} topic{topicOptions.length !== 1 ? 's' : ''} available for {selectedSubject?.name || 'this subject'}
+                {effectiveTopicOptions.length} topic{effectiveTopicOptions.length !== 1 ? 's' : ''} available for {selectedSubject?.name || 'this subject'}
               </p>
             )}
           </div>
