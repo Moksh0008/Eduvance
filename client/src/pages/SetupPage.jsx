@@ -32,9 +32,8 @@ export function SetupPage() {
     dailyHours: workspace.preferences?.dailyHours || 3,
   }))
   const navigate = useNavigate()
-  // Track analyzing count using functional state (useRef breaks in Vercel minifier)
-  const [analyzingCount, setAnalyzingCount] = useState(0)
-  const anyAnalyzing = analyzingCount > 0
+  // Track analyzing count — module-level variable avoids Vite minifier issues
+  const [anyAnalyzing, setAnyAnalyzing] = useState(false)
 
   function syncSubjectsFromExams(nextExams) {
     setSubjects((prev) =>
@@ -125,7 +124,7 @@ export function SetupPage() {
               timetableFile={timetableFile}
               setTimetableFile={setTimetableFile}
               onAnalyzingChange={(analyzing) => {
-                setAnalyzingCount(c => c + (analyzing ? 1 : -1))
+                setAnyAnalyzing(analyzing)
               }}
             />
           )}
