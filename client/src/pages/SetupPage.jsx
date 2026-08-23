@@ -250,7 +250,7 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile, onAna
               <tr key={row.id} className="border-t border-line">
                 <td className="py-2 pr-2">
                   <input
-                    className="h-9 w-full border border-line bg-surface px-2"
+                    className="h-9 w-full border-0 border-b border-line bg-transparent px-0 text-sm focus:outline-none focus:border-accent"
                     placeholder="e.g. Operating Systems"
                     value={row.name}
                     aria-label="Subject"
@@ -260,7 +260,7 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile, onAna
                 <td className="py-2 pr-2">
                   <input
                     type="date"
-                    className="h-9 w-full border border-line bg-surface px-2"
+                    className="h-9 w-full border-0 border-b border-line bg-transparent px-0 text-sm focus:outline-none focus:border-accent"
                     value={row.date}
                     aria-label="Exam date"
                     onChange={(e) => setExams(exams.map((x, i) => (i === idx ? { ...x, date: e.target.value } : x)))}
@@ -269,7 +269,7 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile, onAna
                 <td className="py-2 pr-2">
                   <input
                     type="time"
-                    className="h-9 w-full border border-line bg-surface px-2"
+                    className="h-9 w-full border-0 border-b border-line bg-transparent px-0 text-sm focus:outline-none focus:border-accent"
                     value={row.time}
                     aria-label="Exam time"
                     onChange={(e) => setExams(exams.map((x, i) => (i === idx ? { ...x, time: e.target.value } : x)))}
@@ -278,7 +278,7 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile, onAna
                 <td className="py-2 pr-2">
                   <input
                     type="number"
-                    className="h-9 w-20 border border-line bg-surface px-2"
+                    className="h-9 w-20 border-0 border-b border-line bg-transparent px-0 text-sm focus:outline-none focus:border-accent"
                     value={row.marks}
                     aria-label="Marks"
                     onChange={(e) =>
