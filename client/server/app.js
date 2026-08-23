@@ -54,8 +54,8 @@ export function createApp() {
       checks.mongodb = 'unavailable'
     }
 
-    // Check Grok API key
-    checks.grok = process.env.GROQ_API_KEY ? 'groq-ready' : (process.env.XAI_API_KEY ? 'xai-configured' : 'missing')
+    // Check AI provider status
+    checks.grok = process.env.XAI_API_KEY ? 'xai-ready' : (process.env.GROQ_API_KEY ? 'groq-ready' : 'missing')
 
     // Server uptime
     checks.uptime = Math.round(process.uptime()) + 's'
