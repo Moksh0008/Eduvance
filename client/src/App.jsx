@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { AppShell } from './components/layout/AppShell'
@@ -13,6 +14,7 @@ import { AnalyticsPage } from './pages/AnalyticsPage'
 import { SubjectsPage } from './pages/SubjectsPage'
 import { TimetablePage } from './pages/TimetablePage'
 import { QuestionPapersPage } from './pages/QuestionPapersPage'
+import { warmBackend } from './services/warmup'
 import { StudySessionPage } from './pages/StudySessionPage'
 import { SetupPage } from './pages/SetupPage'
 import { ProfilePage } from './pages/ProfilePage'
@@ -53,6 +55,8 @@ function ProtectedSetup() {
 
 export default function App() {
   const location = useLocation()
+  // Warm backend on first load to prevent cold start delays
+  useEffect(() => { warmBackend() }, [])
 
   return (
     <>

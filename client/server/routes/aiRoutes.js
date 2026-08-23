@@ -114,32 +114,29 @@ aiRoutes.post('/analyze-file', upload.single('file'), asyncHandler(async (req, r
 
   const subject = req.body.subject || ''
 
-  // Store for RAG — this is the CRITICAL part for quiz questions from notes
+  // Run RAG indexing and Grok analysis IN PARALLEL for speed
   const materialId = `mat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-  try {
-    await agent.indexStudyMaterial(req.user.userId, materialId, file.originalname, file.mimetype, text, ragService)
-    console.log(`[AnalyzeFile] RAG indexed: ${file.originalname} (${text.length} chars)`)
-  } catch (ragErr) {
-    console.error('[AnalyzeFile] RAG indexing failed:', ragErr.message)
-  }
 
-  // Analyze with Grok for topic extraction
-  let result = { subjects: [] }
-  try {
-    result = await agent.analyzeSyllabus(req.user.userId, text, {
-      analyzeSyllabus: async (t) => callGrokJSON(
-        `You are an academic syllabus analyzer. Extract structured topics from this document.
+  const ragPromise = agent.indexStudyMaterial(req.user.userId, materialId, file.originalname, file.mimetype, text, ragService)
+    .then(() => console.log(`[AnalyzeFile] RAG indexed: ${file.originalname} (${text.length} chars)`))
+    .catch(err => console.error('[AnalyzeFile] RAG indexing failed:', err.message))
+
+  const grokPromise = agent.analyzeSyllabus(req.user.userId, text, {
+    analyzeSyllabus: async (t) => callGrokJSON(
+      `You are an academic syllabus analyzer. Extract structured topics from this document.
 Return JSON: { "subjects": [{ "name": "string", "examDate": "YYYY-MM-DD or empty", "units": [{ "name": "string", "topics": [{ "name": "string", "difficulty": "easy|medium|hard", "importance": "high|medium|low", "estimatedMinutes": 60 }] }] }] }
 Extract ALL subjects, units, topics from the document. If exam dates are mentioned, include them. Return ONLY valid JSON.`,
-        `Subject context: ${subject}\n\nDocument content:\n${t.slice(0, 8000)}`
-      ),
-    })
-  } catch (grokErr) {
-    console.error('[AnalyzeFile] Grok analysis failed:', grokErr.message)
-    // Return success with file info even if Grok fails — RAG is already indexed
-  }
+      `Subject context: ${subject}\n\nDocument content:\n${t.slice(0, 8000)}`
+    ),
+  }).catch(err => {
+    console.error('[AnalyzeFile] Grok analysis failed:', err.message)
+    return { subjects: [] }
+  })
 
-  return res.json({ success: true, data: { ...result, fileName: file.originalname, textLength: text.length } })
+  // Wait for BOTH to complete — whichever finishes last determines response time
+  const [_, result] = await Promise.all([ragPromise, grokPromise])
+
+  return res.json({ success: true, data: { ...(result || { subjects: [] }), fileName: file.originalname, textLength: text.length } })
 }))
 
 // ═══ ANALYZE TIMETABLE (server-side PDF parsing) ═══
