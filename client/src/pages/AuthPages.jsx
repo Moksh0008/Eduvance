@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AuthNav } from '../components/layout/MarketingNav'
@@ -6,8 +6,161 @@ import { Button } from '../components/ui/Button'
 import { useAppState } from '../context/AppState'
 import { ApiError } from '../services/api'
 
-/* ═══════════════════════════════════════════════════
-   ═══════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════ */
+
+/* ═══ ANIMATED COUNTER ═══ */
+function AnimatedCounter({ end, duration = 2, suffix = '' }) {
+  const [count, setCount] = useState(0)
+  useEffect(() => {
+    let start = 0
+    const increment = end / (duration * 60)
+    const timer = setInterval(() => {
+      start += increment
+      if (start >= end) {
+        setCount(end)
+        clearInterval(timer)
+      } else {
+        setCount(Math.floor(start))
+      }
+    }, 1000 / 60)
+    return () => clearInterval(timer)
+  }, [end, duration])
+  return <span>{count.toLocaleString()}{suffix}</span>
+}
+
+/* ═══ STATS CARDS ═══ */
+function StatsSection() {
+  const stats = [
+    { value: 12847, suffix: '+', label: 'Students preparing', icon: '🎓' },
+    { value: 89, suffix: '%', label: 'Average improvement', icon: '📈' },
+    { value: 245000, suffix: '+', label: 'Quizzes generated', icon: '🎯' },
+    { value: 4.9, suffix: '/5', label: 'Student rating', icon: '⭐' },
+  ]
+
+  return (
+    <div className="grid grid-cols-2 gap-3 mb-6">
+      {stats.map((stat, i) => (
+        <motion.div
+          key={stat.label}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 + i * 0.1 }}
+          className="rounded-xl p-3 border border-line-2 bg-surface/60 backdrop-blur-sm"
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{stat.icon}</span>
+            <div>
+              <div className="text-lg font-bold text-ink">
+                <AnimatedCounter end={stat.value} duration={1.5} suffix={stat.suffix} />
+              </div>
+              <div className="text-[10px] text-ink-3 leading-tight">{stat.label}</div>
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  )
+}
+
+/* ═══ TESTIMONIALS ═══ */
+function TestimonialCarousel() {
+  const testimonials = [
+    {
+      name: 'Priya S.',
+      role: 'CS Student, IIT Delhi',
+      text: '"Eduvance identified my weak topics in DBMS that I didn\'t even know about. Scored 92% in finals!"',
+      avatar: '👩‍💻',
+    },
+    {
+      name: 'Arjun M.',
+      role: 'EE Student, NIT Trichy',
+      text: '"The adaptive quiz system is insane. It generates questions from my actual notes, not random stuff."',
+      avatar: '👨‍🎓',
+    },
+    {
+      name: 'Sneha K.',
+      role: 'ME Student, BITS Pilani',
+      text: '"From 3 hours of random studying to 1 hour of focused prep. My grades improved by 25%!"',
+      avatar: '👩‍🔬',
+    },
+  ]
+
+  const [current, setCurrent] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrent((prev) => (prev + 1) % testimonials.length)
+    }, 4000)
+    return () => clearInterval(timer)
+  }, [])
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 1 }}
+      className="mb-6"
+    >
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={current}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="rounded-xl p-4 border border-line-2 bg-surface/60 backdrop-blur-sm"
+        >
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">{testimonials[current].avatar}</span>
+            <div>
+              <p className="text-xs text-ink leading-relaxed italic">{testimonials[current].text}</p>
+              <div className="mt-2">
+                <span className="text-[11px] font-semibold text-ink">{testimonials[current].name}</span>
+                <span className="text-[10px] text-ink-3 ml-1">{testimonials[current].role}</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+      <div className="flex justify-center gap-1.5 mt-3">
+        {testimonials.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => setCurrent(i)}
+            className="w-1.5 h-1.5 rounded-full transition-all"
+            style={{ background: i === current ? 'var(--color-accent)' : 'var(--color-line-2)' }}
+          />
+        ))}
+      </div>
+    </motion.div>
+  )
+}
+
+/* ═══ FEATURE HIGHLIGHTS ═══ */
+function FeatureHighlights() {
+  const features = [
+    { icon: '🧠', title: 'AI-Powered', desc: 'Questions from YOUR notes' },
+    { icon: '⚡', title: 'Adaptive', desc: 'Plan changes with your progress' },
+    { icon: '🎯', title: 'Smart Focus', desc: 'Weak topics prioritized' },
+  ]
+
+  return (
+    <div className="flex gap-2 mb-6">
+      {features.map((f, i) => (
+        <motion.div
+          key={f.title}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 1.5 + i * 0.1 }}
+          className="flex-1 rounded-lg p-2.5 border border-line-2 bg-surface/60 backdrop-blur-sm text-center"
+        >
+          <span className="text-lg">{f.icon}</span>
+          <div className="text-[10px] font-semibold text-ink mt-1">{f.title}</div>
+          <div className="text-[9px] text-ink-3 leading-tight">{f.desc}</div>
+        </motion.div>
+      ))}
+    </div>
+  )
+}
 
 /* ═══ ORBITAL VISUALIZATION ═══ */
 const orbitalNodes = [
@@ -20,64 +173,36 @@ const orbitalNodes = [
 
 function OrbitalVisual() {
   return (
-    <div className="relative h-[450px] w-[450px]">
+    <div className="relative h-[320px] w-[320px] mx-auto">
       <motion.div
-        className="absolute left-1/2 top-1/2 z-10 h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-accent/30 flex items-center justify-center"
+        className="absolute left-1/2 top-1/2 z-10 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-accent/30 flex items-center justify-center"
         style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(79,70,229,0.15))', boxShadow: '0 0 40px rgba(99,102,241,0.15)' }}
         animate={{ scale: [1, 1.06, 1], boxShadow: ['0 0 40px rgba(99,102,241,0.15)', '0 0 60px rgba(99,102,241,0.25)', '0 0 40px rgba(99,102,241,0.15)'] }}
         transition={{ duration: 3, repeat: Infinity }}>
-        <span className="text-2xl font-bold text-accent-2">Ev</span>
+        <span className="text-xl font-bold text-accent-2">Ev</span>
       </motion.div>
       {orbitalNodes.map((node, i) => {
-        const radius = 180
+        const radius = 130
         return (
-          <motion.div key={node.label} className="absolute flex flex-col items-center gap-1.5"
+          <motion.div key={node.label} className="absolute flex flex-col items-center gap-1"
             style={{ left: '50%', top: '50%' }}
             animate={{
               x: [Math.cos(((node.angle - 90) * Math.PI) / 180) * radius, Math.cos(((node.angle - 90 + 360) * Math.PI) / 180) * radius],
               y: [Math.sin(((node.angle - 90) * Math.PI) / 180) * radius, Math.sin(((node.angle - 90 + 360) * Math.PI) / 180) * radius],
             }}
             transition={{ duration: 22 + i * 4, repeat: Infinity, ease: 'linear' }}>
-            <motion.div className="h-14 w-14 -translate-x-1/2 -translate-y-1/2 rounded-xl border border-line-2 flex flex-col items-center justify-center shadow-lg gap-0.5"
+            <motion.div className="h-10 w-10 -translate-x-1/2 -translate-y-1/2 rounded-lg border border-line-2 flex flex-col items-center justify-center shadow-md gap-0"
               style={{ background: 'var(--color-surface)' }}
               whileHover={{ scale: 1.15, boxShadow: '0 0 20px rgba(99,102,241,0.2)' }}>
-              <span className="text-lg">{node.emoji}</span>
-              <span className="text-[8px] font-medium text-ink-3 leading-none">{node.label}</span>
+              <span className="text-sm">{node.emoji}</span>
+              <span className="text-[7px] font-medium text-ink-3 leading-none">{node.label}</span>
             </motion.div>
           </motion.div>
         )
       })}
-      <div className="absolute left-1/2 top-1/2 h-[360px] w-[360px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-line/30" />
-      <div className="absolute left-1/2 top-1/2 h-[280px] w-[280px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-line/15" />
-      <div className="absolute left-1/2 top-1/2 h-[200px] w-[200px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.04] blur-[60px]" />
-    </div>
-  )
-}
-
-function AuthDoodles() {
-  const doodles = [
-    { icon: '📚', x: '10%', y: '12%', size: 28, delay: 0 },
-    { icon: '🎯', x: '85%', y: '15%', size: 24, delay: 0.5 },
-    { icon: '⚡', x: '5%', y: '45%', size: 26, delay: 1 },
-    { icon: '🧠', x: '90%', y: '50%', size: 28, delay: 1.5 },
-    { icon: '📊', x: '8%', y: '75%', size: 24, delay: 2 },
-    { icon: '🗓', x: '88%', y: '80%', size: 26, delay: 2.5 },
-    { icon: '💡', x: '15%', y: '90%', size: 22, delay: 3 },
-    { icon: '✨', x: '80%', y: '10%', size: 20, delay: 0.8 },
-    { icon: '📝', x: '20%', y: '30%', size: 22, delay: 1.2 },
-    { icon: '🔑', x: '78%', y: '65%', size: 20, delay: 2.2 },
-  ]
-  return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      {doodles.map((d, i) => (
-        <motion.div key={i}
-          className="absolute"
-          style={{ left: d.x, top: d.y, fontSize: d.size }}
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: 0.15, scale: 1, y: [0, -8, 0] }}
-          transition={{ delay: d.delay, duration: 4 + i * 0.5, repeat: Infinity, ease: 'easeInOut' }}
-        >{d.icon}</motion.div>
-      ))}
+      <div className="absolute left-1/2 top-1/2 h-[260px] w-[260px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-line/30" />
+      <div className="absolute left-1/2 top-1/2 h-[200px] w-[200px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-line/15" />
+      <div className="absolute left-1/2 top-1/2 h-[140px] w-[140px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.04] blur-[60px]" />
     </div>
   )
 }
@@ -110,7 +235,7 @@ function OctoPasswordReaction() {
         {messages[msgIdx]}
       </motion.div>
       <motion.img src="/mascot/octo-140.webp" alt="Octo"
-        style={{ width: 80, height: 80, filter: 'drop-shadow(0 0 15px rgba(99,102,241,0.5))' }}
+        style={{ width: 70, height: 70, filter: 'drop-shadow(0 0 15px rgba(99,102,241,0.5))' }}
         animate={{ rotate: [-5, 5, -5], y: [0, -4, 0] }}
         transition={{ duration: 2, repeat: Infinity }} />
     </motion.div>
@@ -134,10 +259,10 @@ function OctoMascot({ isTypingPassword }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}>
             <motion.img src="/mascot/octo-140.webp" alt="Octo — your study companion"
-              style={{ width: 100, height: 100, filter: 'drop-shadow(0 4px 20px rgba(109,76,216,0.4))' }}
+              style={{ width: 80, height: 80, filter: 'drop-shadow(0 4px 20px rgba(109,76,216,0.4))' }}
               animate={{ y: [0, -6, 0], rotate: [-2, 2, -2] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }} />
-            <motion.div className="rounded-xl px-4 py-2 text-xs font-medium shadow-lg"
+            <motion.div className="rounded-xl px-3 py-1.5 text-[10px] font-medium shadow-lg max-w-[180px]"
               style={{ background: 'var(--color-surface)', border: '1px solid var(--color-line-2)' }}
               animate={{ scale: [1, 1.02, 1] }}
               transition={{ duration: 3, repeat: Infinity }}>
@@ -150,12 +275,24 @@ function OctoMascot({ isTypingPassword }) {
   )
 }
 
+/* ═══ AUTH VISUAL (RIGHT PANEL) ═══ */
 function AuthVisual({ isTypingPassword = false }) {
   return (
-    <div className="relative flex h-full flex-col items-center justify-center gap-6 px-8">
+    <div className="relative flex h-full flex-col justify-center px-8 py-8 overflow-hidden">
+      {/* Background glow */}
       <div className="pointer-events-none absolute inset-0 bg-accent/[0.03] blur-[100px] rounded-3xl" />
-      <AuthDoodles />
+
+      {/* Top: Stats */}
+      <StatsSection />
+
+      {/* Middle: Orbital */}
       <OrbitalVisual />
+
+      {/* Bottom: Testimonials + Features */}
+      <FeatureHighlights />
+      <TestimonialCarousel />
+
+      {/* Octo mascot */}
       <OctoMascot isTypingPassword={isTypingPassword} />
     </div>
   )
