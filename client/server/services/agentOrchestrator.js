@@ -79,7 +79,7 @@ Rules:
       context
         ? `Study material context:\n${context}\n\nGenerate ${count} ${finalDifficulty} questions about ${topic}.`
         : `Generate ${count} ${finalDifficulty} questions about ${topic} in ${subject}.`,
-      { temperature: 0.4, maxTokens: 2000 }
+      { temperature: 0.4, maxTokens: 1500 }
     )
     console.log(`[QuizGen] Grok returned ${questions?.length || 0} questions`)
   } catch (err) {

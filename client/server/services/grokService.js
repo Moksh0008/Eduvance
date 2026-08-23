@@ -51,7 +51,7 @@ function getActiveProvider() {
  * @returns {string} Raw text response
  */
 export async function callGrok(systemPrompt, userPrompt, options = {}) {
-  const { temperature = 0.7, maxTokens = 2000, timeoutMs = 30000 } = options
+  const { temperature = 0.7, maxTokens = 1500, timeoutMs = 60000 } = options
   const provider = getActiveProvider()
   const models = provider.models || [provider.model]
   let lastError = null
@@ -83,14 +83,15 @@ export async function callGrok(systemPrompt, userPrompt, options = {}) {
       clearTimeout(timer)
 
       if (response.status === 429) {
-        // Rate limit — parse retry-after and wait, then retry same model
+        // Rate limit — TPM resets after ~60s, so wait that long
         const errBody = await response.json().catch(() => ({}))
         const retryAfter = errBody.error?.message?.match(/try again in ([\d.]+)s/)?.[1]
-        const waitMs = retryAfter ? parseFloat(retryAfter) * 1000 : 20000
-        console.warn(`[Grok] Rate limited on ${model}, waiting ${Math.round(waitMs / 1000)}s...`)
+        // Wait 65 seconds to ensure TPM window fully resets
+        const waitMs = 65000
+        console.warn(`[Grok] Rate limited on ${model}. Waiting 65s for TPM window reset...`)
         clearTimeout(timer)
-        await new Promise(r => setTimeout(r, Math.min(waitMs, 30000)))
-        // Retry the same model once more
+        await new Promise(r => setTimeout(r, waitMs))
+        // Retry the same model
         try {
           const retryController = new AbortController()
           const retryTimer = setTimeout(() => retryController.abort(), timeoutMs)
