@@ -29,23 +29,21 @@ export function QuizPage() {
   const [generating, setGenerating] = useState(false)
   const [generationStatus, setGenerationStatus] = useState('')
 
-  // Load topics from backend on mount
+  // Load topics from backend on mount AND on page focus (refresh after setup changes)
   useEffect(() => {
     async function loadTopics() {
       setLoadingTopics(true)
       setTopicError('')
       try {
         const result = await api.get('/ai/syllabus-topics')
-        // api.get returns json.data directly
         console.log('[Quiz] Topics API response:', result)
-        if (result?.subjects) {
+        if (result?.subjects?.length > 0) {
           setBackendSubjects(result.subjects || [])
           setBackendTopics(result.topics || [])
         } else {
           console.warn('[Quiz] No subjects in response:', result)
         }
       } catch (err) {
-        // Fallback to local data
         console.error('[Quiz] Failed to load topics:', err.message)
         setBackendSubjects([])
         setBackendTopics([])
@@ -54,6 +52,10 @@ export function QuizPage() {
       setLoadingTopics(false)
     }
     loadTopics()
+    // Re-fetch when user returns from setup
+    const onFocus = () => loadTopics()
+    window.addEventListener('focus', onFocus)
+    return () => window.removeEventListener('focus', onFocus)
   }, [session?.token])
 
   // Auto-generate topics from subject names when no syllabus exists
