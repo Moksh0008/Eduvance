@@ -3,7 +3,7 @@
    ANALYZE → RETRIEVE → DECIDE → GENERATE → EVALUATE → REPLAN
    ═══════════════════════════════════════════════════ */
 
-import { callGrokJSON, callGrok, generateAndValidateQuestions } from './grokService.js'
+import { callGrokJSON, callGrok, generateAndValidateQuestions, generateQuizQuestions } from './grokService.js'
 import { retrieveRelevantChunks, buildContextString } from './ragService.js'
 import { TopicMastery, QuizAttempt, Question, Quiz, Insight } from '../models/index.js'
 import {
@@ -56,15 +56,14 @@ export async function generateQuiz({ userId, subject, topic, difficulty, count, 
   
   let questions
   try {
-    questions = await generateAndValidateQuestions(
-      `Generate ${count} MCQ questions about ${topic} in ${subject}. Return ONLY a JSON array.`,
-      context
-        ? `Based on this study material, generate ${count} ${finalDifficulty} questions about ${topic}:
-
-${context.slice(0, 2000)}`
-        : `Generate ${count} ${finalDifficulty} MCQ questions about ${topic} in ${subject}.`,
-      { temperature: 0.4, maxTokens: 2500 }
-    )
+    questions = await generateQuizQuestions({
+      subject,
+      topic,
+      difficulty: finalDifficulty,
+      count: Math.min(count, 8),
+      context,
+      previousQuestions: previousQuestions.map(q => q.prompt),
+    })
     console.log(`[QuizGen] Generated ${questions.length} validated questions`)
   } catch (err) {
     console.error('[QuizGen] Question generation failed:', err.message)

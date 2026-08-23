@@ -19,14 +19,9 @@ const PROVIDERS = [
     getKey: () => process.env.GROQ_API_KEY,
     models: [
       'llama-3.1-8b-instant',
-      'llama-3.3-70b-versatile',
-      'llama3-70b-8192',
       'llama3-8b-8192',
       'mixtral-8x7b-32768',
       'gemma2-9b-it',
-      'openai/gpt-oss-20b',
-      'openai/gpt-oss-120b',
-      'qwen/qwen3.6-27b',
     ],
     model: process.env.GROQ_MODEL || 'llama-3.1-8b-instant',
   },
@@ -36,7 +31,7 @@ function getActiveProvider() {
   for (const p of PROVIDERS) {
     if (p.getKey()) return p
   }
-  throw new Error('No AI provider configured. Add XAI_API_KEY to Render environment variables.')
+  throw new Error('No AI provider configured. Add XAI_API_KEY or GROQ_API_KEY to Render environment variables.')
 }
 
 /**
@@ -44,7 +39,7 @@ function getActiveProvider() {
  * Tries xAI first, falls back to Groq
  */
 export async function callGrok(systemPrompt, userPrompt, options = {}) {
-  const { temperature = 0.7, maxTokens = 2500, timeoutMs = 60000 } = options
+  const { temperature = 0.7, maxTokens = 4096, timeoutMs = 60000 } = options
   const provider = getActiveProvider()
   const models = provider.models || [provider.model]
   let lastError = null
@@ -76,8 +71,8 @@ export async function callGrok(systemPrompt, userPrompt, options = {}) {
 
       // Rate limit — wait and retry
       if (response.status === 429) {
-        console.warn(`[AI] Rate limited on ${provider.name}/${model}. Waiting 65s...`)
-        await new Promise(r => setTimeout(r, 65000))
+        console.warn(`[AI] Rate limited on ${provider.name}/${model}. Waiting 70s...`)
+        await new Promise(r => setTimeout(r, 70000))
         try {
           const rc = new AbortController()
           const rt = setTimeout(() => rc.abort(), timeoutMs)
@@ -102,7 +97,6 @@ export async function callGrok(systemPrompt, userPrompt, options = {}) {
       }
 
       if (response.status === 404 || response.status === 400) {
-        const errText = await response.text()
         console.warn(`[AI] ${provider.name} model ${model} unavailable (${response.status})`)
         lastError = new Error(`Model ${model} unavailable`)
         continue
@@ -129,7 +123,7 @@ export async function callGrok(systemPrompt, userPrompt, options = {}) {
     }
   }
 
-  throw new Error(`All ${provider.name} models failed. Last error: ${lastError?.message || 'unknown'}. Server logs may have details.`)
+  throw new Error(`All AI models failed. ${lastError?.message || 'Check server logs.'}`)
 }
 
 /**
@@ -140,7 +134,6 @@ function extractJSON(raw) {
   let jsonStr = raw
 
   // Step 1: Strip markdown code fences
-  // Try matching ```json ... ``` (with closing fences)
   const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/)
   if (fenceMatch) {
     jsonStr = fenceMatch[1].trim()
@@ -166,14 +159,32 @@ function extractJSON(raw) {
   // Step 4: Repair truncated JSON
   try {
     let fixed = jsonStr
-    // Cut at last complete object boundary
+
+    // Remove trailing incomplete values
+    // Remove trailing comma
+    fixed = fixed.replace(/,\s*$/, '')
+
+    // If we're mid-string (odd number of unescaped quotes), close the string
+    const quoteCount = (fixed.match(/(?<!\\)"/g) || []).length
+    if (quoteCount % 2 !== 0) {
+      // Odd quotes = unclosed string. Close it and remove incomplete value
+      // Find last key-value pair boundary
+      fixed = fixed.replace(/:\s*"[^"]*$/, ': ""')
+      // Or if we're mid-key
+      fixed = fixed.replace(/,\s*"[^"]*$/, '')
+      fixed = fixed.replace(/\{\s*"[^"]*$/, '{')
+    }
+
+    // Remove trailing incomplete key-value pairs
+    fixed = fixed.replace(/,\s*"[^"]*\s*:\s*$/, '')
+    fixed = fixed.replace(/"[^"]*\s*:\s*$/, '')
+
+    // Cut at last complete object boundary (last })
     const lastBrace = fixed.lastIndexOf('}')
     if (lastBrace > 0) {
       fixed = fixed.slice(0, lastBrace + 1)
-    } else {
-      // No complete object — try to salvage partial
-      fixed = fixed.replace(/,[\s]*$/, '').replace(/"[^"]*$/, '"')
     }
+
     // Close any unclosed brackets
     const openSquare = (fixed.match(/\[/g) || []).length - (fixed.match(/\]/g) || []).length
     const openCurly = (fixed.match(/\{/g) || []).length - (fixed.match(/\}/g) || []).length
@@ -182,6 +193,27 @@ function extractJSON(raw) {
     const parsed = JSON.parse(fixed)
     console.warn(`[AI] Repaired truncated JSON — recovered ${Array.isArray(parsed) ? parsed.length : 1} items`)
     return parsed
+  } catch (repairErr) {
+    console.error('[AI] JSON repair failed:', repairErr.message)
+  }
+
+  // Step 5: Last resort — try to extract individual question objects
+  try {
+    const objects = []
+    const objRegex = /\{[^{}]*?"prompt"\s*:\s*"[^"]*"[^{}]*?"options"\s*:\s*\[[^\[\]]*\][^{}]*?"correctAnswer"\s*:\s*\d[^{}]*\}/g
+    let match
+    while ((match = objRegex.exec(jsonStr)) !== null) {
+      try {
+        const obj = JSON.parse(match[0])
+        if (obj.prompt && Array.isArray(obj.options) && obj.options.length === 4) {
+          objects.push(obj)
+        }
+      } catch {}
+    }
+    if (objects.length > 0) {
+      console.warn(`[AI] Extracted ${objects.length} individual question objects from truncated response`)
+      return objects
+    }
   } catch {}
 
   throw new Error(`Could not parse AI response as JSON`)
@@ -190,7 +222,7 @@ function extractJSON(raw) {
 /**
  * Validate a single quiz question
  */
-function validateQuestion(q, index) {
+function validateQuestion(q) {
   if (!q || typeof q !== 'object') return null
   if (!q.prompt || typeof q.prompt !== 'string') return null
   if (!Array.isArray(q.options) || q.options.length !== 4) return null
@@ -219,9 +251,9 @@ export async function callGrokJSON(systemPrompt, userPrompt, options = {}) {
     console.warn(`[AI] First parse attempt failed, retrying with stricter prompt...`)
     // Retry with even more explicit JSON-only instruction
     const retryRaw = await callGrok(
-      systemPrompt + '\n\nIMPORTANT: Return ONLY the JSON array. No text before or after. No markdown fences. No explanation.',
+      'Return ONLY a valid JSON array. No text before or after. No markdown fences.',
       userPrompt,
-      { ...options, temperature: 0.1, maxTokens: options.maxTokens || 2500 }
+      { ...options, temperature: 0.1, maxTokens: options.maxTokens || 4096 }
     )
     return extractJSON(retryRaw)
   }
@@ -248,9 +280,13 @@ export async function generateAndValidateQuestions(systemPrompt, userPrompt, opt
 
   // Validate each question
   const valid = []
+  const seen = new Set()
   for (let i = 0; i < parsed.length; i++) {
-    const q = validateQuestion(parsed[i], i)
-    if (q) valid.push(q)
+    const q = validateQuestion(parsed[i])
+    if (q && !seen.has(q.prompt.toLowerCase().slice(0, 50))) {
+      seen.add(q.prompt.toLowerCase().slice(0, 50))
+      valid.push(q)
+    }
   }
 
   if (valid.length === 0) {
@@ -262,118 +298,91 @@ export async function generateAndValidateQuestions(systemPrompt, userPrompt, opt
 }
 
 /**
+ * Generate quiz questions — BATCHED to prevent truncation
+ * Generates questions in small batches of 3-5 to stay within token limits
+ */
+export async function generateQuizQuestions({ subject, topic, difficulty, count, context, previousQuestions = [] }) {
+  const BATCH_SIZE = 3
+  const allQuestions = []
+  const seenPrompts = new Set()
+  let attempts = 0
+  const maxAttempts = Math.ceil(count / BATCH_SIZE) + 2
+
+  while (allQuestions.length < count && attempts < maxAttempts) {
+    attempts++
+    const remaining = count - allQuestions.length
+    const batchSize = Math.min(BATCH_SIZE, remaining)
+
+    const systemPrompt = `Generate ${batchSize} MCQ questions about ${topic} (${subject}). Difficulty: ${difficulty}.
+
+Return ONLY a JSON array. Each object:
+{"prompt":"question?","options":["A","B","C","D"],"correctAnswer":0,"explanation":"why"}`
+
+    const prevSlice = allQuestions.slice(-3).map(q => q.prompt.slice(0, 40)).join('; ')
+    const userPrompt = context
+      ? `Study material:\n${context.slice(0, 1500)}\n\nGenerate ${batchSize} questions about "${topic}".${prevSlice ? ` Avoid: ${prevSlice}` : ''}`
+      : `Generate ${batchSize} ${difficulty} MCQ questions about "${topic}" in ${subject}.${prevSlice ? ` Avoid: ${prevSlice}` : ''}`
+
+    try {
+      const batch = await generateAndValidateQuestions(systemPrompt, userPrompt, {
+        temperature: 0.4,
+        maxTokens: 3000,
+      })
+
+      for (const q of batch) {
+        const key = q.prompt.toLowerCase().slice(0, 50)
+        if (!seenPrompts.has(key)) {
+          seenPrompts.add(key)
+          allQuestions.push(q)
+        }
+      }
+    } catch (err) {
+      console.error(`[QuizBatch] Batch ${attempts} failed:`, err.message)
+      if (attempts > 1) break // Don't keep retrying forever
+    }
+
+    // Small delay between batches
+    if (allQuestions.length < count && attempts < maxAttempts) {
+      await new Promise(r => setTimeout(r, 1000))
+    }
+  }
+
+  if (allQuestions.length === 0) {
+    throw new Error('Failed to generate any valid questions')
+  }
+
+  console.log(`[QuizBatch] Generated ${allQuestions.length} questions in ${attempts} batches`)
+  return allQuestions
+}
+
+/**
  * Analyze syllabus text and extract structured topics
  */
 export async function analyzeSyllabus(syllabusText) {
-  const systemPrompt = `You are an academic syllabus analyzer. Extract structured topic information from the syllabus text.
+  const systemPrompt = `Extract topics from syllabus text. Return JSON:
+{"subjects":[{"name":"...","units":[{"name":"...","topics":[{"name":"...","difficulty":"easy|medium|hard","importance":"high|medium|low"}]}]}]}
+Return ONLY valid JSON.`
 
-Return a JSON object with this EXACT structure:
-{
-  "subjects": [
-    {
-      "name": "Subject Name",
-      "units": [
-        {
-          "name": "Unit Name",
-          "topics": [
-            {
-              "name": "Topic Name",
-              "difficulty": "easy|medium|hard",
-              "importance": "high|medium|low",
-              "estimatedMinutes": 60,
-              "prerequisites": ["prerequisite topic names"]
-            }
-          ]
-        }
-      ]
-    }
-  ]
-}
-
-Rules:
-- Extract ALL subjects, units, and topics from the syllabus
-- Estimate difficulty based on typical CS curriculum
-- Mark important/frequently tested topics as high importance
-- Provide realistic study time estimates
-- Identify prerequisite relationships where obvious
-- Return ONLY valid JSON, no explanations`
-
-  return callGrokJSON(systemPrompt, `Syllabus content:\n\n${syllabusText}`)
+  return callGrokJSON(systemPrompt, `Syllabus:\n${syllabusText}`, { maxTokens: 3000 })
 }
 
 /**
  * Analyze study material and extract knowledge chunks
  */
 export async function analyzeStudyMaterial(text, subject = '') {
-  const systemPrompt = `You are a study material analyzer. Break down educational content into structured knowledge chunks.
+  const systemPrompt = `Analyze study material. Return JSON:
+{"subject":"...","topics":[{"name":"...","difficulty":"...","keyConcepts":["..."],"chunks":[{"title":"...","content":"...","concepts":["..."]}]}]}
+Return ONLY valid JSON.`
 
-Return a JSON object with this EXACT structure:
-{
-  "subject": "detected subject name",
-  "topics": [
-    {
-      "name": "topic name",
-      "difficulty": "easy|medium|hard",
-      "keyConcepts": ["concept1", "concept2"],
-      "chunks": [
-        {
-          "title": "chunk title",
-          "content": "the actual content text",
-          "concepts": ["concept1"],
-          "potentialQuestions": ["what is X?", "how does Y work?"]
-        }
-      ]
-    }
-  ]
-}
-
-Rules:
-- Extract ALL meaningful educational content
-- Break into logical chunks of 100-300 words each
-- Identify key concepts and definitions
-- Note potential exam questions
-- Maintain accuracy — do not add information not in the source
-- Return ONLY valid JSON`
-
-  return callGrokJSON(systemPrompt, `Subject: ${subject || 'auto-detect'}\n\nMaterial:\n${text}`)
-}
-
-/**
- * Generate quiz questions from retrieved context
- */
-export async function generateQuizQuestions({ subject, topic, difficulty, count, context, previousQuestions = [] }) {
-  const systemPrompt = `Generate ${count} multiple-choice questions about ${topic} in ${subject} at ${difficulty} difficulty.
-
-Return ONLY a JSON array. No markdown, no explanation text before or after.
-
-Each question object must have exactly these fields:
-- "prompt": the question text
-- "options": array of exactly 4 strings
-- "correctAnswer": integer 0-3
-- "explanation": short explanation (under 50 words)
-
-Rules:
-- Questions must be specific to ${topic}
-- Mix conceptual, application, and scenario-based questions
-- Do not repeat these previous questions: ${previousQuestions.slice(0, 3).map(q => q.slice(0, 40)).join('; ') || 'none'}`
-
-  const userPrompt = context
-    ? `Based on this study material, generate ${count} ${difficulty} questions about ${topic}:\n\n${context.slice(0, 2000)}`
-    : `Generate ${count} ${difficulty} MCQ questions about ${topic} in ${subject}.`
-
-  return generateAndValidateQuestions(systemPrompt, userPrompt, { maxTokens: 2500 })
+  return callGrokJSON(systemPrompt, `Subject: ${subject || 'auto-detect'}\n\nMaterial:\n${text}`, { maxTokens: 3000 })
 }
 
 /**
  * Generate question explanation
  */
 export async function explainQuestion(question, correctAnswer, selectedAnswer, topic) {
-  const systemPrompt = `You are a helpful CS tutor. Explain why the correct answer is right and why the student's answer is wrong (if applicable).
-
-Be concise but thorough. Use examples if helpful. Keep the explanation under 150 words.`
-
-  const userPrompt = `Question: ${question}\nCorrect answer: ${correctAnswer}\nStudent selected: ${selectedAnswer}\nTopic: ${topic}\n\nExplain the correct answer.`
-
+  const systemPrompt = `Explain why the correct answer is right. Be concise (under 100 words).`
+  const userPrompt = `Q: ${question}\nCorrect: ${correctAnswer}\nStudent chose: ${selectedAnswer}\nTopic: ${topic}`
   return callGrok(systemPrompt, userPrompt, { maxTokens: 500 })
 }
 
@@ -381,113 +390,36 @@ Be concise but thorough. Use examples if helpful. Keep the explanation under 150
  * Generate AI insights from student performance data
  */
 export async function generateInsights(studentData) {
-  const systemPrompt = `You are an AI study advisor. Analyze the student's preparation data and generate actionable insights.
-
-Return a JSON array of insights:
-[
-  {
-    "type": "strength|weakness|improvement|regression|action|consistency|recommendation|alert",
-    "text": "insight text",
-    "emoji": "relevant emoji",
-    "priority": "low|medium|high",
-    "subject": "subject name or null",
-    "topic": "topic name or null"
-  }
-]
-
-Rules:
-- Generate 3-6 meaningful insights based on the data
-- Be specific with numbers and percentages
-- Focus on actionable advice
-- Never shame the student — always constructive
-- Include at least one positive insight if data supports it
-- Return ONLY valid JSON array`
-
-  return callGrokJSON(systemPrompt, `Student performance data:\n${JSON.stringify(studentData, null, 2)}`)
+  const systemPrompt = `Analyze student performance. Return JSON array:
+[{"type":"strength|weakness|improvement|action","text":"insight","emoji":"📊","priority":"low|medium|high","subject":"...","topic":"..."}]
+Generate 3-6 insights. Return ONLY valid JSON.`
+  return callGrokJSON(systemPrompt, `Performance:\n${JSON.stringify(studentData, null, 2)}`, { maxTokens: 2000 })
 }
 
 /**
  * Generate adaptive study recommendations
  */
 export async function generateRecommendations(studentContext) {
-  const systemPrompt = `You are an adaptive learning AI. Based on the student's current state, recommend what they should study next.
-
-Return a JSON object:
-{
-  "primaryRecommendation": {
-    "subject": "subject",
-    "topic": "topic",
-    "reason": "why this is recommended",
-    "estimatedMinutes": 45,
-    "difficulty": "easy|medium|hard"
-  },
-  "secondaryRecommendations": [
-    {
-      "subject": "subject",
-      "topic": "topic",
-      "reason": "reason",
-      "estimatedMinutes": 30
-    }
-  ],
-  "octoMessage": "A friendly message from the study companion (2 sentences max)"
-}
-
-Rules:
-- Primary recommendation should be the highest-priority topic
-- Consider exam proximity, weak areas, and recent performance
-- Don't recommend topics already mastered (>85% accuracy)
-- The octoMessage should be encouraging and specific to this student
-- Return ONLY valid JSON`
-
-  return callGrokJSON(systemPrompt, `Student context:\n${JSON.stringify(studentContext, null, 2)}`)
+  const systemPrompt = `Recommend what to study next. Return JSON:
+{"primaryRecommendation":{"subject":"...","topic":"...","reason":"...","estimatedMinutes":45},"secondaryRecommendations":[...],"octoMessage":"..."}
+Return ONLY valid JSON.`
+  return callGrokJSON(systemPrompt, `Context:\n${JSON.stringify(studentContext, null, 2)}`, { maxTokens: 2000 })
 }
 
 /**
  * Replan study schedule based on new quiz results
  */
 export async function replanSchedule(currentPlan, quizResult, studentContext) {
-  const systemPrompt = `You are a study planner AI. The student just completed a quiz. Adjust their study schedule accordingly.
-
-Return a JSON object:
-{
-  "reason": "Why the plan changed",
-  "changes": [
-    {
-      "subject": "subject",
-      "topic": "topic",
-      "oldMinutes": 30,
-      "newMinutes": 50,
-      "reason": "why this changed"
-    }
-  ],
-  "octoMessage": "A brief message explaining what changed and why (2 sentences max)"
-}
-
-Rules:
-- If the quiz score was low (<70%), increase time for that topic
-- If the quiz score was high (>85%), reduce time and reallocate to weaker areas
-- Don't dramatically change the entire plan — make targeted adjustments
-- Always explain the reasoning
-- The octoMessage should be friendly and specific
-- Return ONLY valid JSON`
-
-  return callGrokJSON(systemPrompt, `Current schedule:\n${JSON.stringify(currentPlan, null, 2)}\n\nQuiz result:\n${JSON.stringify(quizResult, null, 2)}\n\nStudent context:\n${JSON.stringify(studentContext, null, 2)}`)
+  const systemPrompt = `Adjust study schedule after quiz. Return JSON:
+{"reason":"...","changes":[{"subject":"...","topic":"...","oldMinutes":30,"newMinutes":50,"reason":"..."}],"octoMessage":"..."}
+Return ONLY valid JSON.`
+  return callGrokJSON(systemPrompt, `Plan:\n${JSON.stringify(currentPlan, null, 2)}\nQuiz:\n${JSON.stringify(quizResult, null, 2)}`, { maxTokens: 2000 })
 }
 
 /**
  * Generate Octo's contextual message
  */
 export async function generateOctoMessage(context) {
-  const systemPrompt = `You are Octo, a friendly purple octopus study companion. Generate a brief, encouraging message based on the student's current situation.
-
-Rules:
-- Keep it to 1-2 sentences
-- Use 0-1 emojis max
-- Be specific to what the student is doing
-- Never be condescending
-- If the student is struggling, be supportive
-- If the student is doing well, celebrate briefly
-- Return ONLY the message text, no JSON`
-
-  return callGrok(systemPrompt, `Student context: ${JSON.stringify(context)}`, { maxTokens: 150, temperature: 0.8 })
+  const systemPrompt = `You are Octo, a study companion. Generate a brief encouraging message (1-2 sentences, 0-1 emojis). Return ONLY the message text.`
+  return callGrok(systemPrompt, `Context: ${JSON.stringify(context)}`, { maxTokens: 150, temperature: 0.8 })
 }
