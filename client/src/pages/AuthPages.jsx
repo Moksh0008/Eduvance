@@ -82,10 +82,11 @@ function AuthDoodles() {
   )
 }
 
-function AuthVisual({ passwordVisible = false, isTypingPassword = false }) {
-  const octoMessages = [
+/* ═══ OCTO PASSWORD REACTION ═══ */
+function OctoPasswordReaction() {
+  const messages = [
     "I see Nothing! Nothing at all! 🙈",
-    "Your密码 is safe with me! 🤫",
+    "Your secret is safe with me! 🤫",
     "Not looking! My eyes are closed! 👀🚫",
     "Privacy mode: ACTIVATED! 🔒",
     "What password? I see no password! 🐙",
@@ -93,33 +94,69 @@ function AuthVisual({ passwordVisible = false, isTypingPassword = false }) {
     "Your secret dies with me! 💀",
     "I'm an octopus, I can't even type! 🐙",
   ]
-  const msgIndex = Math.floor(Math.random() * octoMessages.length)
+  const [msgIdx] = useState(() => Math.floor(Math.random() * messages.length))
 
+  return (
+    <motion.div
+      className="absolute -bottom-2 left-1/2 z-20 flex flex-col items-center gap-2 -translate-x-1/2"
+      initial={{ opacity: 0, y: 20, scale: 0.8 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 20, scale: 0.8 }}
+      transition={{ type: 'spring', stiffness: 200, damping: 15 }}>
+      <motion.div className="rounded-xl px-4 py-2 text-xs font-medium shadow-lg whitespace-nowrap"
+        style={{ background: 'rgba(99,102,241,0.9)', color: 'white' }}
+        animate={{ scale: [1, 1.03, 1] }}
+        transition={{ duration: 2, repeat: Infinity }}>
+        {messages[msgIdx]}
+      </motion.div>
+      <motion.img src="/mascot/octo-140.webp" alt="Octo"
+        style={{ width: 80, height: 80, filter: 'drop-shadow(0 0 15px rgba(99,102,241,0.5))' }}
+        animate={{ rotate: [-5, 5, -5], y: [0, -4, 0] }}
+        transition={{ duration: 2, repeat: Infinity }} />
+    </motion.div>
+  )
+}
+
+/* ═══ ALWAYS-VISIBLE OCTO MASCOT ═══ */
+function OctoMascot({ isTypingPassword }) {
+  return (
+    <motion.div
+      className="absolute bottom-8 right-8 z-10 flex flex-col items-center gap-2"
+      initial={{ opacity: 0, y: 30, scale: 0.7 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: 'spring', stiffness: 120, damping: 12, delay: 0.3 }}>
+      <AnimatePresence mode="wait">
+        {isTypingPassword ? (
+          <OctoPasswordReaction key="reaction" />
+        ) : (
+          <motion.div key="idle" className="flex flex-col items-center gap-2"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}>
+            <motion.img src="/mascot/octo-140.webp" alt="Octo — your study companion"
+              style={{ width: 100, height: 100, filter: 'drop-shadow(0 4px 20px rgba(109,76,216,0.4))' }}
+              animate={{ y: [0, -6, 0], rotate: [-2, 2, -2] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }} />
+            <motion.div className="rounded-xl px-4 py-2 text-xs font-medium shadow-lg"
+              style={{ background: 'var(--color-surface)', border: '1px solid var(--color-line-2)' }}
+              animate={{ scale: [1, 1.02, 1] }}
+              transition={{ duration: 3, repeat: Infinity }}>
+              <span className="text-ink-2">Welcome back! Your study data is safe. 🐙</span>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  )
+}
+
+function AuthVisual({ isTypingPassword = false }) {
   return (
     <div className="relative flex h-full flex-col items-center justify-center gap-6 px-8">
       <div className="pointer-events-none absolute inset-0 bg-accent/[0.03] blur-[100px] rounded-3xl" />
       <AuthDoodles />
       <OrbitalVisual />
-      {/* Octo reaction to password typing */}
-      {isTypingPassword && (
-        <motion.div
-          className="absolute bottom-12 right-8 flex flex-col items-center gap-2"
-          initial={{ opacity: 0, y: 20, scale: 0.8 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 20 }}
-        >
-          <motion.div className="rounded-xl px-4 py-2 text-xs font-medium shadow-lg"
-            style={{ background: 'rgba(99,102,241,0.9)', color: 'white' }}
-            animate={{ scale: [1, 1.03, 1] }}
-            transition={{ duration: 2, repeat: Infinity }}>
-            {octoMessages[msgIndex]}
-          </motion.div>
-          <motion.img src="/mascot/octo-140.webp" alt="Octo"
-            style={{ width: 80, height: 80, filter: 'drop-shadow(0 0 15px rgba(99,102,241,0.5))' }}
-            animate={{ rotate: [-5, 5, -5], y: [0, -4, 0] }}
-            transition={{ duration: 2, repeat: Infinity }} />
-        </motion.div>
-      )}
+      <OctoMascot isTypingPassword={isTypingPassword} />
     </div>
   )
 }
