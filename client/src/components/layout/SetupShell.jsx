@@ -29,10 +29,11 @@ export function SetupShell({ children, step, total, onDemo, editing }) {
       </header>
       <main className="mx-auto max-w-3xl px-4 py-10 sm:py-14">{children}</main>
       <p className="px-4 pb-8 text-center text-xs text-ink-3">
-        Uploads are stored locally. The analysis engine is not connected yet.{' '}
+        Your files are uploaded and analyzed by AI. Quiz questions will be generated from your material.
+        {' '}
         {onDemo ? (
           <button type="button" onClick={onDemo} className="underline hover:text-accent-2 transition-colors">
-            Explore CSE demo data instead
+            Explore demo data instead
           </button>
         ) : (
           <Link to="/" className="underline hover:text-accent-2 transition-colors">
