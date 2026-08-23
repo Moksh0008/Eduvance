@@ -5,6 +5,7 @@ import { SetupShell } from '../components/layout/SetupShell'
 import { Button } from '../components/ui/Button'
 import { FileDrop } from '../components/ui/FileDrop'
 import { StageList } from '../components/ui/StageList'
+import { OctoGuide } from '../components/ui/OctoGuide'
 import { AdaptiveLoop } from '../components/domain/AdaptiveLoop'
 import { runStages } from '../services/simulate'
 import { fileMeta, HOUR_PRESETS } from '../services/workspace'
@@ -120,6 +121,8 @@ export function SetupPage() {
           transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
         >
           {step === 1 && (
+            <>
+            <OctoGuide step={1} />
             <StepTimetable
               exams={exams}
               setExams={(next) => {
@@ -130,12 +133,18 @@ export function SetupPage() {
               setTimetableFile={setTimetableFile}
               onAnalyzingChange={handleAnalyzingChange}
             />
+            </>
           )}
-          {step === 2 && <StepSyllabus subjects={subjects} setSubjects={setSubjects} onAnalyzingChange={handleAnalyzingChange} />}
+          {step === 2 && <><OctoGuide step={2} /><StepSyllabus subjects={subjects} setSubjects={setSubjects} onAnalyzingChange={handleAnalyzingChange} /></>}
           {step === 3 && (
+            <>
+            <OctoGuide step={3} />
             <StepPreferences exams={exams} prefs={prefs} setPrefs={setPrefs} />
+            </>
           )}
           {step === 4 && (
+            <>
+            <OctoGuide step={4} />
             <StepConfirm
               timetableFile={timetableFile}
               exams={exams}
@@ -143,6 +152,7 @@ export function SetupPage() {
               prefs={prefs}
               onDone={finish}
             />
+            </>
           )}
         </motion.div>
       </AnimatePresence>
