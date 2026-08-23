@@ -121,8 +121,9 @@ export function QuizPage() {
           batchSize: 10,
         })
         
-        if (result.data?.success && result.data.data?.questions?.length > 0) {
-          setGenerationStatus(`Generated ${result.data.data.totalGenerated} questions!`)
+        // api.post returns json.data directly (unwrapped)
+        if (result?.questions?.length > 0) {
+          setGenerationStatus(`Generated ${result.totalGenerated} questions!`)
           // Store and navigate to quiz
           sessionStorage.setItem(
             'eduvance.quiz.config',
@@ -132,8 +133,8 @@ export function QuizPage() {
               subjectId: topic.subjectId,
               topic: topic.name,
               topicId: topic.id,
-              count: result.data.data.totalGenerated,
-              minutes: Math.max(15, result.data.data.totalGenerated * 1.5),
+              count: result.totalGenerated,
+              minutes: Math.max(15, result.totalGenerated * 1.5),
               useBackendQuestions: true,
             }),
           )

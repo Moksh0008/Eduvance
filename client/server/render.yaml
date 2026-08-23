@@ -17,6 +17,8 @@ services:
         generateValue: true
       - key: XAI_API_KEY
         sync: false
+      - key: GROQ_API_KEY
+        sync: false
       - key: CLIENT_URL
         value: https://eduvance-mmra.vercel.app
       - key: JWT_EXPIRES_IN
