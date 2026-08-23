@@ -49,7 +49,7 @@ export default function SessionTimeout() {
       const data = await res.json()
       if (data.success && data.data?.token) {
         const updated = { ...auth, token: data.data.token, user: data.data.user || auth.user }
-        localStorage.setItem('auth', JSON.stringify(updated))
+        localStorage.setItem('eduvance.auth', JSON.stringify(updated))
         setShowWarning(false)
         setTimeLeft(0)
       } else {

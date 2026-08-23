@@ -65,7 +65,7 @@ export default function VerifyOTP() {
       if (data.success) {
         setSuccess(true)
         setMessage('Email verified! Redirecting...')
-        if (data.token) localStorage.setItem('token', data.token)
+        if (data.token) localStorage.setItem('eduvance.auth', JSON.stringify({ token: data.token, user: data.user }))
         setTimeout(() => navigate('/dashboard'), 2000)
       } else {
         setError(data.message || 'Invalid code. Please try again.')
