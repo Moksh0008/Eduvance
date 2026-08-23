@@ -4,16 +4,7 @@ import { motion } from 'framer-motion'
 import { useAppState } from '../context/AppState'
 import { MarketingNav } from '../components/layout/MarketingNav'
 import { ProductDemo } from '../components/domain/ProductDemo'
-import { AdaptiveLoop } from '../components/domain/AdaptiveLoop'
-
 const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }
-
-const features = [
-  { icon: '🧠', label: 'AI-powered adaptation', desc: 'Quiz results reshape your plan automatically.' },
-  { icon: '📅', label: 'Smart scheduling', desc: 'Exam dates, study hours, deadlines — all factored in.' },
-  { icon: '🎯', label: 'Weak-topic focus', desc: 'Spend time where it matters most.' },
-  { icon: '🔄', label: 'Continuous replanning', desc: 'Plans change when your data changes.' },
-]
 
 export function LandingPage() {
   const { isAuthenticated } = useAppState()
@@ -154,42 +145,6 @@ export function LandingPage() {
           </p>
         </div>
         <ProductDemo />
-      </section>
-
-      {/* Adaptive Loop */}
-      <section className="px-4 py-16">
-        <div className="mx-auto max-w-4xl text-center mb-8">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-2 mb-2">The feedback loop</p>
-          <h2 className="font-serif text-3xl sm:text-4xl text-ink">
-            How Eduvance <span className="text-accent">adapts</span>
-          </h2>
-          <p className="mt-2 text-sm text-ink-2 max-w-lg mx-auto">
-            The plan adapts. Weaknesses detected. Strategy replanned. You keep improving.
-          </p>
-        </div>
-        <AdaptiveLoop />
-      </section>
-
-      {/* Features */}
-      <section className="px-4 py-16">
-        <div className="mx-auto max-w-4xl">
-          <div className="grid sm:grid-cols-2 gap-4">
-            {features.map((f, i) => (
-              <motion.div
-                key={f.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="rounded-2xl p-5 border border-line-2 bg-surface/80 backdrop-blur-md"
-              >
-                <span className="text-2xl">{f.icon}</span>
-                <h3 className="mt-2 font-medium text-ink">{f.label}</h3>
-                <p className="mt-1 text-sm text-ink-2">{f.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* CTA */}
