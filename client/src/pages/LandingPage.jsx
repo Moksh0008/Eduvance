@@ -237,7 +237,7 @@ export function LandingPage() {
 
           {/* Copyright */}
           <p className="mt-4 text-center text-[10px] text-ink-3">
-            © 1996-2026, Eduvance.com, Inc. or its affiliates
+            © 2026, Eduvance.com, Inc. or its affiliates
           </p>
         </div>
       </footer>
