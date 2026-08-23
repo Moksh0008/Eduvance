@@ -37,12 +37,16 @@ export function QuizPage() {
       try {
         const result = await api.get('/ai/syllabus-topics')
         // api.get returns json.data directly
+        console.log('[Quiz] Topics API response:', result)
         if (result?.subjects) {
           setBackendSubjects(result.subjects || [])
           setBackendTopics(result.topics || [])
+        } else {
+          console.warn('[Quiz] No subjects in response:', result)
         }
       } catch (err) {
         // Fallback to local data
+        console.error('[Quiz] Failed to load topics:', err.message)
         setBackendSubjects([])
         setBackendTopics([])
         setTopicError('Could not load topics from server. Using local data.')
