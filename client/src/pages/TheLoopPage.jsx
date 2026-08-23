@@ -82,23 +82,32 @@ export function TheLoopPage() {
             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full"
               style={{ width: radius * 2 + 30, height: radius * 2 + 30, border: `1px dashed ${isDark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)'}` }} />
 
-            {/* Connecting arcs */}
+            {/* Connecting arcs — smooth curves along circle edge */}
             <svg className="absolute inset-0 pointer-events-none" width={size} height={size} aria-hidden="true">
+              <defs>
+                {steps.map((step, i) => (
+                  <linearGradient key={`lg-${i}`} id={`arcGrad-${i}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor={step.color} stopOpacity={i === activeStep ? 0.7 : 0.15} />
+                    <stop offset="100%" stopColor={steps[(i + 1) % steps.length].color} stopOpacity={i === activeStep ? 0.7 : 0.15} />
+                  </linearGradient>
+                ))}
+              </defs>
               {steps.map((step, i) => {
                 const a1 = (i / steps.length) * Math.PI * 2 - Math.PI / 2
                 const a2 = ((i + 1) / steps.length) * Math.PI * 2 - Math.PI / 2
+                const midAngle = (a1 + a2) / 2
                 const x1 = center + Math.cos(a1) * radius
                 const y1 = center + Math.sin(a1) * radius
                 const x2 = center + Math.cos(a2) * radius
                 const y2 = center + Math.sin(a2) * radius
-                const mx = (x1 + x2) / 2
-                const my = (y1 + y2) / 2
-                const cx = mx + (center - mx) * 0.2
-                const cy = my + (center - my) * 0.2
+                // Control point on the circle edge between the two nodes
+                const cx = center + Math.cos(midAngle) * (radius * 1.15)
+                const cy = center + Math.sin(midAngle) * (radius * 1.15)
                 return (
                   <path key={`arc-${i}`} d={`M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`}
-                    fill="none" stroke={i === activeStep ? step.color : isDark ? 'rgba(148,163,184,0.08)' : 'rgba(26,29,46,0.06)'}
-                    strokeWidth={i === activeStep ? 2.5 : 1} strokeLinecap="round" />
+                    fill="none" stroke={`url(#arcGrad-${i})`}
+                    strokeWidth={i === activeStep ? 2.5 : 1}
+                    strokeLinecap="round" />
                 )
               })}
             </svg>
