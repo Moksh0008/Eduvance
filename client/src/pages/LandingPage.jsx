@@ -77,7 +77,7 @@ export function LandingPage() {
         </motion.div>
       </section>
 
-      {/* Roadmap / How It Works */}
+      {/* Roadmap / How It Works — Alternating Timeline */}
       <section className="px-4 py-16">
         <div className="mx-auto max-w-4xl">
           <div className="text-center mb-12">
@@ -87,10 +87,10 @@ export function LandingPage() {
             </h2>
           </div>
 
-          {/* Roadmap steps */}
+          {/* Alternating timeline */}
           <div className="relative">
-            {/* Vertical line */}
-            <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-accent/30 via-accent/50 to-accent/30" />
+            {/* Dotted center line */}
+            <div className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2" style={{ borderLeft: '2px dashed rgba(99,102,241,0.25)' }} />
 
             {[
               { step: '01', icon: '📄', title: 'Upload your syllabus', desc: 'Drop your PDF — AI extracts subjects, units, and topics automatically.', color: '#6366f1' },
@@ -99,39 +99,47 @@ export function LandingPage() {
               { step: '04', icon: '🎯', title: 'Quiz from your notes', desc: 'AI generates questions from YOUR material — not random stuff from the internet.', color: '#ec4899' },
               { step: '05', icon: '📊', title: 'Track your progress', desc: 'Real analytics on accuracy, mastery, weak topics, and improvement trends.', color: '#10b981' },
               { step: '06', icon: '🔄', title: 'Plan adapts automatically', desc: 'Missed a session? Got a question wrong? The plan replans itself.', color: '#f97316' },
-            ].map((item, i) => (
-              <motion.div
-                key={item.step}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="relative flex items-start gap-6 mb-10 pl-14"
-              >
-                {/* Step number circle */}
-                <div
-                  className="absolute left-0 w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold border-2 z-10"
-                  style={{
-                    background: `${item.color}15`,
-                    borderColor: `${item.color}40`,
-                    color: item.color,
-                  }}
+            ].map((item, i) => {
+              const isLeft = i % 2 === 0
+              return (
+                <motion.div
+                  key={item.step}
+                  initial={{ opacity: 0, x: isLeft ? -40 : 40 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true, margin: '-50px' }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  className={`relative flex items-center mb-12 ${isLeft ? 'flex-row' : 'flex-row-reverse'}`}
                 >
-                  {item.icon}
-                </div>
-
-                {/* Content card */}
-                <div className="flex-1 rounded-xl p-5 border border-line-2 bg-surface/60 backdrop-blur-sm hover:border-accent/30 transition-all">
-                  <div className="flex items-center gap-3 mb-2">
+                  {/* Content card */}
+                  <div className="w-[calc(50%-2rem)] rounded-xl p-5 border border-line-2 bg-surface/60 backdrop-blur-sm hover:border-accent/30 transition-all">
                     <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: item.color }}>
                       Step {item.step}
                     </span>
+                    <h3 className="mt-1 text-lg font-semibold text-ink">{item.title}</h3>
+                    <p className="mt-1 text-sm text-ink-2 leading-relaxed">{item.desc}</p>
                   </div>
-                  <h3 className="text-lg font-semibold text-ink">{item.title}</h3>
-                  <p className="mt-1 text-sm text-ink-2 leading-relaxed">{item.desc}</p>
-                </div>
-              </motion.div>
-            ))}
+
+                  {/* Center dot */}
+                  <div className="relative z-10 mx-4 flex-shrink-0">
+                    <motion.div
+                      className="w-10 h-10 rounded-full flex items-center justify-center border-2"
+                      style={{
+                        background: `${item.color}15`,
+                        borderColor: `${item.color}50`,
+                      }}
+                      whileInView={{ scale: [0.5, 1.2, 1] }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.1 + 0.2 }}
+                    >
+                      <span className="text-lg">{item.icon}</span>
+                    </motion.div>
+                  </div>
+
+                  {/* Empty space on opposite side */}
+                  <div className="w-[calc(50%-2rem)]" />
+                </motion.div>
+              )
+            })}
           </div>
         </div>
       </section>
