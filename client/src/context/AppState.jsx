@@ -121,18 +121,21 @@ export function AppStateProvider({ children }) {
         },
         { persist: false },
       )
-      // Save to MongoDB with retry — never silently lose data
+      // Save to MongoDB in background — never block navigation
       if (session?.token) {
-        for (let attempt = 0; attempt < 3; attempt++) {
-          try {
-            await pushPreparation(next)
-            console.log('[Setup] Preparation saved to server successfully')
-            break
-          } catch (err) {
-            console.error(`[Setup] Save attempt ${attempt + 1} failed:`, err.message)
-            if (attempt < 2) await new Promise(r => setTimeout(r, 2000 * (attempt + 1)))
+        (async () => {
+          for (let attempt = 0; attempt < 3; attempt++) {
+            try {
+              await pushPreparation(next)
+              console.log('[Setup] Preparation saved to server successfully')
+              return
+            } catch (err) {
+              console.error(`[Setup] Save attempt ${attempt + 1} failed:`, err.message)
+              if (attempt < 2) await new Promise(r => setTimeout(r, 2000 * (attempt + 1)))
+            }
           }
-        }
+          console.error('[Setup] All save attempts failed — data saved locally')
+        })()
       }
       return next
     },
