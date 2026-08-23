@@ -177,7 +177,7 @@ function extractJSON(raw) {
     // Close any unclosed brackets
     const openSquare = (fixed.match(/\[/g) || []).length - (fixed.match(/\]/g) || []).length
     const openCurly = (fixed.match(/\{/g) || []).length - (fixed.match(/\}/g) || []).length
-    fixed += ']'.repeat(Math.max(0, openSquare)) + '}'.repeat(Math.max(0, openCurly))
+    fixed += '}'.repeat(Math.max(0, openCurly)) + ']'.repeat(Math.max(0, openSquare))
 
     const parsed = JSON.parse(fixed)
     console.warn(`[AI] Repaired truncated JSON — recovered ${Array.isArray(parsed) ? parsed.length : 1} items`)
