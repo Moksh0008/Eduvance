@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { SetupShell } from '../components/layout/SetupShell'
@@ -32,6 +32,9 @@ export function SetupPage() {
     dailyHours: workspace.preferences?.dailyHours || 3,
   }))
   const navigate = useNavigate()
+  // Track how many subjects are currently being analyzed by AI
+  const analyzingCount = useRef(0)
+  const [anyAnalyzing, setAnyAnalyzing] = useState(false)
 
   function syncSubjectsFromExams(nextExams) {
     setSubjects((prev) =>
@@ -149,9 +152,9 @@ export function SetupPage() {
               if (step === 1) syncSubjectsFromExams(exams)
               setStep((s) => s + 1)
             }}
-            disabled={step === 1 && !exams.some((e) => e.name.trim())}
+            disabled={(step === 1 && !exams.some((e) => e.name.trim())) || anyAnalyzing}
           >
-            Continue
+            {anyAnalyzing ? 'Analyzing…' : 'Continue'}
           </Button>
         </div>
       ) : null}
@@ -331,6 +334,10 @@ function StepSyllabus({ subjects, setSubjects }) {
             key={subject.id}
             subject={subject}
             onChange={(next) => setSubjects(subjects.map((s) => (s.id === next.id ? next : s)))}
+            onAnalyzingChange={(analyzing) => {
+              analyzingCount.current += analyzing ? 1 : -1
+              setAnyAnalyzing(analyzingCount.current > 0)
+            }}
           />
         ))}
       </div>
@@ -385,7 +392,7 @@ function StepSyllabus({ subjects, setSubjects }) {
   )
 }
 
-function SubjectSyllabus({ subject, onChange }) {
+function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
   const [phase, setPhase] = useState(subject.syllabusFile ? 'stored' : 'idle')
   const [current, setCurrent] = useState(0)
   const [done, setDone] = useState(Boolean(subject.syllabusFile))
@@ -399,6 +406,7 @@ function SubjectSyllabus({ subject, onChange }) {
     setDone(false)
     setAiError('')
     setAiAnalyzing(true)
+    onAnalyzingChange?.(true)
     // Send file to backend — server parses PDF + sends text to Grok
     try {
       const result = await aiApi.analyzeFile(file, subject.name)
@@ -420,17 +428,19 @@ function SubjectSyllabus({ subject, onChange }) {
         setAiError(msg || 'AI analysis failed — you can add topics manually below')
       }
     }
+    setAiAnalyzing(false)
+    onAnalyzingChange?.(false)
     // Fallback: just store the file metadata
     await runStages(UPLOAD_STAGES, (i) => setCurrent(i), 480)
     onChange({ ...subject, syllabusFile: fileMeta(file) })
     setDone(true)
     setPhase('stored')
-    setAiAnalyzing(false)
   }
 
   async function analyzeText() {
     if (!syllabusText.trim()) return
     setAiAnalyzing(true)
+    onAnalyzingChange?.(true)
     setAiError('')
     try {
       const result = await aiApi.analyzeSyllabus(syllabusText, subject.name)
@@ -454,6 +464,7 @@ function SubjectSyllabus({ subject, onChange }) {
       setAiError(err.message || 'AI analysis failed — add topics manually')
     }
     setAiAnalyzing(false)
+    onAnalyzingChange?.(false)
   }
 
   function applyAiTopics(units) {
