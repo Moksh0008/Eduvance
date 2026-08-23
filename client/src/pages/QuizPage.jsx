@@ -118,8 +118,8 @@ export function QuizPage() {
 
       {!data.isDemo && subjects.length && !topics.length ? (
         <EmptyState
-          title="Add syllabus topics to generate topic-level planning."
-          body="Enter topics in Edit Preparation. Uploaded PDFs are stored, not parsed yet."
+          title="No topics extracted yet."
+          body="Upload a syllabus PDF in Edit Preparation and click '🧠 Analyze syllabus with AI' to auto-extract topics. Make sure your AI backend is configured (GROQ_API_KEY on Render)."
           action={
             <Button as={Link} to="/setup" variant="secondary">
               Edit preparation

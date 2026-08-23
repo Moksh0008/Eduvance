@@ -52,8 +52,12 @@ export async function generateQuiz({ userId, subject, topic, difficulty, count, 
   const mastery = await TopicMastery.findOne({ userId, subject, topic })
 
   // 5. Generate questions via Grok
-  const questions = await callGrokJSON(
-    `You are an expert CS exam question generator. Generate ${count} MCQ questions about ${subject} → ${topic} at ${finalDifficulty} difficulty.
+  console.log(`[QuizGen] subject=${subject}, topic=${topic}, difficulty=${finalDifficulty}, hasContext=${context.length > 0}, prevQuestions=${previousQuestions.length}`)
+  
+  let questions
+  try {
+    questions = await callGrokJSON(
+      `You are an expert CS exam question generator. Generate ${count} MCQ questions about ${subject} → ${topic} at ${finalDifficulty} difficulty.
 
 Return a JSON array:
 [{
@@ -72,11 +76,21 @@ Rules:
 - No repeats from: ${previousQuestions.map(q => q.prompt.slice(0, 50)).join('; ')}
 - ${context ? 'Base questions on the provided study material' : 'Generate based on standard CS curriculum'}
 - Return ONLY valid JSON array`,
-    context
-      ? `Study material context:\n${context}\n\nGenerate ${count} ${finalDifficulty} questions about ${topic}.`
-      : `Generate ${count} ${finalDifficulty} questions about ${topic} in ${subject}.`,
-    { temperature: 0.4 }
-  )
+      context
+        ? `Study material context:\n${context}\n\nGenerate ${count} ${finalDifficulty} questions about ${topic}.`
+        : `Generate ${count} ${finalDifficulty} questions about ${topic} in ${subject}.`,
+      { temperature: 0.4 }
+    )
+    console.log(`[QuizGen] Grok returned ${questions?.length || 0} questions`)
+  } catch (err) {
+    console.error('[QuizGen] Grok API error:', err.message)
+    throw new Error(`AI question generation failed: ${err.message}. Add GROQ_API_KEY (free) to Render environment variables.`)
+  }
+  
+  if (!Array.isArray(questions) || questions.length === 0) {
+    console.error('[QuizGen] Empty or invalid response from Grok:', questions)
+    throw new Error('AI returned no questions. Add GROQ_API_KEY (free) to Render environment variables.')
+  }
 
   // 6. Store questions in DB
   const storedQuestions = []

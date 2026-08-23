@@ -111,16 +111,8 @@ export function ensureSubjectTopics(subjects) {
   return (subjects || []).map((s) => {
     const namedTopics = (s.units || []).flatMap((u) => (u.topics || []).filter((t) => t.name?.trim()))
     if (namedTopics.length) return s
-    return {
-      ...s,
-      units: [
-        {
-          id: `u_core_${s.id}`,
-          name: 'Core',
-          topics: [{ id: `t_core_${s.id}`, name: `${s.name} foundations` }],
-        },
-      ],
-    }
+    // No topics extracted yet — return subject without fake topics
+    return { ...s, units: [] }
   })
 }
 

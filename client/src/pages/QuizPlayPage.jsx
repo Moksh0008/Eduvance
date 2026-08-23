@@ -52,7 +52,7 @@ export function QuizPlayPage() {
     aiApi.generateQuiz(config.subject, config.topic, difficulty, config.count || 10)
       .then(result => {
         if (cancelled || !result?.questions?.length) {
-          setAiError('AI could not generate questions. Using local question bank.')
+          setAiError('AI unavailable — add GROQ_API_KEY to Render (free) for AI questions from your notes.')
           return
         }
         setAiQuizId(result.quizId)
@@ -70,7 +70,7 @@ export function QuizPlayPage() {
       .catch((err) => {
         const msg = err.message || err.toString() || 'Backend may be starting up'
         console.error('[Quiz] AI generation failed:', msg)
-        setAiError(`AI quiz error: ${msg}. Using local questions as fallback.`)
+        setAiError(`AI error: ${msg}. Add GROQ_API_KEY to Render for AI-generated questions.`)
       })
       .finally(() => setLoadingAi(false))
     return () => { cancelled = true }

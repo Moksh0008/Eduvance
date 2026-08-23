@@ -56,7 +56,7 @@ export function AppShell() {
               loading="lazy"
               width="1920"
               height="1080"
-              style={{ opacity: isDark ? 0.5 : 0.85, filter: isDark ? 'none' : 'saturate(0.9) brightness(1)' }}
+              style={{ opacity: isDark ? 0.5 : 0.6, filter: isDark ? 'none' : 'saturate(0.7) brightness(1.1)' }}
             />
             <div className="absolute inset-0" style={{
               background: isDark
