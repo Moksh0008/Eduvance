@@ -148,8 +148,95 @@ export function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-line-2 py-8 px-4 text-center text-[11px] text-ink-3" style={{ borderColor: 'rgba(0,0,0,0.04)' }}>
-        <p>© 2026 Eduvance. All rights reserved. Built with 🧠 for students who refuse to guess.</p>
+      <footer className="border-t border-line-2" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
+        {/* Back to top */}
+        <div className="bg-surface/50 py-3 text-center text-xs text-ink-2 cursor-pointer hover:text-accent transition-colors">
+          Back to top
+        </div>
+
+        {/* Main footer columns */}
+        <div className="mx-auto max-w-6xl px-4 py-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {/* Get to Know Us */}
+            <div>
+              <h4 className="text-xs font-bold text-ink mb-3">Get to Know Us</h4>
+              <ul className="space-y-2 text-xs text-ink-2">
+                <li><span className="hover:text-accent transition-colors cursor-pointer">About Eduvance</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Careers</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Press Releases</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Eduvance Science</span></li>
+              </ul>
+            </div>
+
+            {/* Connect with Us */}
+            <div>
+              <h4 className="text-xs font-bold text-ink mb-3">Connect with Us</h4>
+              <ul className="space-y-2 text-xs text-ink-2">
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Facebook</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Twitter</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Instagram</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">LinkedIn</span></li>
+              </ul>
+            </div>
+
+            {/* Make Money with Us */}
+            <div>
+              <h4 className="text-xs font-bold text-ink mb-3">For Students</h4>
+              <ul className="space-y-2 text-xs text-ink-2">
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Sell on Eduvance</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Become an Affiliate</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Advertise Your Courses</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Eduvance Pay</span></li>
+              </ul>
+            </div>
+
+            {/* Let Us Help You */}
+            <div>
+              <h4 className="text-xs font-bold text-ink mb-3">Let Us Help You</h4>
+              <ul className="space-y-2 text-xs text-ink-2">
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Your Account</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Returns Centre</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">100% Purchase Protection</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Help</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-line-2" style={{ borderColor: 'rgba(0,0,0,0.06)' }} />
+
+        {/* Bottom section */}
+        <div className="mx-auto max-w-6xl px-4 py-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            {/* Logo */}
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ background: 'var(--color-accent)' }}>
+                Ev
+              </div>
+              <span className="font-serif text-lg font-semibold text-ink">Eduvance</span>
+            </div>
+
+            {/* Links */}
+            <div className="flex flex-wrap justify-center gap-4 text-[11px] text-ink-3">
+              <span className="hover:text-accent transition-colors cursor-pointer">Conditions of Use & Sale</span>
+              <span className="hover:text-accent transition-colors cursor-pointer">Privacy Notice</span>
+              <span className="hover:text-accent transition-colors cursor-pointer">Interest-Based Ads</span>
+            </div>
+
+            {/* Language selector */}
+            <div className="flex items-center gap-2 text-[11px] text-ink-3">
+              <span>🌐</span>
+              <span>English</span>
+              <span>India</span>
+            </div>
+          </div>
+
+          {/* Copyright */}
+          <p className="mt-4 text-center text-[10px] text-ink-3">
+            © 1996-2026, Eduvance.com, Inc. or its affiliates
+          </p>
+        </div>
       </footer>
     </div>
   )
