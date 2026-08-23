@@ -90,53 +90,51 @@ export function LandingPage() {
           {/* Alternating timeline */}
           <div className="relative">
             {/* Dotted center line */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2" style={{ borderLeft: '2px dashed rgba(99,102,241,0.25)' }} />
+            <div className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2" style={{ borderLeft: '2px dashed rgba(99,102,241,0.2)' }} />
 
             {[
-              { step: '01', icon: '📄', title: 'Upload your syllabus', desc: 'Drop your PDF — AI extracts subjects, units, and topics automatically.', color: '#6366f1' },
-              { step: '02', icon: '🧠', title: 'AI analyzes everything', desc: 'Grok reads your syllabus and notes, understands the structure, identifies weak areas.', color: '#8b5cf6' },
-              { step: '03', icon: '📅', title: 'Get your smart plan', desc: 'A personalized study schedule based on exam dates, difficulty, and your pace.', color: '#06b6d4' },
-              { step: '04', icon: '🎯', title: 'Quiz from your notes', desc: 'AI generates questions from YOUR material — not random stuff from the internet.', color: '#ec4899' },
-              { step: '05', icon: '📊', title: 'Track your progress', desc: 'Real analytics on accuracy, mastery, weak topics, and improvement trends.', color: '#10b981' },
-              { step: '06', icon: '🔄', title: 'Plan adapts automatically', desc: 'Missed a session? Got a question wrong? The plan replans itself.', color: '#f97316' },
+              { step: '01', icon: '📄', title: 'Upload syllabus', desc: 'AI extracts subjects and topics from your PDF.', color: '#6366f1' },
+              { step: '02', icon: '🧠', title: 'AI analyzes', desc: 'Understands structure and identifies weak areas.', color: '#8b5cf6' },
+              { step: '03', icon: '📅', title: 'Smart plan', desc: 'Personalized schedule based on your pace.', color: '#06b6d4' },
+              { step: '04', icon: '🎯', title: 'Quiz from notes', desc: 'Questions generated from YOUR material.', color: '#ec4899' },
+              { step: '05', icon: '📊', title: 'Track progress', desc: 'Real analytics on mastery and trends.', color: '#10b981' },
+              { step: '06', icon: '🔄', title: 'Auto-replan', desc: 'Plan adapts when your performance changes.', color: '#f97316' },
             ].map((item, i) => {
               const isLeft = i % 2 === 0
               return (
                 <motion.div
                   key={item.step}
-                  initial={{ opacity: 0, x: isLeft ? -40 : 40 }}
+                  initial={{ opacity: 0, x: isLeft ? -30 : 30 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: '-50px' }}
-                  transition={{ duration: 0.5, delay: i * 0.1 }}
-                  className={`relative flex items-center mb-12 ${isLeft ? 'flex-row' : 'flex-row-reverse'}`}
+                  viewport={{ once: true, margin: '-30px' }}
+                  transition={{ duration: 0.4, delay: i * 0.08 }}
+                  className={`relative flex items-center mb-6 ${isLeft ? 'flex-row' : 'flex-row-reverse'}`}
                 >
                   {/* Content card */}
-                  <div className="w-[calc(50%-2rem)] rounded-xl p-5 border border-line-2 bg-surface/60 backdrop-blur-sm hover:border-accent/30 transition-all">
-                    <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: item.color }}>
-                      Step {item.step}
-                    </span>
-                    <h3 className="mt-1 text-lg font-semibold text-ink">{item.title}</h3>
-                    <p className="mt-1 text-sm text-ink-2 leading-relaxed">{item.desc}</p>
+                  <div className="w-[calc(50%-1.5rem)] rounded-lg px-4 py-3 border border-line-2 bg-surface/60 backdrop-blur-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: item.color }}>Step {item.step}</span>
+                      <span className="text-sm">{item.icon}</span>
+                    </div>
+                    <h3 className="mt-0.5 text-sm font-semibold text-ink">{item.title}</h3>
+                    <p className="mt-0.5 text-xs text-ink-2">{item.desc}</p>
                   </div>
 
                   {/* Center dot */}
-                  <div className="relative z-10 mx-4 flex-shrink-0">
+                  <div className="relative z-10 mx-3 flex-shrink-0">
                     <motion.div
-                      className="w-10 h-10 rounded-full flex items-center justify-center border-2"
-                      style={{
-                        background: `${item.color}15`,
-                        borderColor: `${item.color}50`,
-                      }}
+                      className="w-8 h-8 rounded-full flex items-center justify-center border-2"
+                      style={{ background: `${item.color}15`, borderColor: `${item.color}50` }}
                       whileInView={{ scale: [0.5, 1.2, 1] }}
                       viewport={{ once: true }}
-                      transition={{ delay: i * 0.1 + 0.2 }}
+                      transition={{ delay: i * 0.08 + 0.15 }}
                     >
-                      <span className="text-lg">{item.icon}</span>
+                      <span className="text-xs">{item.icon}</span>
                     </motion.div>
                   </div>
 
-                  {/* Empty space on opposite side */}
-                  <div className="w-[calc(50%-2rem)]" />
+                  {/* Empty space */}
+                  <div className="w-[calc(50%-1.5rem)]" />
                 </motion.div>
               )
             })}
