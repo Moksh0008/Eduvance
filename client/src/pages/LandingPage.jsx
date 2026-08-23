@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAppState } from '../context/AppState'
@@ -8,16 +7,8 @@ import { AdaptiveLoop } from '../components/domain/AdaptiveLoop'
 
 const fadeUp = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }
 
-const features = [
-  { icon: '🧠', label: 'AI-powered adaptation', desc: 'Quiz results reshape your plan automatically.' },
-  { icon: '📅', label: 'Smart scheduling', desc: 'Exam dates, study hours, deadlines — all factored in.' },
-  { icon: '🎯', label: 'Weak-topic focus', desc: 'Spend time where it matters most.' },
-  { icon: '🔄', label: 'Continuous replanning', desc: 'Plans change when your data changes.' },
-]
-
 export function LandingPage() {
-  const { isAuthenticated } = useAppState()
-  const { isDark } = useAppState()
+  const { isAuthenticated, isDark } = useAppState()
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-canvas)' }}>
@@ -29,19 +20,13 @@ export function LandingPage() {
           src={isDark ? '/dark-theme-bg.webp' : '/light-theme-bg.webp'}
           alt=""
           className="h-full w-full object-cover object-center"
-          style={{
-            opacity: isDark ? 0.5 : 0.85,
-            filter: isDark ? 'none' : 'saturate(0.9) brightness(1)',
-          }}
+          style={{ opacity: isDark ? 0.5 : 0.85, filter: isDark ? 'none' : 'saturate(0.9) brightness(1)' }}
         />
-        <div
-          className="absolute inset-0"
-          style={{
-            background: isDark
-              ? 'linear-gradient(180deg, rgba(6,9,24,0.6) 0%, rgba(6,9,24,0.85) 100%)'
-              : 'linear-gradient(180deg, rgba(245,245,250,0.3) 0%, rgba(245,245,250,0.5) 100%)',
-          }}
-        />
+        <div className="absolute inset-0" style={{
+          background: isDark
+            ? 'linear-gradient(180deg, rgba(6,9,24,0.6) 0%, rgba(6,9,24,0.85) 100%)'
+            : 'linear-gradient(180deg, rgba(245,245,250,0.3) 0%, rgba(245,245,250,0.5) 100%)',
+        }} />
       </div>
 
       {/* Hero */}
@@ -77,71 +62,6 @@ export function LandingPage() {
         </motion.div>
       </section>
 
-      {/* Roadmap / How It Works — Alternating Timeline */}
-      <section className="px-4 py-16">
-        <div className="mx-auto max-w-4xl">
-          <div className="text-center mb-12">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-2 mb-2">Your journey with Eduvance</p>
-            <h2 className="font-serif text-3xl sm:text-4xl text-ink">
-              From syllabus to <span className="text-accent">success</span>
-            </h2>
-          </div>
-
-          {/* Alternating timeline */}
-          <div className="relative">
-            {/* Dotted center line */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2" style={{ borderLeft: '2px dashed rgba(99,102,241,0.2)' }} />
-
-            {[
-              { step: '01', icon: '📄', title: 'Upload syllabus', desc: 'AI extracts subjects and topics from your PDF.', color: '#6366f1' },
-              { step: '02', icon: '🧠', title: 'AI analyzes', desc: 'Understands structure and identifies weak areas.', color: '#8b5cf6' },
-              { step: '03', icon: '📅', title: 'Smart plan', desc: 'Personalized schedule based on your pace.', color: '#06b6d4' },
-              { step: '04', icon: '🎯', title: 'Quiz from notes', desc: 'Questions generated from YOUR material.', color: '#ec4899' },
-              { step: '05', icon: '📊', title: 'Track progress', desc: 'Real analytics on mastery and trends.', color: '#10b981' },
-              { step: '06', icon: '🔄', title: 'Auto-replan', desc: 'Plan adapts when your performance changes.', color: '#f97316' },
-            ].map((item, i) => {
-              const isLeft = i % 2 === 0
-              return (
-                <motion.div
-                  key={item.step}
-                  initial={{ opacity: 0, x: isLeft ? -30 : 30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: '-30px' }}
-                  transition={{ duration: 0.4, delay: i * 0.08 }}
-                  className={`relative flex items-center mb-6 ${isLeft ? 'flex-row' : 'flex-row-reverse'}`}
-                >
-                  {/* Content card */}
-                  <div className="w-[calc(50%-1.5rem)] rounded-lg px-4 py-3 border border-line-2 bg-surface/60 backdrop-blur-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: item.color }}>Step {item.step}</span>
-                      <span className="text-sm">{item.icon}</span>
-                    </div>
-                    <h3 className="mt-0.5 text-sm font-semibold text-ink">{item.title}</h3>
-                    <p className="mt-0.5 text-xs text-ink-2">{item.desc}</p>
-                  </div>
-
-                  {/* Center dot */}
-                  <div className="relative z-10 mx-3 flex-shrink-0">
-                    <motion.div
-                      className="w-8 h-8 rounded-full flex items-center justify-center border-2"
-                      style={{ background: `${item.color}15`, borderColor: `${item.color}50` }}
-                      whileInView={{ scale: [0.5, 1.2, 1] }}
-                      viewport={{ once: true }}
-                      transition={{ delay: i * 0.08 + 0.15 }}
-                    >
-                      <span className="text-xs">{item.icon}</span>
-                    </motion.div>
-                  </div>
-
-                  {/* Empty space */}
-                  <div className="w-[calc(50%-1.5rem)]" />
-                </motion.div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
       {/* Product Demo */}
       <section className="px-4 py-16">
         <div className="mx-auto max-w-4xl text-center">
@@ -170,28 +90,6 @@ export function LandingPage() {
         <AdaptiveLoop />
       </section>
 
-      {/* Features */}
-      <section className="px-4 py-16">
-        <div className="mx-auto max-w-4xl">
-          <div className="grid sm:grid-cols-2 gap-4">
-            {features.map((f, i) => (
-              <motion.div
-                key={f.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="rounded-2xl p-5 border border-line-2 bg-surface/80 backdrop-blur-md"
-              >
-                <span className="text-2xl">{f.icon}</span>
-                <h3 className="mt-2 font-medium text-ink">{f.label}</h3>
-                <p className="mt-1 text-sm text-ink-2">{f.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* CTA */}
       <section className="px-4 py-20 text-center">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
@@ -205,9 +103,67 @@ export function LandingPage() {
         </motion.div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-line-2 py-8 px-4 text-center text-[11px] text-ink-3" style={{ borderColor: 'rgba(0,0,0,0.04)' }}>
-        <p>© 2026 Eduvance. All rights reserved. Built with 🧠 for students who refuse to guess.</p>
+      {/* Professional Footer */}
+      <footer className="border-t border-line-2" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
+        <div className="mx-auto max-w-6xl px-4 py-12">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+            {/* Brand */}
+            <div className="col-span-2 md:col-span-1">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="h-7 w-7 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ background: 'var(--color-accent)' }}>
+                  Ev
+                </div>
+                <span className="font-serif text-lg font-semibold text-ink">Eduvance</span>
+              </div>
+              <p className="text-xs text-ink-3 leading-relaxed max-w-xs">
+                AI-powered adaptive examination preparation. Stop guessing, start preparing with intelligence.
+              </p>
+            </div>
+
+            {/* Product */}
+            <div>
+              <h4 className="text-[10px] font-semibold uppercase tracking-wider text-ink-3 mb-3">Product</h4>
+              <ul className="space-y-2 text-xs text-ink-2">
+                <li><Link to="/how-it-works" className="hover:text-accent transition-colors">How it works</Link></li>
+                <li><Link to="/problem" className="hover:text-accent transition-colors">Problem</Link></li>
+                <li><Link to="/why-eduvance" className="hover:text-accent transition-colors">Why Eduvance</Link></li>
+                <li><Link to="/the-loop" className="hover:text-accent transition-colors">The loop</Link></li>
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h4 className="text-[10px] font-semibold uppercase tracking-wider text-ink-3 mb-3">Company</h4>
+              <ul className="space-y-2 text-xs text-ink-2">
+                <li><span className="hover:text-accent transition-colors cursor-pointer">About</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Blog</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Careers</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Contact</span></li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h4 className="text-[10px] font-semibold uppercase tracking-wider text-ink-3 mb-3">Legal</h4>
+              <ul className="space-y-2 text-xs text-ink-2">
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Privacy Policy</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Terms of Service</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Cookie Policy</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Refund Policy</span></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="border-t border-line-2 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
+            <p className="text-[11px] text-ink-3">
+              © 2026 Eduvance. All rights reserved. Built with 🧠 for students who refuse to guess.
+            </p>
+            <div className="flex items-center gap-4">
+              <span className="text-[11px] text-ink-3 hover:text-accent transition-colors cursor-pointer">🐙 Octo says: "Study smart, not hard!"</span>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   )
