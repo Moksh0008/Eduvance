@@ -1,31 +1,11 @@
 /* ═══════════════════════════════════════════════════
    AI SERVICE — Server-side AI integration
-   Supports xAI Grok and Groq (fallback)
+   xAI Grok (primary) → Groq (fallback)
    All AI calls happen here, never exposed to frontend
    ═══════════════════════════════════════════════════ */
 
-// Provider priority: Groq → xAI (fallback)
-// Model list: tried in order until one works (handles deprecations gracefully)
-const GROQ_MODELS = [
-  'llama-3.1-8b-instant',
-  'llama-3.3-70b-versatile',
-  'llama3-70b-8192',
-  'llama3-8b-8192',
-  'mixtral-8x7b-32768',
-  'gemma2-9b-it',
-  'openai/gpt-oss-20b',
-  'openai/gpt-oss-120b',
-  'qwen/qwen3.6-27b',
-]
-
+// Provider priority: xAI (primary) → Groq (fallback)
 const PROVIDERS = [
-  {
-    name: 'Groq',
-    baseUrl: 'https://api.groq.com/openai/v1',
-    getKey: () => process.env.GROQ_API_KEY,
-    models: GROQ_MODELS,
-    model: process.env.GROQ_MODEL || GROQ_MODELS[0],
-  },
   {
     name: 'xAI',
     baseUrl: 'https://api.x.ai/v1',
@@ -33,22 +13,35 @@ const PROVIDERS = [
     models: ['grok-2-1212', 'grok-beta'],
     model: 'grok-2-1212',
   },
+  {
+    name: 'Groq',
+    baseUrl: 'https://api.groq.com/openai/v1',
+    getKey: () => process.env.GROQ_API_KEY,
+    models: [
+      'llama-3.1-8b-instant',
+      'llama-3.3-70b-versatile',
+      'llama3-70b-8192',
+      'llama3-8b-8192',
+      'mixtral-8x7b-32768',
+      'gemma2-9b-it',
+      'openai/gpt-oss-20b',
+      'openai/gpt-oss-120b',
+      'qwen/qwen3.6-27b',
+    ],
+    model: process.env.GROQ_MODEL || 'llama-3.1-8b-instant',
+  },
 ]
 
 function getActiveProvider() {
   for (const p of PROVIDERS) {
     if (p.getKey()) return p
   }
-  throw new Error('No AI provider configured. Add GROQ_API_KEY or XAI_API_KEY to server/.env')
+  throw new Error('No AI provider configured. Add XAI_API_KEY to Render environment variables.')
 }
 
 /**
  * Call AI API with a prompt and optional system instruction
- * Tries Groq first (free), falls back to xAI
- * @param {string} systemPrompt - System context/instruction
- * @param {string} userPrompt - User message
- * @param {object} options - Additional options
- * @returns {string} Raw text response
+ * Tries xAI first, falls back to Groq
  */
 export async function callGrok(systemPrompt, userPrompt, options = {}) {
   const { temperature = 0.7, maxTokens = 2500, timeoutMs = 60000 } = options
@@ -56,9 +49,8 @@ export async function callGrok(systemPrompt, userPrompt, options = {}) {
   const models = provider.models || [provider.model]
   let lastError = null
 
-  // Try each model until one works
   for (const model of models) {
-    console.log(`[Grok] Trying ${provider.name} (${model})...`)
+    console.log(`[AI] Trying ${provider.name} (${model})...`)
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), timeoutMs)
 
@@ -82,60 +74,54 @@ export async function callGrok(systemPrompt, userPrompt, options = {}) {
       })
       clearTimeout(timer)
 
+      // Rate limit — wait and retry
       if (response.status === 429) {
-        // Rate limit — TPM resets after ~60s, so wait that long
-        const errBody = await response.json().catch(() => ({}))
-        const retryAfter = errBody.error?.message?.match(/try again in ([\d.]+)s/)?.[1]
-        // Wait 65 seconds to ensure TPM window fully resets
-        const waitMs = 65000
-        console.warn(`[Grok] Rate limited on ${model}. Waiting 65s for TPM window reset...`)
-        clearTimeout(timer)
-        await new Promise(r => setTimeout(r, waitMs))
-        // Retry the same model
+        console.warn(`[AI] Rate limited on ${provider.name}/${model}. Waiting 65s...`)
+        await new Promise(r => setTimeout(r, 65000))
         try {
-          const retryController = new AbortController()
-          const retryTimer = setTimeout(() => retryController.abort(), timeoutMs)
-          const retryRes = await fetch(`${provider.baseUrl}/chat/completions`, {
+          const rc = new AbortController()
+          const rt = setTimeout(() => rc.abort(), timeoutMs)
+          const rr = await fetch(`${provider.baseUrl}/chat/completions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${provider.getKey()}` },
             body: JSON.stringify({ model, messages: [
               { role: 'system', content: systemPrompt },
               { role: 'user', content: userPrompt },
             ], temperature, max_tokens: maxTokens }),
-            signal: retryController.signal,
+            signal: rc.signal,
           })
-          clearTimeout(retryTimer)
-          if (retryRes.ok) {
-            const data = await retryRes.json()
+          clearTimeout(rt)
+          if (rr.ok) {
+            const data = await rr.json()
             const content = data.choices?.[0]?.message?.content || ''
-            console.log(`[Grok] Retry succeeded with ${model}: ${content.length} chars`)
+            console.log(`[AI] Retry succeeded with ${model}: ${content.length} chars`)
             return content
           }
         } catch {}
-        continue // try next model
+        continue
       }
 
       if (response.status === 404 || response.status === 400) {
         const errText = await response.text()
-        console.warn(`[Grok] ${provider.name} model ${model} unavailable (${response.status}):`, errText.slice(0, 100))
+        console.warn(`[AI] ${provider.name} model ${model} unavailable (${response.status})`)
         lastError = new Error(`Model ${model} unavailable`)
-        continue // try next model
+        continue
       }
 
       if (!response.ok) {
         const errText = await response.text()
-        console.error(`[${provider.name}] API error:`, response.status, errText)
-        throw new Error(`${provider.name} API error (${response.status}): ${errText}`)
+        console.error(`[AI] ${provider.name} error (${response.status}):`, errText.slice(0, 200))
+        throw new Error(`${provider.name} API error (${response.status})`)
       }
 
       const data = await response.json()
       const content = data.choices?.[0]?.message?.content || ''
-      console.log(`[Grok] ${provider.name} responded with ${model}: ${content.length} chars`)
+      console.log(`[AI] ${provider.name}/${model} responded: ${content.length} chars`)
       return content
     } catch (err) {
       clearTimeout(timer)
       if (err.name === 'AbortError') {
-        console.warn(`[Grok] ${provider.name} model ${model} timed out after ${timeoutMs}ms — trying next`)
+        console.warn(`[AI] ${provider.name}/${model} timed out — trying next`)
         lastError = new Error(`${provider.name} timed out`)
         continue
       }
@@ -143,15 +129,83 @@ export async function callGrok(systemPrompt, userPrompt, options = {}) {
     }
   }
 
-  throw new Error(`All ${provider.name} models failed. Last error: ${lastError?.message || 'unknown'}`)
+  throw new Error(`All ${provider.name} models failed. Last error: ${lastError?.message || 'unknown'}. Server logs may have details.`)
 }
 
 /**
- * Call Grok and parse response as JSON
- * @param {string} systemPrompt
- * @param {string} userPrompt
- * @param {object} options
- * @returns {object} Parsed JSON from Grok response
+ * Extract and parse JSON from AI response
+ * Handles: markdown fences, truncated responses, mixed text+JSON
+ */
+function extractJSON(raw) {
+  let jsonStr = raw
+
+  // Step 1: Strip markdown code fences
+  // Try matching ```json ... ``` (with closing fences)
+  const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/)
+  if (fenceMatch) {
+    jsonStr = fenceMatch[1].trim()
+  } else {
+    // No closing fences (truncated) — strip opening fence
+    jsonStr = raw.replace(/^```(?:json)?\s*/m, '').trim()
+  }
+
+  // Step 2: Find the start of JSON array or object
+  const arrIdx = jsonStr.indexOf('[')
+  const objIdx = jsonStr.indexOf('{')
+  if (arrIdx >= 0 && (objIdx < 0 || arrIdx < objIdx)) {
+    jsonStr = jsonStr.slice(arrIdx)
+  } else if (objIdx >= 0) {
+    jsonStr = jsonStr.slice(objIdx)
+  }
+
+  // Step 3: Try parsing as-is
+  try {
+    return JSON.parse(jsonStr)
+  } catch {}
+
+  // Step 4: Repair truncated JSON
+  try {
+    let fixed = jsonStr
+    // Cut at last complete object boundary
+    const lastBrace = fixed.lastIndexOf('}')
+    if (lastBrace > 0) {
+      fixed = fixed.slice(0, lastBrace + 1)
+    } else {
+      // No complete object — try to salvage partial
+      fixed = fixed.replace(/,[\s]*$/, '').replace(/"[^"]*$/, '"')
+    }
+    // Close any unclosed brackets
+    const openSquare = (fixed.match(/\[/g) || []).length - (fixed.match(/\]/g) || []).length
+    const openCurly = (fixed.match(/\{/g) || []).length - (fixed.match(/\}/g) || []).length
+    fixed += ']'.repeat(Math.max(0, openSquare)) + '}'.repeat(Math.max(0, openCurly))
+
+    const parsed = JSON.parse(fixed)
+    console.warn(`[AI] Repaired truncated JSON — recovered ${Array.isArray(parsed) ? parsed.length : 1} items`)
+    return parsed
+  } catch {}
+
+  throw new Error(`Could not parse AI response as JSON`)
+}
+
+/**
+ * Validate a single quiz question
+ */
+function validateQuestion(q, index) {
+  if (!q || typeof q !== 'object') return null
+  if (!q.prompt || typeof q.prompt !== 'string') return null
+  if (!Array.isArray(q.options) || q.options.length !== 4) return null
+  if (typeof q.correctAnswer !== 'number' || q.correctAnswer < 0 || q.correctAnswer > 3) return null
+  if (!Number.isInteger(q.correctAnswer)) return null
+  return {
+    prompt: q.prompt.trim(),
+    options: q.options.map(o => String(o).trim()),
+    correctAnswer: q.correctAnswer,
+    explanation: (q.explanation || 'No explanation provided').trim().slice(0, 200),
+  }
+}
+
+/**
+ * Call AI and parse as JSON, with retry on failure
  */
 export async function callGrokJSON(systemPrompt, userPrompt, options = {}) {
   const raw = await callGrok(systemPrompt, userPrompt, {
@@ -159,50 +213,52 @@ export async function callGrokJSON(systemPrompt, userPrompt, options = {}) {
     temperature: 0.3,
   })
 
-  // Extract JSON from response (may be wrapped in markdown code blocks)
-  let jsonStr = raw
-  // Try markdown code blocks (with closing backticks)
-  const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/)
-  if (jsonMatch) {
-    jsonStr = jsonMatch[1]
-  } else {
-    // Truncated response — no closing backticks. Strip ```json prefix
-    jsonStr = raw.replace(/^```(?:json)?\s*/m, '')
-  }
-
-  // Try to find JSON array or object in the response
-  const arrStart = jsonStr.indexOf('[')
-  const objStart = jsonStr.indexOf('{')
-  if (arrStart >= 0 && (objStart < 0 || arrStart < objStart)) {
-    jsonStr = jsonStr.slice(arrStart)
-  } else if (objStart >= 0) {
-    jsonStr = jsonStr.slice(objStart)
-  }
-
   try {
-    return JSON.parse(jsonStr)
-  } catch {
-    // Repair truncated JSON (response hit max_tokens)
-    try {
-      let fixed = jsonStr
-      // Remove trailing incomplete string
-      fixed = fixed.replace(/"[^"\n]*$/, '"')
-      // Remove trailing comma
-      fixed = fixed.replace(/,\s*$/, '')
-      // Close any open objects/arrays by finding last complete item
-      const lastClose = Math.max(fixed.lastIndexOf('}'), fixed.lastIndexOf(']'))
-      if (lastClose > 0) fixed = fixed.slice(0, lastClose + 1)
-      // Try closing remaining brackets
-      const opens = (fixed.match(/\[/g) || []).length - (fixed.match(/\]/g) || []).length
-      const curlyOpens = (fixed.match(/\{/g) || []).length - (fixed.match(/\}/g) || []).length
-      fixed += ']'.repeat(Math.max(0, opens)) + '}'.repeat(Math.max(0, curlyOpens))
-      const parsed = JSON.parse(fixed)
-      console.warn(`[Grok] Repaired truncated JSON — got ${Array.isArray(parsed) ? parsed.length : 1} items`)
-      return parsed
-    } catch {
-      throw new Error(`Failed to parse Grok response as JSON: ${raw.slice(0, 300)}`)
-    }
+    return extractJSON(raw)
+  } catch (firstErr) {
+    console.warn(`[AI] First parse attempt failed, retrying with stricter prompt...`)
+    // Retry with even more explicit JSON-only instruction
+    const retryRaw = await callGrok(
+      systemPrompt + '\n\nIMPORTANT: Return ONLY the JSON array. No text before or after. No markdown fences. No explanation.',
+      userPrompt,
+      { ...options, temperature: 0.1, maxTokens: options.maxTokens || 2500 }
+    )
+    return extractJSON(retryRaw)
   }
+}
+
+/**
+ * Generate and validate quiz questions
+ * Returns only valid questions, never raw AI output
+ */
+export async function generateAndValidateQuestions(systemPrompt, userPrompt, options = {}) {
+  let parsed = await callGrokJSON(systemPrompt, userPrompt, options)
+
+  // Normalize: if AI returned an object with a questions array, unwrap it
+  if (parsed && !Array.isArray(parsed) && Array.isArray(parsed.questions)) {
+    parsed = parsed.questions
+  }
+  if (parsed && !Array.isArray(parsed) && Array.isArray(parsed.data)) {
+    parsed = parsed.data
+  }
+
+  if (!Array.isArray(parsed)) {
+    throw new Error('AI did not return an array of questions')
+  }
+
+  // Validate each question
+  const valid = []
+  for (let i = 0; i < parsed.length; i++) {
+    const q = validateQuestion(parsed[i], i)
+    if (q) valid.push(q)
+  }
+
+  if (valid.length === 0) {
+    throw new Error('AI returned no valid questions')
+  }
+
+  console.log(`[AI] Validated ${valid.length}/${parsed.length} questions`)
+  return valid
 }
 
 /**
@@ -286,37 +342,26 @@ Rules:
  * Generate quiz questions from retrieved context
  */
 export async function generateQuizQuestions({ subject, topic, difficulty, count, context, previousQuestions = [] }) {
-  const systemPrompt = `You are an expert exam question generator for Computer Science topics.
+  const systemPrompt = `Generate ${count} multiple-choice questions about ${topic} in ${subject} at ${difficulty} difficulty.
 
-Generate EXACTLY ${count} multiple-choice questions about ${subject} → ${topic} at ${difficulty} difficulty level.
+Return ONLY a JSON array. No markdown, no explanation text before or after.
 
-Return a JSON array with this EXACT structure:
-[
-  {
-    "prompt": "question text here?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correctAnswer": 0,
-    "explanation": "Why this answer is correct...",
-    "difficulty": "${difficulty}",
-    "sourceContext": "which part of the material this question is based on"
-  }
-]
+Each question object must have exactly these fields:
+- "prompt": the question text
+- "options": array of exactly 4 strings
+- "correctAnswer": integer 0-3
+- "explanation": short explanation (under 50 words)
 
 Rules:
-- Questions must be specific to ${topic}, not generic
-- Include a mix of conceptual, application, and scenario-based questions
-- Each question must have exactly 4 options
-- correctAnswer is the 0-based index of the correct option
-- Questions should be exam-level difficulty
-- Do NOT generate questions already asked: ${previousQuestions.length > 0 ? previousQuestions.slice(-5).join('; ') : 'none'}
-- If study material context is provided, base questions on that material
-- Return ONLY valid JSON array, no explanations`
+- Questions must be specific to ${topic}
+- Mix conceptual, application, and scenario-based questions
+- Do not repeat these previous questions: ${previousQuestions.slice(0, 3).map(q => q.slice(0, 40)).join('; ') || 'none'}`
 
   const userPrompt = context
-    ? `Generate ${count} ${difficulty} questions about ${topic}.\n\nRelevant study material:\n${context}`
-    : `Generate ${count} ${difficulty} questions about ${topic} in ${subject}.`
+    ? `Based on this study material, generate ${count} ${difficulty} questions about ${topic}:\n\n${context.slice(0, 2000)}`
+    : `Generate ${count} ${difficulty} MCQ questions about ${topic} in ${subject}.`
 
-  return callGrokJSON(systemPrompt, userPrompt)
+  return generateAndValidateQuestions(systemPrompt, userPrompt, { maxTokens: 2500 })
 }
 
 /**
@@ -446,4 +491,3 @@ Rules:
 
   return callGrok(systemPrompt, `Student context: ${JSON.stringify(context)}`, { maxTokens: 150, temperature: 0.8 })
 }
-// force redeploy 1787491781

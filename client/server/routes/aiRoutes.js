@@ -553,6 +553,6 @@ aiRoutes.post('/generate-topics', asyncHandler(async (req, res) => {
     return res.json({ success: true, data: { topics: topicList, subject } })
   } catch (err) {
     console.error('[GenerateTopics] AI error:', err.message)
-    return res.status(500).json({ success: false, message: 'AI topic generation failed. Add GROQ_API_KEY to Render.' })
+    return res.status(500).json({ success: false, message: 'AI topic generation failed. The AI service may be starting up.' })
   }
 }))

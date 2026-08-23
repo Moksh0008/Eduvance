@@ -3,7 +3,7 @@
    ANALYZE → RETRIEVE → DECIDE → GENERATE → EVALUATE → REPLAN
    ═══════════════════════════════════════════════════ */
 
-import { callGrokJSON, callGrok } from './grokService.js'
+import { callGrokJSON, callGrok, generateAndValidateQuestions } from './grokService.js'
 import { retrieveRelevantChunks, buildContextString } from './ragService.js'
 import { TopicMastery, QuizAttempt, Question, Quiz, Insight } from '../models/index.js'
 import {
@@ -56,24 +56,19 @@ export async function generateQuiz({ userId, subject, topic, difficulty, count, 
   
   let questions
   try {
-    questions = await callGrokJSON(
-      `Generate ${count} MCQ questions about ${topic} in ${subject}. Return ONLY a JSON array, no markdown:
-[{"prompt":"question?","options":["A","B","C","D"],"correctAnswer":0,"explanation":"why","difficulty":"${finalDifficulty}"}]
-Each question: 4 options, correctAnswer is 0-3, specific to ${topic}.`,
+    questions = await generateAndValidateQuestions(
+      `Generate ${count} MCQ questions about ${topic} in ${subject}. Return ONLY a JSON array.`,
       context
-        ? `Material:\n${context.slice(0, 1000)}\n\nGenerate ${count} ${finalDifficulty} questions about ${topic}.`
+        ? `Based on this study material, generate ${count} ${finalDifficulty} questions about ${topic}:
+
+${context.slice(0, 2000)}`
         : `Generate ${count} ${finalDifficulty} MCQ questions about ${topic} in ${subject}.`,
       { temperature: 0.4, maxTokens: 2500 }
     )
-    console.log(`[QuizGen] Grok returned ${questions?.length || 0} questions`)
+    console.log(`[QuizGen] Generated ${questions.length} validated questions`)
   } catch (err) {
-    console.error('[QuizGen] Grok API error:', err.message)
-    throw new Error(`AI question generation failed: ${err.message}. Add GROQ_API_KEY (free) to Render environment variables.`)
-  }
-  
-  if (!Array.isArray(questions) || questions.length === 0) {
-    console.error('[QuizGen] Empty or invalid response from Grok:', questions)
-    throw new Error('AI returned no questions. Add GROQ_API_KEY (free) to Render environment variables.')
+    console.error('[QuizGen] Question generation failed:', err.message)
+    throw new Error(`AI question generation failed: ${err.message}`)
   }
 
   // 6. Store questions in DB
