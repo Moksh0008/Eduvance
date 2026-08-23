@@ -14,16 +14,91 @@ aiRoutes.use(authMiddleware)
 // File upload config
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB — students may upload large notes
   fileFilter: (_req, file, cb) => {
-    const allowed = ['text/plain', 'application/pdf', 'text/markdown', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
-    if (allowed.includes(file.mimetype) || file.mimetype.startsWith('text/')) {
+    // Accept PDF, text, markdown, docx, and anything that looks like a document
+    const name = (file.originalname || '').toLowerCase()
+    const allowed = ['text/plain', 'application/pdf', 'text/markdown', 'text/csv',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+    const allowedExt = ['.pdf', '.txt', '.md', '.docx', '.doc', '.rtf', '.csv']
+    const ext = name.slice(name.lastIndexOf('.'))
+    if (allowed.includes(file.mimetype) || file.mimetype.startsWith('text/') || allowedExt.includes(ext)) {
       cb(null, true)
     } else {
-      cb(new Error('Unsupported file type. Please upload text, PDF, or markdown files.'))
+      // Accept anyway — extractTextFromFile will handle the rest
+      cb(null, true)
     }
   },
 })
+
+// ═══ BULLETPROOF TEXT EXTRACTION ═══
+// Tries multiple strategies to extract text from any file type.
+// Returns extracted text or null if all strategies fail.
+async function extractTextFromFile(file) {
+  const name = (file.originalname || '').toLowerCase()
+  const isPdf = file.mimetype === 'application/pdf' || name.endsWith('.pdf')
+  const isDocx = file.mimetype?.includes('wordprocessingml') || name.endsWith('.docx')
+
+  // Strategy 1: pdf-parse library
+  if (isPdf) {
+    try {
+      const pdfParse = (await import('pdf-parse')).default
+      const data = await pdfParse(file.buffer)
+      if (data.text && data.text.trim().length >= 20) {
+        console.log(`[Extract] pdf-parse success: ${data.text.length} chars from ${file.originalname}`)
+        return data.text
+      }
+    } catch (err) {
+      console.error('[Extract] pdf-parse failed:', err.message)
+    }
+    // Strategy 1b: Try pdf-parse with pagerender option
+    try {
+      const pdfParse = (await import('pdf-parse')).default
+      const data = await pdfParse(file.buffer, {
+        pagerender: async (pageData) => (await pageData.getTextContent()).items.map(i => i.str).join(' '),
+      })
+      if (data.text && data.text.trim().length >= 20) {
+        console.log(`[Extract] pdf-parse+pagerender success: ${data.text.length} chars`)
+        return data.text
+      }
+    } catch (err) {
+      console.error('[Extract] pdf-parse+pagerender failed:', err.message)
+    }
+  }
+
+  // Strategy 2: DOCX XML extraction
+  if (isDocx) {
+    try {
+      const raw = file.buffer.toString('utf-8')
+      const textMatches = raw.match(/<w:t[^>]*>([^<]+)<\/w:t>/g)
+      if (textMatches && textMatches.length > 0) {
+        const extracted = textMatches.map(m => m.replace(/<[^>]+>/g, '')).join(' ')
+        if (extracted.trim().length >= 20) {
+          console.log(`[Extract] DOCX XML success: ${extracted.length} chars from ${file.originalname}`)
+          return extracted
+        }
+      }
+    } catch (err) {
+      console.error('[Extract] DOCX XML failed:', err.message)
+    }
+  }
+
+  // Strategy 3: Raw UTF-8 with binary stripping (works for .txt, .md, and fallback)
+  try {
+    let raw = file.buffer.toString('utf-8')
+    raw = raw.replace(/[\x00-\x08\x0E-\x1F]/g, ' ').replace(/\s+/g, ' ').trim()
+    if (raw.length >= 20) {
+      console.log(`[Extract] Raw UTF-8 fallback: ${raw.length} chars from ${file.originalname}`)
+      return raw
+    }
+  } catch (err) {
+    console.error('[Extract] Raw fallback failed:', err.message)
+  }
+
+  // All strategies failed
+  console.error(`[Extract] All strategies failed for ${file.originalname} (${file.mimetype}, ${file.buffer?.length} bytes)`)
+  return null
+}
 
 // ═══ ANALYZE FILE (server-side PDF parsing + Grok) ═══
 aiRoutes.post('/analyze-file', upload.single('file'), asyncHandler(async (req, res) => {
@@ -32,67 +107,37 @@ aiRoutes.post('/analyze-file', upload.single('file'), asyncHandler(async (req, r
     return res.status(400).json({ success: false, message: 'No file uploaded' })
   }
 
-  let text = ''
-  if (file.mimetype === 'application/pdf') {
-    try {
-      const pdfParse = (await import('pdf-parse')).default
-      // pdf-parse v1.x: pass {pagerender: fn} only, no 'max' option
-      const data = await pdfParse(file.buffer)
-      text = data.text || ''
-      console.log(`[AnalyzeFile] PDF parsed: ${text.length} chars from ${file.originalname}`)
-    } catch (pdfErr) {
-      console.error('[AnalyzeFile] PDF parse error:', pdfErr.message)
-      // Fallback: try reading buffer as UTF-8 text
-      try {
-        text = file.buffer.toString('utf-8')
-        // Strip binary characters
-        text = text.replace(/[\x00-\x08\x0E-\x1F]/g, ' ').trim()
-        if (text.length < 20) {
-          return res.status(400).json({ success: false, message: 'Failed to parse PDF. It may be image-based or corrupted. Use Paste syllabus text instead.' })
-        }
-      } catch {
-        return res.status(400).json({ success: false, message: 'Failed to parse PDF. Use the Paste syllabus text option instead.' })
-      }
-    }
-  } else if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || file.originalname?.endsWith('.docx')) {
-    // DOCX files — extract text from XML inside
-    try {
-      const raw = file.buffer.toString('utf-8')
-      const textMatches = raw.match(/<w:t[^>]*>([^<]+)<\/w:t>/g)
-      if (textMatches && textMatches.length > 0) {
-        text = textMatches.map(m => m.replace(/<[^>]+>/g, '')).join(' ')
-      } else {
-        text = raw.replace(/[\x00-\x08\x0E-\x1F]/g, ' ').trim()
-      }
-      console.log(`[AnalyzeFile] DOCX parsed: ${text.length} chars from ${file.originalname}`)
-    } catch {
-      text = file.buffer.toString('utf-8')
-    }
-  } else {
-    text = file.buffer.toString('utf-8')
-  }
-
-  if (!text || text.trim().length < 20) {
-    return res.status(400).json({ success: false, message: 'File content is too short or empty. Try a different file or paste the text manually.' })
+  const text = await extractTextFromFile(file)
+  if (!text) {
+    return res.status(400).json({ success: false, message: 'Could not read file content. It may be image-based or corrupted. Try the Paste syllabus text option instead.' })
   }
 
   const subject = req.body.subject || ''
 
-  // Also store for RAG
+  // Store for RAG — this is the CRITICAL part for quiz questions from notes
   const materialId = `mat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
   try {
     await agent.indexStudyMaterial(req.user.userId, materialId, file.originalname, file.mimetype, text, ragService)
-  } catch { /* RAG storage is best-effort */ }
+    console.log(`[AnalyzeFile] RAG indexed: ${file.originalname} (${text.length} chars)`)
+  } catch (ragErr) {
+    console.error('[AnalyzeFile] RAG indexing failed:', ragErr.message)
+  }
 
-  // Analyze with Grok
-  const result = await agent.analyzeSyllabus(req.user.userId, text, {
-    analyzeSyllabus: async (t) => callGrokJSON(
-      `You are an academic syllabus analyzer. Extract structured topics from this document.
+  // Analyze with Grok for topic extraction
+  let result = { subjects: [] }
+  try {
+    result = await agent.analyzeSyllabus(req.user.userId, text, {
+      analyzeSyllabus: async (t) => callGrokJSON(
+        `You are an academic syllabus analyzer. Extract structured topics from this document.
 Return JSON: { "subjects": [{ "name": "string", "examDate": "YYYY-MM-DD or empty", "units": [{ "name": "string", "topics": [{ "name": "string", "difficulty": "easy|medium|hard", "importance": "high|medium|low", "estimatedMinutes": 60 }] }] }] }
 Extract ALL subjects, units, topics from the document. If exam dates are mentioned, include them. Return ONLY valid JSON.`,
-      `Subject context: ${subject}\n\nDocument content:\n${t.slice(0, 8000)}`
-    ),
-  })
+        `Subject context: ${subject}\n\nDocument content:\n${t.slice(0, 8000)}`
+      ),
+    })
+  } catch (grokErr) {
+    console.error('[AnalyzeFile] Grok analysis failed:', grokErr.message)
+    // Return success with file info even if Grok fails — RAG is already indexed
+  }
 
   return res.json({ success: true, data: { ...result, fileName: file.originalname, textLength: text.length } })
 }))
@@ -177,28 +222,16 @@ Extract ALL subjects, units, topics. Estimate difficulty and importance. Return 
   return res.json({ success: true, data: result })
 }))
 
-// ═══ UPLOAD STUDY MATERIAL ═══
+// ═══ UPLOAD STUDY MATERIAL (RAG indexing for quiz questions) ═══
 aiRoutes.post('/upload-material', upload.single('file'), asyncHandler(async (req, res) => {
   const file = req.file
   if (!file) {
     return res.status(400).json({ success: false, message: 'No file uploaded' })
   }
 
-  let text = ''
-  if (file.mimetype === 'application/pdf') {
-    try {
-      const pdfParse = (await import('pdf-parse')).default
-      const data = await pdfParse(file.buffer)
-      text = data.text
-    } catch {
-      return res.status(400).json({ success: false, message: 'Failed to parse PDF. Try a text file instead.' })
-    }
-  } else {
-    text = file.buffer.toString('utf-8')
-  }
-
+  const text = await extractTextFromFile(file)
   if (!text || text.trim().length < 50) {
-    return res.status(400).json({ success: false, message: 'File content is too short or empty.' })
+    return res.status(400).json({ success: false, message: 'File content is too short or empty. Try a different file.' })
   }
 
   const materialId = `mat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
