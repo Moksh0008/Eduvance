@@ -56,12 +56,12 @@ export function AppShell() {
               loading="lazy"
               width="1920"
               height="1080"
-              style={{ opacity: isDark ? 0.5 : 0.6, filter: isDark ? 'none' : 'saturate(0.7) brightness(1.1)' }}
+              style={{ opacity: isDark ? 0.5 : 0.45, filter: isDark ? 'none' : 'saturate(0.5) brightness(1.2)' }}
             />
             <div className="absolute inset-0" style={{
               background: isDark
-                ? 'linear-gradient(180deg, rgba(6,9,24,0.4) 0%, rgba(6,9,24,0.6) 50%, var(--color-canvas) 100%)'
-                : 'linear-gradient(180deg, rgba(240,237,232,0.2) 0%, rgba(240,237,232,0.35) 50%, var(--color-canvas) 100%)'
+                ? 'linear-gradient(180deg, rgba(6,9,24,0.5) 0%, rgba(6,9,24,0.7) 50%, var(--color-canvas) 100%)'
+                : 'linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.5) 50%, var(--color-canvas) 100%)'
             }} />
       </div>
 

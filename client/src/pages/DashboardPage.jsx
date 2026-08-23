@@ -16,6 +16,7 @@ import { StreakDisplay, StreakReminder } from '../components/ui/StreakDisplay'
 import { CountUp } from '../components/ui/CountUp'
 import { useAppData } from '../hooks/useAppData'
 import { useAppState } from '../context/AppState'
+import { useTheme } from '../context/ThemeContext'
 
 function getTimeGreeting() {
   const h = new Date().getHours()
@@ -27,6 +28,7 @@ function getTimeGreeting() {
 export function DashboardPage() {
   const data = useAppData()
   const { setupCompleted } = useAppState()
+  const { isDark } = useTheme()
 
   if (!setupCompleted && !data.isDemo) {
     return (
@@ -68,7 +70,7 @@ export function DashboardPage() {
             ⚡ Adaptive preparation engine
           </p>
 
-          <h1 className="mt-4 max-w-3xl font-serif text-4xl leading-[1.1] text-ink sm:text-5xl lg:text-6xl">
+          <h1 className="mt-4 max-w-3xl font-serif text-4xl leading-[1.1] text-ink sm:text-5xl lg:text-6xl" style={{ textShadow: isDark ? 'none' : '0 2px 8px rgba(255,255,255,0.8)' }}>
             What should you{' '}
             <span className="gradient-text">master</span>{' '}
             next?
