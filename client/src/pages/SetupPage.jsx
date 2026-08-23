@@ -124,6 +124,10 @@ export function SetupPage() {
               }}
               timetableFile={timetableFile}
               setTimetableFile={setTimetableFile}
+              onAnalyzingChange={(analyzing) => {
+                analyzingCount.current += analyzing ? 1 : -1
+                setAnyAnalyzing(analyzingCount.current > 0)
+              }}
             />
           )}
           {step === 2 && <StepSyllabus subjects={subjects} setSubjects={setSubjects} />}
@@ -166,7 +170,7 @@ function blankExam() {
   return { id: `sub_${Date.now()}`, name: '', date: '', time: '10:00', marks: 100 }
 }
 
-function StepTimetable({ exams, setExams, timetableFile, setTimetableFile }) {
+function StepTimetable({ exams, setExams, timetableFile, setTimetableFile, onAnalyzingChange }) {
   const [phase, setPhase] = useState(timetableFile ? 'stored' : 'idle')
   const [current, setCurrent] = useState(0)
   const [done, setDone] = useState(Boolean(timetableFile))
@@ -175,6 +179,7 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile }) {
     setPhase('run')
     setDone(false)
     setCurrent(0)
+    onAnalyzingChange?.(true)
     // Send PDF to backend for server-side parsing + AI extraction
     try {
       const result = await aiApi.analyzeTimetable(file)
@@ -198,6 +203,7 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile }) {
     setTimetableFile(fileMeta(file))
     setDone(true)
     setPhase('stored')
+    onAnalyzingChange?.(false)
   }
 
   function remove(id) {
