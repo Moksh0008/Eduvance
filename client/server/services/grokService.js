@@ -10,8 +10,8 @@ const PROVIDERS = [
     name: 'xAI',
     baseUrl: 'https://api.x.ai/v1',
     getKey: () => process.env.XAI_API_KEY,
-    models: ['grok-2-1212', 'grok-beta'],
-    model: 'grok-2-1212',
+    models: ['grok-4-0716', 'grok-3', 'grok-3-mini'],
+    model: 'grok-4-0716',
   },
   {
     name: 'Groq',
@@ -20,18 +20,14 @@ const PROVIDERS = [
     models: [
       'llama-3.1-8b-instant',
       'llama3-8b-8192',
-      'mixtral-8x7b-32768',
       'gemma2-9b-it',
     ],
     model: process.env.GROQ_MODEL || 'llama-3.1-8b-instant',
   },
 ]
 
-function getActiveProvider() {
-  for (const p of PROVIDERS) {
-    if (p.getKey()) return p
-  }
-  throw new Error('No AI provider configured. Add XAI_API_KEY or GROQ_API_KEY to Render environment variables.')
+function getAvailableProviders() {
+  return PROVIDERS.filter(p => p.getKey())
 }
 
 /**
@@ -40,90 +36,108 @@ function getActiveProvider() {
  */
 export async function callGrok(systemPrompt, userPrompt, options = {}) {
   const { temperature = 0.7, maxTokens = 4096, timeoutMs = 60000 } = options
-  const provider = getActiveProvider()
-  const models = provider.models || [provider.model]
-  let lastError = null
-
-  for (const model of models) {
-    console.log(`[AI] Trying ${provider.name} (${model})...`)
-    const controller = new AbortController()
-    const timer = setTimeout(() => controller.abort(), timeoutMs)
-
-    try {
-      const response = await fetch(`${provider.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${provider.getKey()}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          temperature,
-          max_tokens: maxTokens,
-        }),
-        signal: controller.signal,
-      })
-      clearTimeout(timer)
-
-      // Rate limit — wait and retry
-      if (response.status === 429) {
-        console.warn(`[AI] Rate limited on ${provider.name}/${model}. Waiting 70s...`)
-        await new Promise(r => setTimeout(r, 70000))
-        try {
-          const rc = new AbortController()
-          const rt = setTimeout(() => rc.abort(), timeoutMs)
-          const rr = await fetch(`${provider.baseUrl}/chat/completions`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${provider.getKey()}` },
-            body: JSON.stringify({ model, messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userPrompt },
-            ], temperature, max_tokens: maxTokens }),
-            signal: rc.signal,
-          })
-          clearTimeout(rt)
-          if (rr.ok) {
-            const data = await rr.json()
-            const content = data.choices?.[0]?.message?.content || ''
-            console.log(`[AI] Retry succeeded with ${model}: ${content.length} chars`)
-            return content
-          }
-        } catch {}
-        continue
-      }
-
-      if (response.status === 404 || response.status === 400) {
-        console.warn(`[AI] ${provider.name} model ${model} unavailable (${response.status})`)
-        lastError = new Error(`Model ${model} unavailable`)
-        continue
-      }
-
-      if (!response.ok) {
-        const errText = await response.text()
-        console.error(`[AI] ${provider.name} error (${response.status}):`, errText.slice(0, 200))
-        throw new Error(`${provider.name} API error (${response.status})`)
-      }
-
-      const data = await response.json()
-      const content = data.choices?.[0]?.message?.content || ''
-      console.log(`[AI] ${provider.name}/${model} responded: ${content.length} chars`)
-      return content
-    } catch (err) {
-      clearTimeout(timer)
-      if (err.name === 'AbortError') {
-        console.warn(`[AI] ${provider.name}/${model} timed out — trying next`)
-        lastError = new Error(`${provider.name} timed out`)
-        continue
-      }
-      throw err
-    }
+  const providers = getAvailableProviders()
+  if (providers.length === 0) {
+    throw new Error('No AI provider configured. Add XAI_API_KEY or GROQ_API_KEY to Render environment variables.')
   }
 
-  throw new Error(`All AI models failed. ${lastError?.message || 'Check server logs.'}`)
+  let lastError = null
+
+  // Try ALL providers in order (xAI first, then Groq)
+  for (const provider of providers) {
+    const models = provider.models || [provider.model]
+
+    for (const model of models) {
+      console.log(`[AI] Trying ${provider.name} (${model})...`)
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), timeoutMs)
+
+      try {
+        const response = await fetch(`${provider.baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${provider.getKey()}`,
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt },
+            ],
+            temperature,
+            max_tokens: maxTokens,
+          }),
+          signal: controller.signal,
+        })
+        clearTimeout(timer)
+
+        // Rate limit — wait and retry
+        if (response.status === 429) {
+          console.warn(`[AI] Rate limited on ${provider.name}/${model}. Waiting 70s...`)
+          await new Promise(r => setTimeout(r, 70000))
+          try {
+            const rc = new AbortController()
+            const rt = setTimeout(() => rc.abort(), timeoutMs)
+            const rr = await fetch(`${provider.baseUrl}/chat/completions`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${provider.getKey()}` },
+              body: JSON.stringify({ model, messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt },
+              ], temperature, max_tokens: maxTokens }),
+              signal: rc.signal,
+            })
+            clearTimeout(rt)
+            if (rr.ok) {
+              const data = await rr.json()
+              const content = data.choices?.[0]?.message?.content || ''
+              console.log(`[AI] Retry succeeded with ${model}: ${content.length} chars`)
+              return content
+            }
+          } catch {}
+          continue
+        }
+
+        if (response.status === 404 || response.status === 400) {
+          console.warn(`[AI] ${provider.name} model ${model} unavailable (${response.status})`)
+          lastError = new Error(`${provider.name} model ${model} unavailable`)
+          continue // Try next model in this provider
+        }
+
+        if (!response.ok) {
+          const errText = await response.text()
+          console.error(`[AI] ${provider.name} error (${response.status}):`, errText.slice(0, 200))
+          lastError = new Error(`${provider.name} API error (${response.status})`)
+          continue // Try next model/provider
+        }
+
+        const data = await response.json()
+        const content = data.choices?.[0]?.message?.content || ''
+        if (!content) {
+          console.warn(`[AI] ${provider.name}/${model} returned empty content`)
+          lastError = new Error('Empty response from AI')
+          continue
+        }
+        console.log(`[AI] ${provider.name}/${model} responded: ${content.length} chars`)
+        return content
+      } catch (err) {
+        clearTimeout(timer)
+        if (err.name === 'AbortError') {
+          console.warn(`[AI] ${provider.name}/${model} timed out — trying next`)
+          lastError = new Error(`${provider.name} timed out`)
+          continue
+        }
+        // Network errors — try next provider
+        console.warn(`[AI] ${provider.name}/${model} network error: ${err.message}`)
+        lastError = err
+        break // Break model loop, try next provider
+      }
+    }
+    // If we got here, all models for this provider failed — try next provider
+  }
+
+  throw new Error(`All AI providers failed. Last error: ${lastError?.message || 'unknown'}. Check server logs for details.`)
 }
 
 /**
