@@ -26,5 +26,13 @@ export async function loginAccount({ email, password }) {
 }
 
 export async function fetchMe() {
-  return api.get('/auth/me')
+  try {
+    return await api.get('/auth/me')
+  } catch (err) {
+    // 401 means token is invalid — clear it
+    if (err.status === 401) {
+      clearAuth()
+    }
+    throw err
+  }
 }
