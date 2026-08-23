@@ -424,12 +424,16 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
   const [syllabusText, setSyllabusText] = useState('')
   const [showTextMode, setShowTextMode] = useState(false)
 
+  // BULLETPROOF: Always notify parent when analyzing state changes
+  useEffect(() => {
+    onAnalyzingChange?.(aiAnalyzing)
+  }, [aiAnalyzing])
+
   async function onFile(file) {
     setPhase('run')
     setDone(false)
     setAiError('')
     setAiAnalyzing(true)
-    onAnalyzingChange?.(true)
     try {
       console.log(`[Setup] Uploading ${file.name} (${file.size} bytes) for ${subject.name}`)
       const result = await aiApi.analyzeFile(file, subject.name)
@@ -453,7 +457,6 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
       }
     } finally {
       setAiAnalyzing(false)
-      onAnalyzingChange?.(false)
     }
     // Fallback: just store the file metadata even if analysis failed
     await runStages(UPLOAD_STAGES, (i) => setCurrent(i), 480)
@@ -465,7 +468,6 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
   async function analyzeText() {
     if (!syllabusText.trim()) return
     setAiAnalyzing(true)
-    onAnalyzingChange?.(true)
     setAiError('')
     try {
       console.log(`[Setup] Starting syllabus analysis for ${subject.name} (${syllabusText.length} chars)`)
@@ -494,7 +496,6 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
       setAiError(err.message || 'AI analysis failed — add topics manually')
     } finally {
       setAiAnalyzing(false)
-      onAnalyzingChange?.(false)
     }
   }
 
