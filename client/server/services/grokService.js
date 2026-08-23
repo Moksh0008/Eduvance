@@ -4,27 +4,28 @@
    All AI calls happen here, never exposed to frontend
    ═══════════════════════════════════════════════════ */
 
-// Provider priority: xAI (primary) → Groq (fallback)
+// AI provider configuration
+// xAI is primary (configured via XAI_API_KEY + XAI_MODEL)
+// Groq is fallback (configured via GROQ_API_KEY + GROQ_MODEL)
+const XAI_MODEL = process.env.XAI_MODEL || 'grok-4.6'
+const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.1-8b-instant'
+
 const PROVIDERS = [
   {
     name: 'xAI',
     baseUrl: 'https://api.x.ai/v1',
     getKey: () => process.env.XAI_API_KEY,
-    models: ['grok-4.6', 'grok-4.5', 'grok-3'],
-    model: 'grok-4-0716',
+    models: [XAI_MODEL],
   },
   {
     name: 'Groq',
     baseUrl: 'https://api.groq.com/openai/v1',
     getKey: () => process.env.GROQ_API_KEY,
-    models: [
-      'llama-3.1-8b-instant',
-      'llama3-8b-8192',
-      'gemma2-9b-it',
-    ],
-    model: process.env.GROQ_MODEL || 'llama-3.1-8b-instant',
+    models: [GROQ_MODEL],
   },
 ]
+
+console.log(`[AI] xAI model: ${XAI_MODEL}, Groq model: ${GROQ_MODEL}`)
 
 function getAvailableProviders() {
   return PROVIDERS.filter(p => p.getKey())
