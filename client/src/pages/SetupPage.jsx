@@ -430,20 +430,20 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
     setAiError('')
     setAiAnalyzing(true)
     onAnalyzingChange?.(true)
-    // Send file to backend — server parses PDF + sends text to Grok
     try {
+      console.log(`[Setup] Uploading ${file.name} (${file.size} bytes) for ${subject.name}`)
       const result = await aiApi.analyzeFile(file, subject.name)
+      console.log(`[Setup] File analysis result:`, result)
       if (result?.subjects?.[0]?.units) {
         applyAiTopics(result.subjects[0].units)
         setDone(true)
         setPhase('stored')
-        setAiAnalyzing(false)
-        onAnalyzingChange?.(false)
         onChange({ ...subject, syllabusFile: fileMeta(file) })
         return
       }
     } catch (err) {
       const msg = err.message || ''
+      console.error(`[Setup] File analysis failed: ${msg}`)
       if (msg.includes('waking up') || msg.includes('starting up')) {
         setAiError('Server is waking up — topics will be extracted on retry. You can also add topics manually below.')
       } else if (msg.includes('No AI provider') || msg.includes('credits')) {
@@ -451,15 +451,15 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
       } else {
         setAiError(msg || 'AI analysis failed — you can add topics manually below')
       }
+    } finally {
+      setAiAnalyzing(false)
+      onAnalyzingChange?.(false)
     }
-    setAiAnalyzing(false)
-    onAnalyzingChange?.(false)
     // Fallback: just store the file metadata even if analysis failed
     await runStages(UPLOAD_STAGES, (i) => setCurrent(i), 480)
     onChange({ ...subject, syllabusFile: fileMeta(file) })
     setDone(true)
     setPhase('stored')
-    // Note: onAnalyzingChange(false) already called above — don't call again
   }
 
   async function analyzeText() {
@@ -468,7 +468,9 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
     onAnalyzingChange?.(true)
     setAiError('')
     try {
+      console.log(`[Setup] Starting syllabus analysis for ${subject.name} (${syllabusText.length} chars)`)
       const result = await aiApi.analyzeSyllabus(syllabusText, subject.name)
+      console.log(`[Setup] Analysis result:`, result)
       if (result?.subjects?.[0]?.units) {
         applyAiTopics(result.subjects[0].units)
       } else if (result?.subjects?.length) {
@@ -484,12 +486,16 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
           })),
         }]
         applyAiTopics(flatUnits)
+      } else {
+        setAiError('AI returned no topics. Try rephrasing your syllabus text.')
       }
     } catch (err) {
+      console.error('[Setup] Syllabus analysis failed:', err.message)
       setAiError(err.message || 'AI analysis failed — add topics manually')
+    } finally {
+      setAiAnalyzing(false)
+      onAnalyzingChange?.(false)
     }
-    setAiAnalyzing(false)
-    onAnalyzingChange?.(false)
   }
 
   function applyAiTopics(units) {

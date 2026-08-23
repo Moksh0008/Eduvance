@@ -176,23 +176,31 @@ Extract ALL exams with their dates, times, and marks. If a field is not found, u
 // ═══ SYLLABUS ANALYSIS ═══
 aiRoutes.post('/analyze-syllabus', asyncHandler(async (req, res) => {
   const { syllabusText, subject } = req.body
+  console.log(`[Syllabus] Analysis request received — subject: ${subject}, text length: ${syllabusText?.length || 0}`)
   if (!syllabusText) {
     return res.status(400).json({ success: false, message: 'syllabusText is required' })
   }
 
-  // Trim syllabus text to 4000 chars max — shorter = faster Grok response
-  const trimmedText = syllabusText.length > 4000 ? syllabusText.slice(0, 4000) + '\n...(truncated)' : syllabusText
+  // Trim syllabus text to 3000 chars max — shorter = faster Grok response
+  const trimmedText = syllabusText.length > 3000 ? syllabusText.slice(0, 3000) : syllabusText
+  console.log(`[Syllabus] Text length after trim: ${trimmedText.length}`)
+  console.log(`[Syllabus] Starting Grok request...`)
   const t0 = Date.now()
-  const result = await agent.analyzeSyllabus(req.user.userId, trimmedText, {
-    analyzeSyllabus: async (text) => callGrokJSON(
-      `You are a fast syllabus analyzer. Extract topics from this text.
-Return JSON: { "subjects": [{ "name": "string", "units": [{ "name": "string", "topics": [{ "name": "string", "difficulty": "easy|medium|hard", "importance": "high|medium|low" }] }] }] }
-Return ONLY valid JSON. Be concise.`,
-      `Syllabus:\n${text}`,
-      { temperature: 0.2 }
-    ),
-  })
-  console.log(`[AnalyzeSyllabus] Grok took ${Date.now() - t0}ms for ${trimmedText.length} chars`)
+  let result
+  try {
+    result = await agent.analyzeSyllabus(req.user.userId, trimmedText, {
+      analyzeSyllabus: async (text) => callGrokJSON(
+        `Extract topics from this syllabus text. Return JSON:\n{"subjects":[{"name":"...","units":[{"name":"...","topics":[{"name":"...","difficulty":"easy|medium|hard","importance":"high|medium|low"}]}]}]}\nReturn ONLY valid JSON.`,
+        `Syllabus:\n${text}`,
+        { temperature: 0.2, timeoutMs: 30000 }
+      ),
+    })
+  } catch (grokErr) {
+    console.error(`[Syllabus] Grok failed after ${Date.now() - t0}ms:`, grokErr.message)
+    return res.status(500).json({ success: false, message: `AI analysis failed: ${grokErr.message}` })
+  }
+  console.log(`[Syllabus] Grok completed in ${Date.now() - t0}ms`)
+  console.log(`[Syllabus] Topics extracted:`, JSON.stringify(result?.subjects?.map(s => ({ name: s.name, topicCount: s.units?.reduce((n, u) => n + (u.topics?.length || 0), 0) }))))
 
   // Store the analyzed syllabus in preparation
   const updateData = {}

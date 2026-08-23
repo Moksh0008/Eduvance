@@ -36,34 +36,52 @@ function getActiveProvider() {
  * @returns {string} Raw text response
  */
 export async function callGrok(systemPrompt, userPrompt, options = {}) {
-  const { temperature = 0.7, maxTokens = 2000 } = options
+  const { temperature = 0.7, maxTokens = 2000, timeoutMs = 30000 } = options
   const provider = getActiveProvider()
+  console.log(`[Grok] Calling ${provider.name} (${provider.model}) with ${timeoutMs}ms timeout`)
 
-  const response = await fetch(`${provider.baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${provider.getKey()}`,
-    },
-    body: JSON.stringify({
-      model: provider.model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature,
-      max_tokens: maxTokens,
-    }),
-  })
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
 
-  if (!response.ok) {
-    const err = await response.text()
-    console.error(`[${provider.name}] API error:`, response.status, err)
-    throw new Error(`${provider.name} API error (${response.status}): ${err}`)
+  try {
+    const response = await fetch(`${provider.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${provider.getKey()}`,
+      },
+      body: JSON.stringify({
+        model: provider.model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature,
+        max_tokens: maxTokens,
+      }),
+      signal: controller.signal,
+    })
+
+    clearTimeout(timer)
+
+    if (!response.ok) {
+      const err = await response.text()
+      console.error(`[${provider.name}] API error:`, response.status, err)
+      throw new Error(`${provider.name} API error (${response.status}): ${err}`)
+    }
+
+    const data = await response.json()
+    const content = data.choices?.[0]?.message?.content || ''
+    console.log(`[Grok] ${provider.name} responded: ${content.length} chars`)
+    return content
+  } catch (err) {
+    clearTimeout(timer)
+    if (err.name === 'AbortError') {
+      console.error(`[Grok] ${provider.name} timed out after ${timeoutMs}ms`)
+      throw new Error(`${provider.name} timed out after ${timeoutMs / 1000}s. The AI service may be overloaded.`)
+    }
+    throw err
   }
-
-  const data = await response.json()
-  return data.choices?.[0]?.message?.content || ''
 }
 
 /**

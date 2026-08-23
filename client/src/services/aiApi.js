@@ -83,7 +83,7 @@ export const aiApi = {
 
   /** Analyze syllabus text → returns structured subjects/units/topics */
   analyzeSyllabus: (syllabusText, subject) =>
-    api.post('/ai/analyze-syllabus', { syllabusText, subject }),
+    api.post('/ai/analyze-syllabus', { syllabusText, subject }, { timeout: 45000, retries: 1 }),
 
   /** Upload study material file */
   uploadMaterial: async (file, subject = '') => {
