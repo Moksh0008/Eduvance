@@ -28,8 +28,9 @@ const STYLES = `
   50% { transform: translateY(-5px); }
 }
 @keyframes octo-blink-line {
-  0%, 92%, 100% { opacity: 0; }
-  94% { opacity: 1; }
+  0%, 94%, 100% { opacity: 0; transform: scaleY(1); }
+  96% { opacity: 0.6; transform: scaleY(0.3); }
+  98% { opacity: 0; transform: scaleY(1); }
 }
 @keyframes octo-dot-pulse {
   0%, 100% { transform: scale(1); opacity: 1; }
@@ -407,17 +408,20 @@ export function EduvanceMascot() {
             draggable={false}
           />
 
-          {/* Blink overlay */}
+          {/* Blink overlay — subtle eye-shine, not a visible rectangle */}
           <div
             className="absolute rounded-full"
             style={{
-              top: '22%',
-              left: '25%',
-              width: '50%',
-              height: '12%',
-              background: isDark ? 'rgba(109,76,216,0.6)' : 'rgba(109,76,216,0.5)',
+              top: '30%',
+              left: '38%',
+              width: '24%',
+              height: '8%',
+              background: 'transparent',
+              boxShadow: isDark
+                ? '0 0 6px 2px rgba(109,76,216,0.3)'
+                : '0 0 4px 1px rgba(255,255,255,0.5)',
               borderRadius: '50%',
-              animation: 'octo-blink-line 4s ease-in-out infinite',
+              animation: 'octo-blink-line 5s ease-in-out infinite',
               pointerEvents: 'none',
             }}
           />
