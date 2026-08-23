@@ -150,9 +150,12 @@ export function LandingPage() {
       {/* Footer */}
       <footer className="border-t border-line-2" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
         {/* Back to top */}
-        <div className="bg-surface/50 py-3 text-center text-xs text-ink-2 cursor-pointer hover:text-accent transition-colors">
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="w-full bg-surface/50 py-3 text-center text-xs text-ink-2 cursor-pointer hover:text-accent transition-colors"
+        >
           Back to top
-        </div>
+        </button>
 
         {/* Main footer columns */}
         <div className="mx-auto max-w-6xl px-4 py-10">
