@@ -77,6 +77,65 @@ export function LandingPage() {
         </motion.div>
       </section>
 
+      {/* Roadmap / How It Works */}
+      <section className="px-4 py-16">
+        <div className="mx-auto max-w-4xl">
+          <div className="text-center mb-12">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-2 mb-2">Your journey with Eduvance</p>
+            <h2 className="font-serif text-3xl sm:text-4xl text-ink">
+              From syllabus to <span className="text-accent">success</span>
+            </h2>
+          </div>
+
+          {/* Roadmap steps */}
+          <div className="relative">
+            {/* Vertical line */}
+            <div className="absolute left-6 top-0 bottom-0 w-px bg-gradient-to-b from-accent/30 via-accent/50 to-accent/30" />
+
+            {[
+              { step: '01', icon: '📄', title: 'Upload your syllabus', desc: 'Drop your PDF — AI extracts subjects, units, and topics automatically.', color: '#6366f1' },
+              { step: '02', icon: '🧠', title: 'AI analyzes everything', desc: 'Grok reads your syllabus and notes, understands the structure, identifies weak areas.', color: '#8b5cf6' },
+              { step: '03', icon: '📅', title: 'Get your smart plan', desc: 'A personalized study schedule based on exam dates, difficulty, and your pace.', color: '#06b6d4' },
+              { step: '04', icon: '🎯', title: 'Quiz from your notes', desc: 'AI generates questions from YOUR material — not random stuff from the internet.', color: '#ec4899' },
+              { step: '05', icon: '📊', title: 'Track your progress', desc: 'Real analytics on accuracy, mastery, weak topics, and improvement trends.', color: '#10b981' },
+              { step: '06', icon: '🔄', title: 'Plan adapts automatically', desc: 'Missed a session? Got a question wrong? The plan replans itself.', color: '#f97316' },
+            ].map((item, i) => (
+              <motion.div
+                key={item.step}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="relative flex items-start gap-6 mb-10 pl-14"
+              >
+                {/* Step number circle */}
+                <div
+                  className="absolute left-0 w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold border-2 z-10"
+                  style={{
+                    background: `${item.color}15`,
+                    borderColor: `${item.color}40`,
+                    color: item.color,
+                  }}
+                >
+                  {item.icon}
+                </div>
+
+                {/* Content card */}
+                <div className="flex-1 rounded-xl p-5 border border-line-2 bg-surface/60 backdrop-blur-sm hover:border-accent/30 transition-all">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: item.color }}>
+                      Step {item.step}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-ink">{item.title}</h3>
+                  <p className="mt-1 text-sm text-ink-2 leading-relaxed">{item.desc}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Product Demo */}
       <section className="px-4 py-16">
         <div className="mx-auto max-w-4xl text-center">
