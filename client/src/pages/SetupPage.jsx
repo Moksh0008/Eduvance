@@ -494,7 +494,7 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
   const [aiAnalyzing, setAiAnalyzing] = useState(false)
   const [aiError, setAiError] = useState('')
   const [syllabusText, setSyllabusText] = useState('')
-  const [showTextMode, setShowTextMode] = useState(false)
+  // PDF upload removed — paste text only
 
   // BULLETPROOF: Always notify parent when analyzing state changes
   useEffect(() => {
