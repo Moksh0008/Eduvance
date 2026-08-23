@@ -128,7 +128,7 @@ export const aiApi = {
 
   /** Generate AI quiz questions */
   generateQuiz: (subject, topic, difficulty, count = 5) =>
-    api.post('/ai/generate-quiz', { subject, topic, difficulty, count }),
+    api.post('/ai/generate-quiz', { subject, topic, difficulty, count }, { timeout: 180000, retries: 0 }),
 
   /** Evaluate a single answer */
   evaluateAnswer: (quizId, questionId, selectedAnswer, timeTaken) =>
