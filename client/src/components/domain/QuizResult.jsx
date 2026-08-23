@@ -134,7 +134,7 @@ export function QuizResult({ result, onAddToPlan, added }) {
         </motion.div>
       )}
 
-      <motion.div custom={2} variants={reveal} initial={reduce ? false : 'hidden'} animate="show" className="mt-12 grid gap-10 md:grid-cols-2">
+      <motion.div custom={3} variants={reveal}
         <section>
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Topic analysis</h2>
           <p className="mt-3 text-sm text-ink-2">
@@ -152,11 +152,11 @@ export function QuizResult({ result, onAddToPlan, added }) {
         </section>
       </motion.div>
 
-      <motion.div custom={3} variants={reveal} initial={reduce ? false : 'hidden'} animate="show" className="mt-10">
+      <motion.div custom={4} variants={reveal} initial={reduce ? false : 'hidden'} animate="show" className="mt-10">
         <AdaptiveLoop compact />
       </motion.div>
 
-      <motion.div custom={4} variants={reveal} initial={reduce ? false : 'hidden'} animate="show" className="mt-12">
+      <motion.div custom={5} variants={reveal} initial={reduce ? false : 'hidden'} animate="show" className="mt-12">
         <AdaptiveInsight title="Recommendation">
           {result.score < 70
             ? `Return to ${result.topic} before moving on. Remaining study minutes should increase on the next plan.`
