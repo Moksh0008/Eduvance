@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { SetupShell } from '../components/layout/SetupShell'
@@ -32,9 +32,9 @@ export function SetupPage() {
     dailyHours: workspace.preferences?.dailyHours || 3,
   }))
   const navigate = useNavigate()
-  // Track how many subjects are currently being analyzed by AI
-  const analyzingCount = useRef(0)
-  const [anyAnalyzing, setAnyAnalyzing] = useState(false)
+  // Track analyzing count using functional state (useRef breaks in Vercel minifier)
+  const [analyzingCount, setAnalyzingCount] = useState(0)
+  const anyAnalyzing = analyzingCount > 0
 
   function syncSubjectsFromExams(nextExams) {
     setSubjects((prev) =>
@@ -125,8 +125,7 @@ export function SetupPage() {
               timetableFile={timetableFile}
               setTimetableFile={setTimetableFile}
               onAnalyzingChange={(analyzing) => {
-                analyzingCount.current += analyzing ? 1 : -1
-                setAnyAnalyzing(analyzingCount.current > 0)
+                setAnalyzingCount(c => c + (analyzing ? 1 : -1))
               }}
             />
           )}
@@ -341,8 +340,7 @@ function StepSyllabus({ subjects, setSubjects }) {
             subject={subject}
             onChange={(next) => setSubjects(subjects.map((s) => (s.id === next.id ? next : s)))}
             onAnalyzingChange={(analyzing) => {
-              analyzingCount.current += analyzing ? 1 : -1
-              setAnyAnalyzing(analyzingCount.current > 0)
+              setAnalyzingCount(c => c + (analyzing ? 1 : -1))
             }}
           />
         ))}
