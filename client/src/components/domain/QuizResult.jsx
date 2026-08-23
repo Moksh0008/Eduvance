@@ -134,7 +134,7 @@ export function QuizResult({ result, onAddToPlan, added }) {
         </motion.div>
       )}
 
-      <motion.div custom={3} variants={reveal}
+      <motion.div custom={3} variants={reveal} initial={reduce ? false : 'hidden'} animate="show" className="mt-12 grid gap-10 md:grid-cols-2">
         <section>
           <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-3">Topic analysis</h2>
           <p className="mt-3 text-sm text-ink-2">
