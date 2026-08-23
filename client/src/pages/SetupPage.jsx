@@ -36,6 +36,7 @@ export function SetupPage() {
   const [anyAnalyzing, setAnyAnalyzing] = useState(false)
   function handleAnalyzingChange(analyzing) {
     analyzingRef.current += analyzing ? 1 : -1
+    if (analyzingRef.current < 0) analyzingRef.current = 0
     setAnyAnalyzing(analyzingRef.current > 0)
   }
 
@@ -157,7 +158,11 @@ export function SetupPage() {
               setStep((s) => s + 1)
             }}
             disabled={anyAnalyzing}
+            className={anyAnalyzing ? 'opacity-60 cursor-not-allowed' : ''}
           >
+            {anyAnalyzing && (
+              <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            )}
             {anyAnalyzing ? 'Analyzing…' : 'Continue'}
           </Button>
         </div>
@@ -494,6 +499,10 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
   // BULLETPROOF: Always notify parent when analyzing state changes
   useEffect(() => {
     onAnalyzingChange?.(aiAnalyzing)
+    return () => {
+      // Clean up: if component unmounts while analyzing, notify parent
+      if (aiAnalyzing) onAnalyzingChange?.(false)
+    }
   }, [aiAnalyzing])
 
   async function onFile(file) {
