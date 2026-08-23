@@ -415,6 +415,7 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
         setDone(true)
         setPhase('stored')
         setAiAnalyzing(false)
+        onAnalyzingChange?.(false)
         onChange({ ...subject, syllabusFile: fileMeta(file) })
         return
       }
@@ -430,11 +431,12 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
     }
     setAiAnalyzing(false)
     onAnalyzingChange?.(false)
-    // Fallback: just store the file metadata
+    // Fallback: just store the file metadata even if analysis failed
     await runStages(UPLOAD_STAGES, (i) => setCurrent(i), 480)
     onChange({ ...subject, syllabusFile: fileMeta(file) })
     setDone(true)
     setPhase('stored')
+    // Note: onAnalyzingChange(false) already called above — don't call again
   }
 
   async function analyzeText() {
