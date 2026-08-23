@@ -49,13 +49,15 @@ authRoutes.get('/google', (req, res) => {
 authRoutes.get('/google/callback', asyncHandler(async (req, res) => {
   const { code } = req.query
   if (!code) {
-    return res.redirect('/login?error=no_code')
+    const frontendUrl = process.env.CLIENT_URL || 'http://localhost:5173'
+    return res.redirect(`${frontendUrl}/login?error=no_code`)
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET
   if (!clientId || !clientSecret) {
-    return res.redirect('/login?error=not_configured')
+    const frontendUrl = process.env.CLIENT_URL || 'http://localhost:5173'
+    return res.redirect(`${frontendUrl}/login?error=not_configured`)
   }
 
   const redirectUri = getGoogleRedirectUri()
@@ -74,7 +76,8 @@ authRoutes.get('/google/callback', asyncHandler(async (req, res) => {
   })
   const tokens = await tokenRes.json()
   if (!tokens.access_token) {
-    return res.redirect('/login?error=token_failed')
+    const frontendUrl = process.env.CLIENT_URL || 'http://localhost:5173'
+    return res.redirect(`${frontendUrl}/login?error=token_failed`)
   }
 
   // Get user info

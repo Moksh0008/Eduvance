@@ -306,10 +306,17 @@ export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [focusedField, setFocusedField] = useState(null)
-  const [error, setError] = useState('')
+  const [error, setError] = useState(() => {
+    const err = params.get('error')
+    if (err === 'token_failed') return 'Google sign-in failed. Please try again.'
+    if (err === 'not_configured') return 'Google sign-in is not configured.'
+    if (err === 'no_code') return 'Google sign-in was cancelled.'
+    if (err === 'no_email') return 'Could not get your email from Google.'
+    return ''
+  })
   const [pending, setPending] = useState(false)
 
-  // Clear any stale tokens on mount so Invalid token errors don't bleed in
+  // Clear any stale tokens on mount
   useEffect(() => {
     try {
       const raw = localStorage.getItem('eduvance.auth')
@@ -321,7 +328,7 @@ export function LoginPage() {
         }
       }
     } catch {}
-    setError('')
+    setError(prev => prev || '')
   }, [])
 
   async function onSubmit(e) {
