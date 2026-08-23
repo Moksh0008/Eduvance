@@ -98,12 +98,12 @@ function OctoPasswordReaction() {
 
   return (
     <motion.div
-      className="absolute -bottom-2 left-1/2 z-20 flex flex-col items-center gap-2 -translate-x-1/2"
+      className="absolute -bottom-2 right-0 z-20 flex flex-col items-end gap-2"
       initial={{ opacity: 0, y: 20, scale: 0.8 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 20, scale: 0.8 }}
       transition={{ type: 'spring', stiffness: 200, damping: 15 }}>
-      <motion.div className="rounded-xl px-4 py-2 text-xs font-medium shadow-lg whitespace-nowrap"
+      <motion.div className="rounded-xl px-4 py-2 text-xs font-medium shadow-lg max-w-[200px] text-center"
         style={{ background: 'rgba(99,102,241,0.9)', color: 'white' }}
         animate={{ scale: [1, 1.03, 1] }}
         transition={{ duration: 2, repeat: Infinity }}>
@@ -121,7 +121,7 @@ function OctoPasswordReaction() {
 function OctoMascot({ isTypingPassword }) {
   return (
     <motion.div
-      className="absolute bottom-8 right-8 z-10 flex flex-col items-center gap-2"
+      className="absolute bottom-4 right-4 z-10 flex flex-col items-center gap-2"
       initial={{ opacity: 0, y: 30, scale: 0.7 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: 'spring', stiffness: 120, damping: 12, delay: 0.3 }}>
@@ -141,7 +141,7 @@ function OctoMascot({ isTypingPassword }) {
               style={{ background: 'var(--color-surface)', border: '1px solid var(--color-line-2)' }}
               animate={{ scale: [1, 1.02, 1] }}
               transition={{ duration: 3, repeat: Infinity }}>
-              <span className="text-ink-2">Welcome back! Your study data is safe. 🐙</span>
+              <span className="text-ink-2 text-center block">Welcome back! Your study data is safe. 🐙</span>
             </motion.div>
           </motion.div>
         )}
