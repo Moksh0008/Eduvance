@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { SetupShell } from '../components/layout/SetupShell'
@@ -32,8 +32,12 @@ export function SetupPage() {
     dailyHours: workspace.preferences?.dailyHours || 3,
   }))
   const navigate = useNavigate()
-  // Track analyzing count — module-level variable avoids Vite minifier issues
+  const analyzingRef = useRef(0)
   const [anyAnalyzing, setAnyAnalyzing] = useState(false)
+  function handleAnalyzingChange(analyzing) {
+    analyzingRef.current += analyzing ? 1 : -1
+    setAnyAnalyzing(analyzingRef.current > 0)
+  }
 
   function syncSubjectsFromExams(nextExams) {
     setSubjects((prev) =>
@@ -123,12 +127,10 @@ export function SetupPage() {
               }}
               timetableFile={timetableFile}
               setTimetableFile={setTimetableFile}
-              onAnalyzingChange={(analyzing) => {
-                setAnyAnalyzing(analyzing)
-              }}
+              onAnalyzingChange={handleAnalyzingChange}
             />
           )}
-          {step === 2 && <StepSyllabus subjects={subjects} setSubjects={setSubjects} />}
+          {step === 2 && <StepSyllabus subjects={subjects} setSubjects={setSubjects} onAnalyzingChange={handleAnalyzingChange} />}
           {step === 3 && (
             <StepPreferences exams={exams} prefs={prefs} setPrefs={setPrefs} />
           )}
@@ -296,7 +298,7 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile, onAna
   )
 }
 
-function StepSyllabus({ subjects, setSubjects }) {
+function StepSyllabus({ subjects, setSubjects, onAnalyzingChange }) {
   const [studyFiles, setStudyFiles] = useState([])
   const [uploadingStudy, setUploadingStudy] = useState(false)
   const [uploadProgress, setUploadProgress] = useState('')
@@ -376,7 +378,7 @@ function StepSyllabus({ subjects, setSubjects }) {
             subject={subject}
             onChange={(next) => setSubjects(subjects.map((s) => (s.id === next.id ? next : s)))}
             onAnalyzingChange={(analyzing) => {
-              setAnalyzingCount(c => c + (analyzing ? 1 : -1))
+              onAnalyzingChange?.(analyzing)
             }}
           />
         ))}
