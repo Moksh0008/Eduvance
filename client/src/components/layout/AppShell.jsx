@@ -49,20 +49,16 @@ export function AppShell() {
   return (
     <div className="min-h-screen bg-canvas">
       {/* Fixed background image — same as landing page */}
-      <div className="fixed inset-0 z-0">            <img
+      <div className="fixed inset-0 z-0">
+            <img
               src={isDark ? '/dark-theme-bg.png' : '/light-theme-bg.png'}
               alt=""
               className="h-full w-full object-cover object-center"
               loading="lazy"
               width="1920"
               height="1080"
-              style={{ opacity: isDark ? 1 : 0.7, filter: isDark ? 'none' : 'saturate(0.8) brightness(1.1)' }}
+              style={{ opacity: isDark ? 0.15 : 0.18, filter: isDark ? 'none' : 'saturate(0.6) brightness(1.1)' }}
             />
-            <div className="absolute inset-0" style={{
-              background: isDark
-                ? 'none'
-                : 'linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.25) 50%, var(--color-canvas) 100%)'
-            }} />
       </div>
 
       {/* Particle background */}

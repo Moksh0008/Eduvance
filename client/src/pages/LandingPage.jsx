@@ -15,22 +15,14 @@ export function LandingPage() {
       <MarketingNav />
 
       {/* Background image */}
-      <div className="fixed inset-0 z-0">
+      <div className="fixed inset-0 z-0" style={{ background: 'var(--color-canvas)' }}>
         <img
           src={isDark ? '/dark-theme-bg.png' : '/light-theme-bg.png'}
           alt=""
           className="h-full w-full object-cover object-center"
           style={{
-            opacity: isDark ? 1 : 0.9,
-            filter: isDark ? 'none' : 'saturate(0.95) brightness(1.05)',
-          }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background: isDark
-              ? 'none'
-              : 'linear-gradient(180deg, rgba(245,245,250,0.1) 0%, rgba(245,245,250,0.25) 100%)',
+            opacity: isDark ? 0.18 : 0.2,
+            filter: isDark ? 'none' : 'saturate(0.6) brightness(1.1)',
           }}
         />
       </div>
