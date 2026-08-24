@@ -87,7 +87,7 @@ function SidebarItem({ to, label, icon: Icon, emoji, onNavigate }) {
             'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-250',
             isActive
               ? 'font-medium'
-              : 'text-ink-2 hover:text-ink',
+              : 'text-ink-2 hover:text-ink hover:bg-white/[0.03]',
           )
         }
       >
@@ -144,8 +144,12 @@ export function Sidebar({ onNavigate }) {
   return (
     <nav aria-label="Application" className="flex h-full flex-col overflow-y-auto px-3 py-3">
       {groups.map((group, gi) => (
-        <div key={group.label} className={gi > 0 ? 'mt-5' : ''}>
-          <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-3/50">
+        <div key={group.label} className={gi > 0 ? 'mt-6' : ''}>
+          {/* Section divider line */}
+          {gi > 0 && (
+            <div className="mx-3 mb-3 h-px" style={{ background: 'var(--color-line, rgba(255,255,255,0.06))' }} />
+          )}
+          <p className="px-3 pb-2.5 text-[10px] font-bold uppercase tracking-[0.18em] text-ink-3/70">
             {group.label}
           </p>
           <ul className="flex flex-col gap-0.5">
