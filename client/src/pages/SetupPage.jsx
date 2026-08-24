@@ -646,7 +646,7 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
         <div>
           <textarea
             className="w-full border border-line bg-surface px-3 py-2 text-sm" rows={6}
-            placeholder={`Paste your ${subject.name} syllabus topics here...\n\nExample:\nUnit 1: Normalization\n- 1NF, 2NF, 3NF, BCNF\n- Functional Dependencies\n- Decomposition\n\nUnit 2: SQL\n- SELECT queries\n- JOINs\n- Subqueries\n- Views`}
+            placeholder={`Paste your ${subject.name} syllabus topics here...`}
             value={syllabusText}
             onChange={(e) => setSyllabusText(e.target.value)}
           />
