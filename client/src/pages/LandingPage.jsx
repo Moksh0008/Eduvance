@@ -154,7 +154,7 @@ export function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {/* Get to Know Us */}
             <div>
-              <h4 className="text-xs font-bold text-ink mb-3">Get to Know Us</h4>
+              <h3 className="text-xs font-bold text-ink mb-3">Get to Know Us</h3>
               <ul className="space-y-2 text-xs text-ink-2">
                 <li><span className="hover:text-accent transition-colors cursor-pointer">About Eduvance</span></li>
                 <li><span className="hover:text-accent transition-colors cursor-pointer">Careers</span></li>
@@ -165,7 +165,7 @@ export function LandingPage() {
 
             {/* Connect with Us */}
             <div>
-              <h4 className="text-xs font-bold text-ink mb-3">Connect with Us</h4>
+              <h3 className="text-xs font-bold text-ink mb-3">Connect with Us</h3>
               <ul className="space-y-2 text-xs text-ink-2">
                 <li><span className="hover:text-accent transition-colors cursor-pointer">Facebook</span></li>
                 <li><span className="hover:text-accent transition-colors cursor-pointer">Twitter</span></li>
@@ -176,7 +176,7 @@ export function LandingPage() {
 
             {/* For Students */}
             <div>
-              <h4 className="text-xs font-bold text-ink mb-3">For Students</h4>
+              <h3 className="text-xs font-bold text-ink mb-3">For Students</h3>
               <ul className="space-y-2 text-xs text-ink-2">
                 <li><span className="hover:text-accent transition-colors cursor-pointer">Adaptive Quizzes</span></li>
                 <li><span className="hover:text-accent transition-colors cursor-pointer">Study Planner</span></li>
@@ -187,7 +187,7 @@ export function LandingPage() {
 
             {/* Let Us Help You */}
             <div>
-              <h4 className="text-xs font-bold text-ink mb-3">Let Us Help You</h4>
+              <h3 className="text-xs font-bold text-ink mb-3">Let Us Help You</h3>
               <ul className="space-y-2 text-xs text-ink-2">
                 <li><span className="hover:text-accent transition-colors cursor-pointer">Your Account</span></li>
                 <li><span className="hover:text-accent transition-colors cursor-pointer">Help Centre</span></li>
