@@ -140,7 +140,7 @@ export function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="relative z-10" style={{ background: 'var(--color-canvas)' }}>
+      <footer className="relative z-10" style={{ background: isDark ? '#0a0e1a' : '#f5f3ef' }}>
         {/* Back to top */}
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
