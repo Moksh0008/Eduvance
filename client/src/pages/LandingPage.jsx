@@ -28,7 +28,7 @@ export function LandingPage() {
       </div>
 
       {/* Hero */}
-      <section className="relative px-4 pt-20 pb-16 sm:pt-28 sm:pb-24 text-center">
+      <section className="relative z-10 px-4 pt-20 pb-16 sm:pt-28 sm:pb-24 text-center">
         <motion.div
           className="mx-auto max-w-3xl"
           initial="hidden"
@@ -61,7 +61,7 @@ export function LandingPage() {
       </section>
 
       {/* Roadmap / How It Works — Alternating Timeline */}
-      <section className="px-4 py-16">
+      <section className="relative z-10 px-4 py-16">
         <div className="mx-auto max-w-4xl">
           <div className="text-center mb-12">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-2 mb-2">Your journey with Eduvance</p>
@@ -126,7 +126,7 @@ export function LandingPage() {
       </section>
 
       {/* Product Demo */}
-      <section className="px-4 py-16">
+      <section className="relative z-10 px-4 py-16">
         <div className="mx-auto max-w-4xl text-center">
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-2 mb-2">See Eduvance in action</p>
           <h2 className="font-serif text-3xl sm:text-4xl text-ink">
@@ -140,7 +140,7 @@ export function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-line-2" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
+      <footer className="relative z-10 border-t border-line-2" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
         {/* Back to top */}
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
