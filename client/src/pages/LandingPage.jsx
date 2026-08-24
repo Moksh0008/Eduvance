@@ -11,11 +11,11 @@ export function LandingPage() {
   const { isDark } = useAppState()
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--color-canvas)' }}>
+    <div className="min-h-screen" style={{ background: 'transparent' }}>
       <MarketingNav />
 
       {/* Background image */}
-      <div className="fixed inset-0 -z-10">
+      <div className="fixed inset-0 z-0">
         <img
           src={isDark ? '/dark-theme-bg.png' : '/light-theme-bg.png'}
           alt=""
