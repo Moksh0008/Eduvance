@@ -21,7 +21,7 @@ export function LandingPage() {
           alt=""
           className="h-full w-full object-cover object-center"
           style={{
-            opacity: isDark ? 0.6 : 0.9,
+            opacity: isDark ? 1 : 0.9,
             filter: isDark ? 'none' : 'saturate(0.95) brightness(1.05)',
           }}
         />
@@ -29,8 +29,8 @@ export function LandingPage() {
           className="absolute inset-0"
           style={{
             background: isDark
-              ? 'linear-gradient(180deg, rgba(6,9,24,0.4) 0%, rgba(6,9,24,0.7) 100%)'
-              : 'linear-gradient(180deg, rgba(245,245,250,0.15) 0%, rgba(245,245,250,0.35) 100%)',
+              ? 'none'
+              : 'linear-gradient(180deg, rgba(245,245,250,0.1) 0%, rgba(245,245,250,0.25) 100%)',
           }}
         />
       </div>
