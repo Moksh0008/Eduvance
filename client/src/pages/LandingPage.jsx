@@ -17,20 +17,20 @@ export function LandingPage() {
       {/* Background image */}
       <div className="fixed inset-0 -z-10">
         <img
-          src={isDark ? '/dark-theme-bg.webp' : '/light-theme-bg.webp'}
+          src={isDark ? '/dark-theme-bg.png' : '/light-theme-bg.png'}
           alt=""
           className="h-full w-full object-cover object-center"
           style={{
-            opacity: isDark ? 0.5 : 0.85,
-            filter: isDark ? 'none' : 'saturate(0.9) brightness(1)',
+            opacity: isDark ? 0.6 : 0.9,
+            filter: isDark ? 'none' : 'saturate(0.95) brightness(1.05)',
           }}
         />
         <div
           className="absolute inset-0"
           style={{
             background: isDark
-              ? 'linear-gradient(180deg, rgba(6,9,24,0.6) 0%, rgba(6,9,24,0.85) 100%)'
-              : 'linear-gradient(180deg, rgba(245,245,250,0.3) 0%, rgba(245,245,250,0.5) 100%)',
+              ? 'linear-gradient(180deg, rgba(6,9,24,0.4) 0%, rgba(6,9,24,0.7) 100%)'
+              : 'linear-gradient(180deg, rgba(245,245,250,0.15) 0%, rgba(245,245,250,0.35) 100%)',
           }}
         />
       </div>

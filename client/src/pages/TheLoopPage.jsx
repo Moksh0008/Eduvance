@@ -34,7 +34,7 @@ export function TheLoopPage() {
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-canvas)' }}>
       <div className="fixed inset-0 z-0">
-        <img src={isDark ? '/dark-theme-bg.webp' : '/light-theme-bg.webp'} alt="" className="h-full w-full object-cover"
+        <img src={isDark ? '/dark-theme-bg.png' : '/light-theme-bg.png'} alt="" className="h-full w-full object-cover"
           style={{ opacity: isDark ? 0.5 : 0.85 }} />
       </div>
 
