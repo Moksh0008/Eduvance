@@ -167,8 +167,8 @@ export function SetupPage() {
               if (step === 1) syncSubjectsFromExams(exams)
               setStep((s) => s + 1)
             }}
-            disabled={anyAnalyzing}
-            className={anyAnalyzing ? 'opacity-60 cursor-not-allowed' : ''}
+            disabled={anyAnalyzing || (step === 1 && !exams.some((e) => e.name.trim() && e.date))}
+            className={(anyAnalyzing || (step === 1 && !exams.some((e) => e.name.trim() && e.date))) ? 'opacity-60 cursor-not-allowed' : ''}
           >
             {anyAnalyzing && (
               <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
