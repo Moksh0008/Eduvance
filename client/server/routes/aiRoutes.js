@@ -123,7 +123,7 @@ aiRoutes.post('/analyze-file', upload.single('file'), asyncHandler(async (req, r
 
   const grokPromise = agent.analyzeSyllabus(req.user.userId, text, {
     analyzeSyllabus: async (t) => callGrokJSON(
-      `You are an academic syllabus analyzer. Extract structured topics from this document.
+      `You are an academic syllabus analyzer. Extract structured topics from this document. All output MUST be in English.
 Return JSON: { "subjects": [{ "name": "string", "examDate": "YYYY-MM-DD or empty", "units": [{ "name": "string", "topics": [{ "name": "string", "difficulty": "easy|medium|hard", "importance": "high|medium|low", "estimatedMinutes": 60 }] }] }] }
 Extract ALL subjects, units, topics from the document. If exam dates are mentioned, include them. Return ONLY valid JSON.`,
       `Subject context: ${subject}\n\nDocument content:\n${t.slice(0, 8000)}`
@@ -164,7 +164,7 @@ aiRoutes.post('/analyze-timetable', upload.single('file'), asyncHandler(async (r
   }
 
   const result = await callGrokJSON(
-    `You are a timetable parser. Extract exam/subject information from this timetable document.
+    `You are a timetable parser. Extract exam/subject information from this timetable document. All output MUST be in English.
 Return JSON: { "exams": [{ "name": "subject name", "date": "YYYY-MM-DD", "time": "HH:MM", "marks": 100 }] }
 Extract ALL exams with their dates, times, and marks. If a field is not found, use reasonable defaults. Return ONLY valid JSON.`,
     `Timetable content:\n${text.slice(0, 6000)}`
@@ -190,7 +190,7 @@ aiRoutes.post('/analyze-syllabus', asyncHandler(async (req, res) => {
   try {
     result = await agent.analyzeSyllabus(req.user.userId, trimmedText, {
       analyzeSyllabus: async (text) => callGrokJSON(
-        `Extract topics from this syllabus text. Return JSON:\n{"subjects":[{"name":"...","units":[{"name":"...","topics":[{"name":"...","difficulty":"easy|medium|hard","importance":"high|medium|low"}]}]}]}\nReturn ONLY valid JSON.`,
+        `Extract topics from this syllabus text. All output MUST be in English.\nReturn JSON:\n{"subjects":[{"name":"...","units":[{"name":"...","topics":[{"name":"...","difficulty":"easy|medium|hard","importance":"high|medium|low"}]}]}]}\nReturn ONLY valid JSON.`,
         `Syllabus:\n${text}`,
         { temperature: 0.2, timeoutMs: 30000 }
       ),
@@ -536,7 +536,7 @@ aiRoutes.post('/generate-topics', asyncHandler(async (req, res) => {
 
   try {
     const result = await callGrokJSON(
-      `You are a CS exam topic generator. Generate a list of standard academic topics for the subject: ${subject}.\n\nReturn JSON:\n{\n  "topics": [\n    { "name": "Topic Name", "difficulty": "easy|medium|hard", "importance": "high|medium|low" }\n  ]\n}\n\nGenerate 8-15 topics that a typical university course on ${subject} would cover. Return ONLY valid JSON.`,
+      `You are a CS exam topic generator. Generate a list of standard academic topics for the subject: ${subject}. All output MUST be in English.\n\nReturn JSON:\n{\n  "topics": [\n    { "name": "Topic Name", "difficulty": "easy|medium|hard", "importance": "high|medium|low" }\n  ]\n}\n\nGenerate 8-15 topics that a typical university course on ${subject} would cover. Return ONLY valid JSON.`,
       `Generate standard exam topics for ${subject}.`,
       { temperature: 0.4 }
     )

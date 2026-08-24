@@ -266,7 +266,7 @@ export async function callGrokJSON(systemPrompt, userPrompt, options = {}) {
     console.warn(`[AI] First parse attempt failed, retrying with stricter prompt...`)
     // Retry with even more explicit JSON-only instruction
     const retryRaw = await callGrok(
-      'Return ONLY a valid JSON array. No text before or after. No markdown fences.',
+      'Return ONLY a valid JSON array in English. No text before or after. No markdown fences. All content must be in English.',
       userPrompt,
       { ...options, temperature: 0.1, maxTokens: options.maxTokens || 4096 }
     )
@@ -330,6 +330,8 @@ export async function generateQuizQuestions({ subject, topic, difficulty, count,
 
     const systemPrompt = `Generate ${batchSize} MCQ questions about ${topic} (${subject}). Difficulty: ${difficulty}.
 
+CRITICAL: All questions, options, and explanations MUST be written in English. Do NOT use any other language.
+
 Return ONLY a JSON array. Each object:
 {"prompt":"question?","options":["A","B","C","D"],"correctAnswer":0,"explanation":"why"}`
 
@@ -374,7 +376,8 @@ Return ONLY a JSON array. Each object:
  * Analyze syllabus text and extract structured topics
  */
 export async function analyzeSyllabus(syllabusText) {
-  const systemPrompt = `Extract topics from syllabus text. Return JSON:
+  const systemPrompt = `Extract topics from syllabus text. All output MUST be in English.
+Return JSON:
 {"subjects":[{"name":"...","units":[{"name":"...","topics":[{"name":"...","difficulty":"easy|medium|hard","importance":"high|medium|low"}]}]}]}
 Return ONLY valid JSON.`
 
@@ -385,7 +388,8 @@ Return ONLY valid JSON.`
  * Analyze study material and extract knowledge chunks
  */
 export async function analyzeStudyMaterial(text, subject = '') {
-  const systemPrompt = `Analyze study material. Return JSON:
+  const systemPrompt = `Analyze study material. All output MUST be in English.
+Return JSON:
 {"subject":"...","topics":[{"name":"...","difficulty":"...","keyConcepts":["..."],"chunks":[{"title":"...","content":"...","concepts":["..."]}]}]}
 Return ONLY valid JSON.`
 
@@ -396,7 +400,7 @@ Return ONLY valid JSON.`
  * Generate question explanation
  */
 export async function explainQuestion(question, correctAnswer, selectedAnswer, topic) {
-  const systemPrompt = `Explain why the correct answer is right. Be concise (under 100 words).`
+  const systemPrompt = `Explain why the correct answer is right. Be concise (under 100 words). All output MUST be in English.`
   const userPrompt = `Q: ${question}\nCorrect: ${correctAnswer}\nStudent chose: ${selectedAnswer}\nTopic: ${topic}`
   return callGrok(systemPrompt, userPrompt, { maxTokens: 500 })
 }
@@ -405,7 +409,8 @@ export async function explainQuestion(question, correctAnswer, selectedAnswer, t
  * Generate AI insights from student performance data
  */
 export async function generateInsights(studentData) {
-  const systemPrompt = `Analyze student performance. Return JSON array:
+  const systemPrompt = `Analyze student performance. All output MUST be in English.
+Return JSON array:
 [{"type":"strength|weakness|improvement|action","text":"insight","emoji":"📊","priority":"low|medium|high","subject":"...","topic":"..."}]
 Generate 3-6 insights. Return ONLY valid JSON.`
   return callGrokJSON(systemPrompt, `Performance:\n${JSON.stringify(studentData, null, 2)}`, { maxTokens: 2000 })
@@ -415,7 +420,8 @@ Generate 3-6 insights. Return ONLY valid JSON.`
  * Generate adaptive study recommendations
  */
 export async function generateRecommendations(studentContext) {
-  const systemPrompt = `Recommend what to study next. Return JSON:
+  const systemPrompt = `Recommend what to study next. All output MUST be in English.
+Return JSON:
 {"primaryRecommendation":{"subject":"...","topic":"...","reason":"...","estimatedMinutes":45},"secondaryRecommendations":[...],"octoMessage":"..."}
 Return ONLY valid JSON.`
   return callGrokJSON(systemPrompt, `Context:\n${JSON.stringify(studentContext, null, 2)}`, { maxTokens: 2000 })
@@ -425,7 +431,8 @@ Return ONLY valid JSON.`
  * Replan study schedule based on new quiz results
  */
 export async function replanSchedule(currentPlan, quizResult, studentContext) {
-  const systemPrompt = `Adjust study schedule after quiz. Return JSON:
+  const systemPrompt = `Adjust study schedule after quiz. All output MUST be in English.
+Return JSON:
 {"reason":"...","changes":[{"subject":"...","topic":"...","oldMinutes":30,"newMinutes":50,"reason":"..."}],"octoMessage":"..."}
 Return ONLY valid JSON.`
   return callGrokJSON(systemPrompt, `Plan:\n${JSON.stringify(currentPlan, null, 2)}\nQuiz:\n${JSON.stringify(quizResult, null, 2)}`, { maxTokens: 2000 })
@@ -435,6 +442,6 @@ Return ONLY valid JSON.`
  * Generate Octo's contextual message
  */
 export async function generateOctoMessage(context) {
-  const systemPrompt = `You are Octo, a study companion. Generate a brief encouraging message (1-2 sentences, 0-1 emojis). Return ONLY the message text.`
+  const systemPrompt = `You are Octo, a study companion. Generate a brief encouraging message (1-2 sentences, 0-1 emojis) in English. Return ONLY the message text.`
   return callGrok(systemPrompt, `Context: ${JSON.stringify(context)}`, { maxTokens: 150, temperature: 0.8 })
 }
