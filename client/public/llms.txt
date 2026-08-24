@@ -1,0 +1,25 @@
+# Eduvance — AI-Powered Adaptive Exam Preparation
+
+> Eduvance is a web application that helps students prepare for exams using AI-powered adaptive learning. It analyzes your syllabus, exam schedule, and study progress to decide what to study, when, and for how long.
+
+## Features
+
+- [Adaptive Study Planner](https://eduvance-mmra.vercel.app/planner) — AI-generated study schedules based on exam dates and weak topics
+- [Smart Quizzes](https://eduvance-mmra.vercel.app/quiz) — AI-generated questions specific to your uploaded syllabus topics
+- [Progress Tracking](https://eduvance-mmra.vercel.app/progress) — Track mastery across subjects and topics
+- [Syllabus Analysis](https://eduvance-mmra.vercel.app/syllabus) — Upload your syllabus and Eduvance extracts topics automatically
+- [Performance Analytics](https://eduvance-mmra.vercel.app/analytics) — Detailed insights into your study patterns
+
+## How It Works
+
+1. Upload your syllabus and exam timetable
+2. Eduvance analyzes topics and prioritizes based on exam weight
+3. Follow the AI-generated study plan
+4. Take quizzes to test understanding
+5. The system adapts your plan based on quiz performance
+
+## Links
+
+- [Landing Page](https://eduvance-mmra.vercel.app)
+- [Login](https://eduvance-mmra.vercel.app/login)
+- [Sign Up](https://eduvance-mmra.vercel.app/register)
