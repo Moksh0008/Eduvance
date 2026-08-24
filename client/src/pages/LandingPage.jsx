@@ -28,7 +28,7 @@ export function LandingPage() {
       </div>
 
       {/* Hero */}
-      <section className="relative z-10 px-4 pt-20 pb-16 sm:pt-28 sm:pb-24 text-center">
+      <section className="relative z-10 min-h-screen flex items-center justify-center px-4 text-center">
         <motion.div
           className="mx-auto max-w-3xl"
           initial="hidden"
