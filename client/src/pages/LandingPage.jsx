@@ -11,26 +11,18 @@ export function LandingPage() {
   const { isDark } = useAppState()
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--color-canvas)' }}>
+    <div className="min-h-screen" style={{ background: 'transparent' }}>
       <MarketingNav />
 
       {/* Background image */}
-      <div className="fixed inset-0 -z-10">
+      <div className="fixed inset-0 z-0" style={{ background: 'var(--color-canvas)' }}>
         <img
-          src={isDark ? '/dark-theme-bg.webp' : '/light-theme-bg.webp'}
+          src={isDark ? '/dark-theme-bg.png' : '/light-theme-bg.png'}
           alt=""
           className="h-full w-full object-cover object-center"
           style={{
-            opacity: isDark ? 0.5 : 0.85,
-            filter: isDark ? 'none' : 'saturate(0.9) brightness(1)',
-          }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background: isDark
-              ? 'linear-gradient(180deg, rgba(6,9,24,0.6) 0%, rgba(6,9,24,0.85) 100%)'
-              : 'linear-gradient(180deg, rgba(245,245,250,0.3) 0%, rgba(245,245,250,0.5) 100%)',
+            opacity: isDark ? 0.18 : 0.2,
+            filter: isDark ? 'none' : 'saturate(0.6) brightness(1.1)',
           }}
         />
       </div>

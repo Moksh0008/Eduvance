@@ -5,6 +5,7 @@ import { SetupShell } from '../components/layout/SetupShell'
 import { Button } from '../components/ui/Button'
 import { FileDrop } from '../components/ui/FileDrop'
 import { StageList } from '../components/ui/StageList'
+import { OctoGuide } from '../components/ui/OctoGuide'
 import { AdaptiveLoop } from '../components/domain/AdaptiveLoop'
 import { runStages } from '../services/simulate'
 import { fileMeta, HOUR_PRESETS } from '../services/workspace'
@@ -36,6 +37,7 @@ export function SetupPage() {
   const [anyAnalyzing, setAnyAnalyzing] = useState(false)
   function handleAnalyzingChange(analyzing) {
     analyzingRef.current += analyzing ? 1 : -1
+    if (analyzingRef.current < 0) analyzingRef.current = 0
     setAnyAnalyzing(analyzingRef.current > 0)
   }
 
@@ -119,6 +121,8 @@ export function SetupPage() {
           transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
         >
           {step === 1 && (
+            <>
+            <OctoGuide step={1} />
             <StepTimetable
               exams={exams}
               setExams={(next) => {
@@ -129,12 +133,18 @@ export function SetupPage() {
               setTimetableFile={setTimetableFile}
               onAnalyzingChange={handleAnalyzingChange}
             />
+            </>
           )}
-          {step === 2 && <StepSyllabus subjects={subjects} setSubjects={setSubjects} onAnalyzingChange={handleAnalyzingChange} />}
+          {step === 2 && <><OctoGuide step={2} /><StepSyllabus subjects={subjects} setSubjects={setSubjects} onAnalyzingChange={handleAnalyzingChange} /></>}
           {step === 3 && (
+            <>
+            <OctoGuide step={3} />
             <StepPreferences exams={exams} prefs={prefs} setPrefs={setPrefs} />
+            </>
           )}
           {step === 4 && (
+            <>
+            <OctoGuide step={4} />
             <StepConfirm
               timetableFile={timetableFile}
               exams={exams}
@@ -142,6 +152,7 @@ export function SetupPage() {
               prefs={prefs}
               onDone={finish}
             />
+            </>
           )}
         </motion.div>
       </AnimatePresence>
@@ -156,8 +167,12 @@ export function SetupPage() {
               if (step === 1) syncSubjectsFromExams(exams)
               setStep((s) => s + 1)
             }}
-            disabled={anyAnalyzing}
+            disabled={anyAnalyzing || (step === 1 && !exams.some((e) => e.name.trim() && e.date))}
+            className={(anyAnalyzing || (step === 1 && !exams.some((e) => e.name.trim() && e.date))) ? 'opacity-60 cursor-not-allowed' : ''}
           >
+            {anyAnalyzing && (
+              <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            )}
             {anyAnalyzing ? 'Analyzing…' : 'Continue'}
           </Button>
         </div>
@@ -245,7 +260,7 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile, onAna
               <tr key={row.id} className="border-t border-line">
                 <td className="py-2 pr-2">
                   <input
-                    className="h-9 w-full border border-line bg-surface px-2"
+                    className="h-9 w-full border-0 border-b border-line bg-transparent px-0 text-sm focus:outline-none focus:border-accent"
                     placeholder="e.g. Operating Systems"
                     value={row.name}
                     aria-label="Subject"
@@ -255,7 +270,7 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile, onAna
                 <td className="py-2 pr-2">
                   <input
                     type="date"
-                    className="h-9 w-full border border-line bg-surface px-2"
+                    className="h-9 w-full border-0 border-b border-line bg-transparent px-0 text-sm focus:outline-none focus:border-accent"
                     value={row.date}
                     aria-label="Exam date"
                     onChange={(e) => setExams(exams.map((x, i) => (i === idx ? { ...x, date: e.target.value } : x)))}
@@ -264,7 +279,7 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile, onAna
                 <td className="py-2 pr-2">
                   <input
                     type="time"
-                    className="h-9 w-full border border-line bg-surface px-2"
+                    className="h-9 w-full border-0 border-b border-line bg-transparent px-0 text-sm focus:outline-none focus:border-accent"
                     value={row.time}
                     aria-label="Exam time"
                     onChange={(e) => setExams(exams.map((x, i) => (i === idx ? { ...x, time: e.target.value } : x)))}
@@ -273,7 +288,7 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile, onAna
                 <td className="py-2 pr-2">
                   <input
                     type="number"
-                    className="h-9 w-20 border border-line bg-surface px-2"
+                    className="h-9 w-20 border-0 border-b border-line bg-transparent px-0 text-sm focus:outline-none focus:border-accent"
                     value={row.marks}
                     aria-label="Marks"
                     onChange={(e) =>
@@ -333,7 +348,7 @@ function StepSyllabus({ subjects, setSubjects, onAnalyzingChange }) {
       <div>
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">Step 2 · Syllabus</p>
         <h1 className="mt-2 font-serif text-4xl text-ink">What do you need to prepare?</h1>
-        <p className="mt-3 text-sm text-ink-2">Add your subjects below, then paste or upload your syllabus for each.</p>
+        <p className="mt-3 text-sm text-ink-2">        Add your subjects below, then paste your syllabus topics for each.</p>
         <div className="mt-6 flex gap-2">
           <input
             type="text"
@@ -489,11 +504,15 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
   const [aiAnalyzing, setAiAnalyzing] = useState(false)
   const [aiError, setAiError] = useState('')
   const [syllabusText, setSyllabusText] = useState('')
-  const [showTextMode, setShowTextMode] = useState(false)
+  // PDF upload removed — paste text only
 
   // BULLETPROOF: Always notify parent when analyzing state changes
   useEffect(() => {
     onAnalyzingChange?.(aiAnalyzing)
+    return () => {
+      // Clean up: if component unmounts while analyzing, notify parent
+      if (aiAnalyzing) onAnalyzingChange?.(false)
+    }
   }, [aiAnalyzing])
 
   async function onFile(file) {
@@ -622,41 +641,25 @@ function SubjectSyllabus({ subject, onChange, onAnalyzingChange }) {
         {topicCount > 0 && <span className="ml-2 text-green-500">· {topicCount} topics extracted</span>}
       </p>
 
-      {/* Upload or paste syllabus */}
+      {/* Paste syllabus topics */}
       <div className="mt-4">
-        <div className="flex gap-2 mb-3">
-          <Button variant="secondary" size="sm" onClick={() => setShowTextMode(false)}>
-            📄 Upload PDF
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => setShowTextMode(true)}>
-            ✏️ Paste syllabus text
+        <div>
+          <textarea
+            className="w-full border border-line bg-surface px-3 py-2 text-sm" rows={6}
+            placeholder={`Paste your ${subject.name} syllabus topics here...`}
+            value={syllabusText}
+            onChange={(e) => setSyllabusText(e.target.value)}
+          />
+          <Button
+            variant="accent"
+            size="sm"
+            className="mt-2"
+            onClick={analyzeText}
+            disabled={aiAnalyzing || !syllabusText.trim()}
+          >
+            {aiAnalyzing ? '🔄 Analyzing with AI...' : '🧠 Analyze syllabus with AI'}
           </Button>
         </div>
-
-        {!showTextMode ? (
-          <>
-            <FileDrop label={`Upload syllabus for ${subject.name}`} hint="PDF / notes / document — AI will extract topics automatically" onFile={onFile} disabled={phase === 'run' || aiAnalyzing} />
-            {phase !== 'idle' && !aiAnalyzing ? <StageList stages={UPLOAD_STAGES} current={current} complete={done} /> : null}
-          </>
-        ) : (
-          <div>
-            <textarea
-              className="w-full border border-line bg-surface px-3 py-2 text-sm" rows={6}
-              placeholder={`Paste your ${subject.name} syllabus here...\n\nExample:\nUnit 1: Normalization\n- 1NF, 2NF, 3NF, BCNF\n- Functional Dependencies\n- Decomposition\n\nUnit 2: SQL\n- SELECT queries\n- JOINs\n- Subqueries\n- Views`}
-              value={syllabusText}
-              onChange={(e) => setSyllabusText(e.target.value)}
-            />
-            <Button
-              variant="accent"
-              size="sm"
-              className="mt-2"
-              onClick={analyzeText}
-              disabled={aiAnalyzing || !syllabusText.trim()}
-            >
-              {aiAnalyzing ? '🔄 Analyzing with AI...' : '🧠 Analyze syllabus with AI'}
-            </Button>
-          </div>
-        )}
 
         {/* AI analyzing spinner with timer */}
         {aiAnalyzing && (

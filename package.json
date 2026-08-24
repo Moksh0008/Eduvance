@@ -2,12 +2,15 @@
   "name": "eduvance",
   "private": true,
   "type": "module",
- "engines": {
-  "node": "22.x"
-},
-  "workspaces": ["client", "client/server"],
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "client",
+    "client/server"
+  ],
   "scripts": {
-    "build": "npm run build -w eduvance-client",
+    "build": "npm run build -w eduvance-client && cp -r client/dist ./dist",
     "dev:client": "npm run dev -w eduvance-client",
     "dev:server": "npm run dev -w eduvance-server"
   }
