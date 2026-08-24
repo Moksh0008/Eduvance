@@ -174,14 +174,14 @@ export function LandingPage() {
               </ul>
             </div>
 
-            {/* Make Money with Us */}
+            {/* For Students */}
             <div>
               <h4 className="text-xs font-bold text-ink mb-3">For Students</h4>
               <ul className="space-y-2 text-xs text-ink-2">
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Sell on Eduvance</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Become an Affiliate</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Advertise Your Courses</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Eduvance Pay</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Adaptive Quizzes</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Study Planner</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">AI-Powered Insights</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Performance Analytics</span></li>
               </ul>
             </div>
 
@@ -190,9 +190,9 @@ export function LandingPage() {
               <h4 className="text-xs font-bold text-ink mb-3">Let Us Help You</h4>
               <ul className="space-y-2 text-xs text-ink-2">
                 <li><span className="hover:text-accent transition-colors cursor-pointer">Your Account</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Returns Centre</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">100% Purchase Protection</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Help</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Help Centre</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Privacy Policy</span></li>
+                <li><span className="hover:text-accent transition-colors cursor-pointer">Terms of Service</span></li>
               </ul>
             </div>
           </div>
