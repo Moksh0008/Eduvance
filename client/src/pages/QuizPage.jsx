@@ -329,16 +329,14 @@ export function QuizPage() {
             >
               <option value={5}>5 questions (quick check)</option>
               <option value={10}>10 questions (standard)</option>
-              <option value={20}>20 questions (thorough)</option>
-              <option value={50}>50 questions (comprehensive)</option>
-              <option value={100}>100 questions (full bank)</option>
+              <option value={15}>15 questions (thorough)</option>
             </select>
           </div>
 
           {/* Start quiz button */}
           <div className="flex items-center gap-3">
             <Button
-              onClick={questionCount > 15 ? startBatchQuiz : startCheck}
+              onClick={startCheck}
               disabled={!selectedTopic || generating}
             >
               {generating ? 'Generating...' : `Start quiz →`}

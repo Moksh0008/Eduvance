@@ -317,7 +317,7 @@ export async function generateAndValidateQuestions(systemPrompt, userPrompt, opt
  * Generates questions in small batches of 3-5 to stay within token limits
  */
 export async function generateQuizQuestions({ subject, topic, difficulty, count, context, previousQuestions = [] }) {
-  const BATCH_SIZE = 3
+  const BATCH_SIZE = 5
   const allQuestions = []
   const seenPrompts = new Set()
   let attempts = 0

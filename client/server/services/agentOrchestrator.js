@@ -60,7 +60,7 @@ export async function generateQuiz({ userId, subject, topic, difficulty, count, 
       subject,
       topic,
       difficulty: finalDifficulty,
-      count: Math.min(count, 8),
+      count: Math.min(count, 15),
       context,
       previousQuestions: previousQuestions.map(q => q.prompt),
     })
