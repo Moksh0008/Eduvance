@@ -1,10 +1,16 @@
 import express from 'express'
 import cors from 'cors'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+import fs from 'fs'
 import { connectDb } from './config/db.js'
 import { authRoutes } from './routes/authRoutes.js'
 import { preparationRoutes } from './routes/preparationRoutes.js'
 import { aiRoutes } from './routes/aiRoutes.js'
 import { errorHandler, notFound } from './middleware/errorMiddleware.js'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 export async function ensureDb() {
   await connectDb(process.env.MONGODB_URI)
@@ -79,6 +85,18 @@ export function createApp() {
   app.use('/api/auth', authRoutes)
   app.use('/api/preparation', preparationRoutes)
   app.use('/api/ai', aiRoutes)
+
+  // ── Serve frontend (Vite build) in production ──
+  const distDir = join(__dirname, '..', '..', 'dist')
+  if (fs.existsSync(distDir)) {
+    app.use(express.static(distDir, { maxAge: '1h', index: 'index.html' }))
+    // SPA fallback: any non-API route serves index.html
+    app.get('*', (req, res, next) => {
+      if (req.path.startsWith('/api/')) return next()
+      res.sendFile(join(distDir, 'index.html'))
+    })
+  }
+
   app.use(notFound)
   app.use(errorHandler)
 
