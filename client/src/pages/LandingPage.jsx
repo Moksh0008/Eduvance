@@ -206,7 +206,7 @@ export function LandingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <img src="/logo.png" alt="Eduvance logo" className="h-8 w-8 rounded-lg object-contain shadow-md" />
+              <img src="/logo.webp" alt="Eduvance logo" className="h-8 w-8 rounded-lg object-contain shadow-md" />
               <span className="font-serif text-lg font-semibold text-ink">Eduvance</span>
             </div>
 

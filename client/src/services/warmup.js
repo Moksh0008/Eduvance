@@ -10,18 +10,18 @@ export function warmBackend() {
   if (warmedUp) return
   warmedUp = true
 
-  // Delay ping so it doesn't block LCP
+  // Delay ping well past LCP (5s) so it never blocks rendering
   setTimeout(() => {
-    fetch('/api/health', { method: 'GET' })
+    fetch('/api/health', { method: 'GET', priority: 'low' })
       .then(res => {
         if (res.ok) console.log('[Warmup] Backend is alive')
         else console.log('[Warmup] Backend responded with', res.status)
       })
       .catch(() => console.log('[Warmup] Backend unreachable — will retry on next request'))
 
-    // Second ping after 5 seconds (in case first one hit a cold start)
+    // Second ping after 8 seconds (in case first one hit a cold start)
     setTimeout(() => {
-      fetch('/api/health').catch(() => {})
-    }, 5000)
-  }, 2000)
+      fetch('/api/health', { priority: 'low' }).catch(() => {})
+    }, 8000)
+  }, 5000)
 }

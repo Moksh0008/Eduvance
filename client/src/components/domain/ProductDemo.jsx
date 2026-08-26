@@ -6,7 +6,7 @@ const OCTO_IMG = '/mascot/octo-140.webp'
 
 /* ═══ YOUR 3 CHARACTER IMAGES ═══ */
 const CHARS = {
-  tensed: '/characters/tensed.webp',
+  tensed: '/characters/tensed-small.webp',
   confused: '/characters/confused.png',
   happy: '/characters/happy-new.png',
 }
