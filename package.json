@@ -10,7 +10,7 @@
     "client/server"
   ],
   "scripts": {
-    "build": "npm run build -w eduvance-client && cp -r client/dist ./dist",
+    "build": "npm run build -w eduvance-client",
     "start": "node client/server/server.js",
     "dev:client": "npm run dev -w eduvance-client",
     "dev:server": "npm run dev -w eduvance-server"

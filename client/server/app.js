@@ -88,13 +88,18 @@ export function createApp() {
 
   // ── Serve frontend (Vite build) in production ──
   const distDir = join(__dirname, '..', '..', 'dist')
-  if (fs.existsSync(distDir)) {
-    app.use(express.static(distDir, { maxAge: '1h', index: 'index.html' }))
+  const clientDistDir = join(__dirname, '..', 'dist')
+  const resolvedDist = fs.existsSync(distDir) ? distDir : fs.existsSync(clientDistDir) ? clientDistDir : null
+  if (resolvedDist) {
+    console.log(`[Frontend] Serving static files from ${resolvedDist}`)
+    app.use(express.static(resolvedDist, { maxAge: '1h', index: 'index.html' }))
     // SPA fallback: any non-API route serves index.html
     app.get('*', (req, res, next) => {
       if (req.path.startsWith('/api/')) return next()
-      res.sendFile(join(distDir, 'index.html'))
+      res.sendFile(join(resolvedDist, 'index.html'))
     })
+  } else {
+    console.log('[Frontend] No dist directory found — API-only mode')
   }
 
   app.use(notFound)
