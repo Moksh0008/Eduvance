@@ -455,13 +455,13 @@ export function ProductDemo() {
       {/* Controls */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 24px', background: isDark ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)' }}>
         <button onClick={() => setPaused(!paused)} aria-label={paused ? 'Play demo' : 'Pause demo'}
-          style={{ width: 44, height: 44, borderRadius: '50%', border: 'none', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          style={{ width: 48, height: 48, borderRadius: '50%', border: 'none', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {paused ? '▶' : '⏸'}
         </button>
         <div style={{ display: 'flex', gap: 6 }} role="tablist" aria-label="Demo scenes">
           {SCENES.map((s, i) => (
             <button key={i} onClick={() => setScene(i)} role="tab" aria-selected={i === scene} aria-label={`Scene ${i + 1}: ${s.id}`}
-              style={{ width: 44, height: 44, borderRadius: 4, border: 'none', background: 'transparent', cursor: 'pointer', transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+              style={{ width: 48, height: 48, borderRadius: 4, border: 'none', background: 'transparent', cursor: 'pointer', transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
             >
               <span style={{ display: 'block', width: i === scene ? 20 : 8, height: 8, borderRadius: 4, background: i === scene ? '#6366f1' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)') }} />
             </button>
