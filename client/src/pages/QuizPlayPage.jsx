@@ -42,7 +42,7 @@ export function QuizPlayPage() {
   const questions = aiQuestions || localQuestions
   const limit = (config.minutes || 15) * 60
   const [index, setIndex] = useState(0)
-  const [answers, setAnswers] = useState(() => Array(questions.length).fill(null))
+  const [answers, setAnswers] = useState(() => Array(config.count || 10).fill(null))
 
   // Try loading AI-generated questions on mount
   useEffect(() => {
@@ -57,7 +57,7 @@ export function QuizPlayPage() {
         }
         setAiQuizId(result.quizId)
         setFromMaterial(result.fromMaterial || false)
-        setAiQuestions(result.questions.map((q, i) => ({
+        const mapped = result.questions.map((q, i) => ({
           id: q.id || `ai-${i}`,
           prompt: q.prompt,
           options: q.options,
@@ -66,7 +66,16 @@ export function QuizPlayPage() {
           difficulty: q.difficulty || difficulty,
           subject: config.subject,
           topic: config.topic,
-        })))
+        }))
+        setAiQuestions(mapped)
+        // Resize answers array to match actual question count
+        setAnswers(prev => {
+          if (prev.length !== mapped.length) {
+            console.log(`[Quiz] Resizing answers array from ${prev.length} to ${mapped.length}`)
+            return Array(mapped.length).fill(null)
+          }
+          return prev
+        })
       })
       .catch((err) => {
         const msg = err.message || err.toString() || 'Backend may be starting up'
