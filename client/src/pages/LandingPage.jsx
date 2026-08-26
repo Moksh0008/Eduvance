@@ -206,9 +206,7 @@ export function LandingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ background: 'var(--color-accent)' }}>
-                Ev
-              </div>
+              <img src="/logo.png" alt="Eduvance logo" className="h-8 w-8 rounded-lg object-contain shadow-md" />
               <span className="font-serif text-lg font-semibold text-ink">Eduvance</span>
             </div>
 
