@@ -108,7 +108,7 @@ export function AppShell() {
 
       <div className="relative z-10 flex min-h-screen">
         {/* Desktop sidebar — borderless, floating feel */}
-        <aside className="sticky top-0 hidden h-screen w-[15.5rem] shrink-0 bg-surface/60 backdrop-blur-lg lg:block" style={{ borderRight: isDark ? '1px solid rgba(148,163,184,0.06)' : '1px solid rgba(0,0,0,0.06)' }}>
+        <aside className="sticky top-0 hidden h-screen w-[15.5rem] shrink-0 backdrop-blur-lg lg:block" style={{ background: isDark ? 'rgba(10,14,28,0.92)' : 'rgba(255,255,255,0.92)', borderRight: isDark ? '1px solid rgba(148,163,184,0.1)' : '1px solid rgba(0,0,0,0.06)' }}>
           <div className="flex h-14 items-center px-4">
             <Logo to="/dashboard" />
           </div>
@@ -125,9 +125,9 @@ export function AppShell() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setOpen(false)}
-              />
-              <motion.aside
-                className="relative h-full w-64 bg-surface backdrop-blur-xl"
+              />                <motion.aside
+                className="relative h-full w-64 backdrop-blur-xl"
+                style={{ background: isDark ? 'rgba(10,14,28,0.95)' : 'rgba(255,255,255,0.95)' }}
                 initial={{ x: -280 }}
                 animate={{ x: 0 }}
                 exit={{ x: -280 }}

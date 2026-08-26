@@ -87,7 +87,7 @@ function SidebarItem({ to, label, icon: Icon, emoji, onNavigate }) {
             'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-250',
             isActive
               ? 'font-medium'
-              : 'text-ink-2 hover:text-ink hover:bg-white/[0.03]',
+              : 'text-ink-2 hover:text-ink hover:bg-white/[0.06]',
           )
         }
       >
@@ -99,8 +99,8 @@ function SidebarItem({ to, label, icon: Icon, emoji, onNavigate }) {
                 layoutId="sidebar-active"
                 className="absolute inset-0 rounded-xl"
                 style={{
-                  background: 'var(--color-accent-soft)',
-                  boxShadow: '0 0 24px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.04)',
+                  background: 'rgba(99,102,241,0.15)',
+                  boxShadow: '0 0 24px rgba(99,102,241,0.3), inset 0 1px 0 rgba(255,255,255,0.06)',
                 }}
                 transition={reduce ? { duration: 0 } : { type: 'spring', stiffness: 350, damping: 30 }}
               />
@@ -147,9 +147,9 @@ export function Sidebar({ onNavigate }) {
         <div key={group.label} className={gi > 0 ? 'mt-6' : ''}>
           {/* Section divider line */}
           {gi > 0 && (
-            <div className="mx-3 mb-3 h-px" style={{ background: 'var(--color-line, rgba(255,255,255,0.06))' }} />
+            <div className="mx-3 mb-3 h-px" style={{ background: 'var(--color-line-2, rgba(148,163,184,0.12))' }} />
           )}
-          <p className="px-3 pb-2.5 text-[10px] font-bold uppercase tracking-[0.18em] text-ink-3/70">
+          <p className="px-3 pb-2.5 text-[10px] font-bold uppercase tracking-[0.18em] text-ink-2">
             {group.label}
           </p>
           <ul className="flex flex-col gap-0.5">
