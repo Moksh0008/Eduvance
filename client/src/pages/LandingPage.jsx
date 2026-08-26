@@ -47,7 +47,7 @@ export function LandingPage() {
           </motion.p>
           <motion.div variants={fadeUp} className="mt-8 flex justify-center gap-3">
             <Link to={isAuthenticated ? '/dashboard' : '/register?intent=prepare'}>
-              <button className="px-6 py-3 rounded-xl font-medium text-sm text-white transition-all hover:shadow-lg hover:shadow-accent/25" style={{ background: 'var(--color-accent)' }}>
+              <button className="px-6 py-3 rounded-xl font-medium text-sm text-white transition-all hover:shadow-lg hover:shadow-accent/25" style={{ background: 'var(--color-accent)' }} aria-label="Start preparing with Eduvance">
                 Start Preparing
               </button>
             </Link>
@@ -145,6 +145,7 @@ export function LandingPage() {
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="w-full bg-surface/50 py-3 text-center text-xs text-ink-2 cursor-pointer hover:text-accent transition-colors"
+          aria-label="Scroll back to top of page"
         >
           Back to top
         </button>
@@ -156,10 +157,10 @@ export function LandingPage() {
             <div>
               <h3 className="text-xs font-bold text-ink mb-3">Get to Know Us</h3>
               <ul className="space-y-2 text-xs text-ink-2">
-                <li><span className="hover:text-accent transition-colors cursor-pointer">About Eduvance</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Careers</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Press Releases</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Eduvance Science</span></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">About Eduvance</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Careers</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Press Releases</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Eduvance Science</button></li>
               </ul>
             </div>
 
@@ -167,10 +168,10 @@ export function LandingPage() {
             <div>
               <h3 className="text-xs font-bold text-ink mb-3">Connect with Us</h3>
               <ul className="space-y-2 text-xs text-ink-2">
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Facebook</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Twitter</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Instagram</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">LinkedIn</span></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Facebook</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Twitter</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Instagram</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">LinkedIn</button></li>
               </ul>
             </div>
 
@@ -178,10 +179,10 @@ export function LandingPage() {
             <div>
               <h3 className="text-xs font-bold text-ink mb-3">For Students</h3>
               <ul className="space-y-2 text-xs text-ink-2">
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Adaptive Quizzes</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Study Planner</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">AI-Powered Insights</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Performance Analytics</span></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Adaptive Quizzes</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Study Planner</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">AI-Powered Insights</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Performance Analytics</button></li>
               </ul>
             </div>
 
@@ -189,10 +190,10 @@ export function LandingPage() {
             <div>
               <h3 className="text-xs font-bold text-ink mb-3">Let Us Help You</h3>
               <ul className="space-y-2 text-xs text-ink-2">
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Your Account</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Help Centre</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Privacy Policy</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Terms of Service</span></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Your Account</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Help Centre</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Privacy Policy</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Terms of Service</button></li>
               </ul>
             </div>
           </div>
@@ -212,9 +213,9 @@ export function LandingPage() {
 
             {/* Links */}
             <div className="flex flex-wrap justify-center gap-4 text-[11px] text-ink-3">
-              <span className="hover:text-accent transition-colors cursor-pointer">Conditions of Use & Sale</span>
-              <span className="hover:text-accent transition-colors cursor-pointer">Privacy Notice</span>
-              <span className="hover:text-accent transition-colors cursor-pointer">Interest-Based Ads</span>
+              <button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Conditions of Use & Sale</button>
+              <button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Privacy Notice</button>
+              <button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Interest-Based Ads</button>
             </div>
 
             {/* Language selector */}

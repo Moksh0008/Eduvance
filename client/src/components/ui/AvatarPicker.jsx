@@ -3,31 +3,31 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const avatars = [
   // ── MARVEL ──
-  { id: 'm1', category: 'marvel', label: 'Iron Man', img: '/avatars/ironman.png' },
-  { id: 'm2', category: 'marvel', label: 'Spider-Man', img: '/avatars/spiderman.png' },
-  { id: 'm3', category: 'marvel', label: 'Thor', img: '/avatars/thor.png' },
-  { id: 'm4', category: 'marvel', label: 'Captain America', img: '/avatars/captain-america.png' },
-  { id: 'm5', category: 'marvel', label: 'Black Panther', img: '/avatars/black-panther.png' },
-  { id: 'm6', category: 'marvel', label: 'Hulk', img: '/avatars/hulk.png' },
-  { id: 'm7', category: 'marvel', label: 'Thanos', img: '/avatars/thanos.png' },
+  { id: 'm1', category: 'marvel', label: 'Iron Man', img: '/avatars/ironman.webp' },
+  { id: 'm2', category: 'marvel', label: 'Spider-Man', img: '/avatars/spiderman.webp' },
+  { id: 'm3', category: 'marvel', label: 'Thor', img: '/avatars/thor.webp' },
+  { id: 'm4', category: 'marvel', label: 'Captain America', img: '/avatars/captain-america.webp' },
+  { id: 'm5', category: 'marvel', label: 'Black Panther', img: '/avatars/black-panther.webp' },
+  { id: 'm6', category: 'marvel', label: 'Hulk', img: '/avatars/hulk.webp' },
+  { id: 'm7', category: 'marvel', label: 'Thanos', img: '/avatars/thanos.webp' },
 
   // ── ANIME ──
-  { id: 'a1', category: 'anime', label: 'Naruto', img: '/avatars/naruto.png' },
-  { id: 'a2', category: 'anime', label: 'Luffy', img: '/avatars/luffy.png' },
-  { id: 'a3', category: 'anime', label: 'Goku', img: '/avatars/goku.png' },
-  { id: 'a4', category: 'anime', label: 'Sasuke', img: '/avatars/sasuke.png' },
-  { id: 'a5', category: 'anime', label: 'Zoro', img: '/avatars/zoro.png' },
-  { id: 'a6', category: 'anime', label: 'Sakura', img: '/avatars/sakura.png' },
-  { id: 'a7', category: 'anime', label: 'Kakashi', img: '/avatars/kakashi.png' },
+  { id: 'a1', category: 'anime', label: 'Naruto', img: '/avatars/naruto.webp' },
+  { id: 'a2', category: 'anime', label: 'Luffy', img: '/avatars/luffy.webp' },
+  { id: 'a3', category: 'anime', label: 'Goku', img: '/avatars/goku.webp' },
+  { id: 'a4', category: 'anime', label: 'Sasuke', img: '/avatars/sasuke.webp' },
+  { id: 'a5', category: 'anime', label: 'Zoro', img: '/avatars/zoro.webp' },
+  { id: 'a6', category: 'anime', label: 'Sakura', img: '/avatars/sakura.webp' },
+  { id: 'a7', category: 'anime', label: 'Kakashi', img: '/avatars/kakashi.webp' },
 
   // ── DISNEY ──
-  { id: 'd1', category: 'disney', label: 'Mickey', img: '/avatars/mickey.png' },
-  { id: 'd2', category: 'disney', label: 'Elsa', img: '/avatars/elsa.png' },
-  { id: 'd3', category: 'disney', label: 'Simba', img: '/avatars/simba.png' },
-  { id: 'd4', category: 'disney', label: 'Buzz', img: '/avatars/buzz.png' },
-  { id: 'd5', category: 'disney', label: 'Nemo', img: '/avatars/nemo.png' },
-  { id: 'd6', category: 'disney', label: 'Genie', img: '/avatars/genie.png' },
-  { id: 'd7', category: 'disney', label: 'Stitch', img: '/avatars/stitch.png' },
+  { id: 'd1', category: 'disney', label: 'Mickey', img: '/avatars/mickey.webp' },
+  { id: 'd2', category: 'disney', label: 'Elsa', img: '/avatars/elsa.webp' },
+  { id: 'd3', category: 'disney', label: 'Simba', img: '/avatars/simba.webp' },
+  { id: 'd4', category: 'disney', label: 'Buzz', img: '/avatars/buzz.webp' },
+  { id: 'd5', category: 'disney', label: 'Nemo', img: '/avatars/nemo.webp' },
+  { id: 'd6', category: 'disney', label: 'Genie', img: '/avatars/genie.webp' },
+  { id: 'd7', category: 'disney', label: 'Stitch', img: '/avatars/stitch.webp' },
 ]
 
 const CATEGORIES = [
