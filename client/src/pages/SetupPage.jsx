@@ -207,7 +207,6 @@ function StepTimetable({ exams, setExams, timetableFile, setTimetableFile, onAna
         })).filter(e => e.name)
         if (extracted.length > 0) {
           setExams(extracted)
-          syncSubjectsFromExams(extracted)
         }
       }
     } catch {
