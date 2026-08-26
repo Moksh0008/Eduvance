@@ -14,9 +14,6 @@ export default defineConfig({
     },
   },
   build: {
-    // Output to root dist/ so Express can serve it on Render
-    outDir: '../dist',
-    emptyDirOnBuild: true,
     // Inline assets smaller than 4KB
     assetsInlineLimit: 4096,
     // Warn on large chunks
