@@ -148,16 +148,31 @@ export async function callGrok(systemPrompt, userPrompt, options = {}) {
 function extractJSON(raw) {
   let jsonStr = raw
 
-  // Step 1: Strip markdown code fences
+  // Step 1: Strip markdown code fences (handles nested, multi-line, unclosed)
   const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/)
   if (fenceMatch) {
     jsonStr = fenceMatch[1].trim()
   } else {
-    // No closing fences (truncated) — strip opening fence
+    // No closing fences — strip opening fence if present
     jsonStr = raw.replace(/^```(?:json)?\s*/m, '').trim()
   }
 
-  // Step 2: Find the start of JSON array or object
+  // Step 2: Strip leading/trailing non-JSON text
+  // Remove lines that don't start with [ or {
+  const lines = jsonStr.split('\n')
+  let startIdx = 0
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim()
+    if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+      startIdx = i
+      break
+    }
+    // Also skip lines like "Here are the questions:"
+    if (i > 10) break // don't skip too many lines
+  }
+  jsonStr = lines.slice(startIdx).join('\n')
+
+  // Find the start of JSON array or object
   const arrIdx = jsonStr.indexOf('[')
   const objIdx = jsonStr.indexOf('{')
   if (arrIdx >= 0 && (objIdx < 0 || arrIdx < objIdx)) {
@@ -171,22 +186,23 @@ function extractJSON(raw) {
     return JSON.parse(jsonStr)
   } catch {}
 
-  // Step 4: Repair truncated JSON
+  // Step 4: Repair truncated / malformed JSON
   try {
     let fixed = jsonStr
 
-    // Remove trailing incomplete values
-    // Remove trailing comma
+    // Remove trailing comma before ] or }
+    fixed = fixed.replace(/,\s*([\]\}])/g, '$1')
+    // Remove trailing comma at end
     fixed = fixed.replace(/,\s*$/, '')
 
-    // If we're mid-string (odd number of unescaped quotes), close the string
+    // If we're mid-string (odd number of unescaped quotes), close it
     const quoteCount = (fixed.match(/(?<!\\)"/g) || []).length
     if (quoteCount % 2 !== 0) {
-      // Odd quotes = unclosed string. Close it and remove incomplete value
-      // Find last key-value pair boundary
+      // Try to close the last unclosed string value
       fixed = fixed.replace(/:\s*"[^"]*$/, ': ""')
-      // Or if we're mid-key
+      // Or if we're mid-key after a comma
       fixed = fixed.replace(/,\s*"[^"]*$/, '')
+      // Or if we're mid-key at start of object
       fixed = fixed.replace(/\{\s*"[^"]*$/, '{')
     }
 
@@ -212,7 +228,7 @@ function extractJSON(raw) {
     console.error('[AI] JSON repair failed:', repairErr.message)
   }
 
-  // Step 5: Last resort — try to extract individual question objects
+  // Step 5: Extract individual question objects via regex (handles partial responses)
   try {
     const objects = []
     const objRegex = /\{[^{}]*?"prompt"\s*:\s*"[^"]*"[^{}]*?"options"\s*:\s*\[[^\[\]]*\][^{}]*?"correctAnswer"\s*:\s*\d[^{}]*\}/g
@@ -240,11 +256,15 @@ function extractJSON(raw) {
 function validateQuestion(q) {
   if (!q || typeof q !== 'object') return null
   if (!q.prompt || typeof q.prompt !== 'string') return null
+  const prompt = q.prompt.trim()
+  if (prompt.length < 5) return null // too short to be a real question
   if (!Array.isArray(q.options) || q.options.length !== 4) return null
+  // All 4 options must be non-empty strings
+  if (q.options.some(o => !o || !String(o).trim())) return null
   if (typeof q.correctAnswer !== 'number' || q.correctAnswer < 0 || q.correctAnswer > 3) return null
   if (!Number.isInteger(q.correctAnswer)) return null
   return {
-    prompt: q.prompt.trim(),
+    prompt,
     options: q.options.map(o => String(o).trim()),
     correctAnswer: q.correctAnswer,
     explanation: (q.explanation || 'No explanation provided').trim().slice(0, 200),
@@ -296,19 +316,28 @@ export async function generateAndValidateQuestions(systemPrompt, userPrompt, opt
   // Validate each question
   const valid = []
   const seen = new Set()
+  let invalidCount = 0
+  let duplicateCount = 0
   for (let i = 0; i < parsed.length; i++) {
     const q = validateQuestion(parsed[i])
-    if (q && !seen.has(q.prompt.toLowerCase().slice(0, 50))) {
-      seen.add(q.prompt.toLowerCase().slice(0, 50))
-      valid.push(q)
+    if (!q) {
+      invalidCount++
+      continue
     }
+    const key = q.prompt.toLowerCase().slice(0, 50)
+    if (seen.has(key)) {
+      duplicateCount++
+      continue
+    }
+    seen.add(key)
+    valid.push(q)
   }
 
   if (valid.length === 0) {
-    throw new Error('AI returned no valid questions')
+    throw new Error(`AI returned 0 valid questions (${parsed.length} total, ${invalidCount} invalid, ${duplicateCount} duplicates)`)
   }
 
-  console.log(`[AI] Validated ${valid.length}/${parsed.length} questions`)
+  console.log(`[AI] Validated ${valid.length}/${parsed.length} questions (${invalidCount} invalid, ${duplicateCount} duplicates removed)`)
   return valid
 }
 
@@ -317,7 +346,7 @@ export async function generateAndValidateQuestions(systemPrompt, userPrompt, opt
  * Generates questions in small batches of 3-5 to stay within token limits
  */
 export async function generateQuizQuestions({ subject, topic, difficulty, count, context, previousQuestions = [] }) {
-  const BATCH_SIZE = 5
+  const BATCH_SIZE = 10
   const allQuestions = []
   const seenPrompts = new Set()
   let attempts = 0

@@ -3,10 +3,11 @@ import multer from 'multer'
 import { authMiddleware } from '../middleware/authMiddleware.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { Preparation } from '../models/Preparation.js'
-import { callGrokJSON } from '../services/grokService.js'
+import { callGrokJSON, generateAndValidateQuestions } from '../services/grokService.js'
 import * as ragService from '../services/ragService.js'
 import * as agent from '../services/agentOrchestrator.js'
 import * as decisionEngine from '../services/decisionEngine.js'
+import { getQuestionsFromBank, saveQuestionsToBank } from '../services/questionBankService.js'
 
 export const aiRoutes = Router()
 aiRoutes.use(authMiddleware)
@@ -438,53 +439,123 @@ aiRoutes.post('/replan', asyncHandler(async (req, res) => {
   return res.json({ success: true, data: { schedule, rankings: rankings.slice(0, 10) } })
 }))
 
-// ═══ BATCH GENERATE QUIZ (100 questions in batches) ═══
+// ═══ BATCH GENERATE QUIZ — cache-first, save-per-batch ═══
 aiRoutes.post('/generate-quiz-batch', asyncHandler(async (req, res) => {
-  const { subject, topic, difficulty, totalQuestions = 100, batchSize = 10 } = req.body
+  const { subject, topic, difficulty, totalQuestions = 10, batchSize = 10 } = req.body
   if (!subject || !topic) {
     return res.status(400).json({ success: false, message: 'subject and topic are required' })
   }
 
-  const preparation = await Preparation.findOne({ userId: req.user.userId })
-  const batchesNeeded = Math.ceil(totalQuestions / batchSize)
-  const allQuestions = []
+  const finalDiff = (difficulty || 'medium').toLowerCase().trim()
+  const requested = Math.min(Math.max(totalQuestions, 1), 100) // clamp 1–100
+  const aiBatchSize = Math.min(Math.max(batchSize, 5), 20) // clamp 5–20
+
+  console.log(`[BatchGen] subject=${subject}, topic=${topic}, difficulty=${finalDiff}, requested=${requested}, aiBatchSize=${aiBatchSize}`)
+
+  // ─── 1. CACHE CHECK: how many do we already have? ───
+  const bankResult = await getQuestionsFromBank(subject, topic, finalDiff, requested)
+  const allQuestions = [...bankResult.cached]
+  const needGenerate = bankResult.needGenerate
+
+  if (needGenerate === 0) {
+    console.log(`[BatchGen] Full cache hit — ${allQuestions.length} questions from bank, no AI needed`)
+    return res.json({
+      success: true,
+      data: {
+        totalGenerated: allQuestions.length,
+        totalRequested: requested,
+        questions: allQuestions,
+        fromCache: true,
+        quiz: { id: `batch_${Date.now()}`, subject, topic, difficulty: finalDiff, totalQuestions: allQuestions.length },
+      },
+    })
+  }
+
+  // ─── 2. GENERATE MISSING in batches of aiBatchSize ───
+  const batchesNeeded = Math.ceil(needGenerate / aiBatchSize)
+  const seenPrompts = new Set(allQuestions.map(q => q.prompt.toLowerCase().slice(0, 50)))
   const errors = []
+  let consecutiveFailures = 0
 
   for (let batch = 0; batch < batchesNeeded; batch++) {
+    const remaining = requested - allQuestions.length
+    if (remaining <= 0) break
+    const thisBatchSize = Math.min(aiBatchSize, remaining)
+
+    const systemPrompt = `Generate exactly ${thisBatchSize} MCQ questions about ${topic} (${subject}). Difficulty: ${finalDiff}.
+
+CRITICAL: All questions, options, and explanations MUST be in English.
+
+Return ONLY a JSON array of exactly ${thisBatchSize} objects. No text before or after.
+Each object: {"prompt":"question?","options":["A","B","C","D"],"correctAnswer":0,"explanation":"why"}`
+
+    const prevPrompts = allQuestions.slice(-5).map(q => q.prompt.slice(0, 40)).join('; ')
+    const userPrompt = `Generate exactly ${thisBatchSize} ${finalDiff} MCQ questions about "${topic}" in ${subject}.${prevPrompts ? ` Avoid: ${prevPrompts}` : ''}`
+
     try {
-      const result = await agent.generateQuiz({
-        userId: req.user.userId,
-        subject,
-        topic,
-        difficulty,
-        count: batchSize,
-        preparation,
+      const batch = await generateAndValidateQuestions(systemPrompt, userPrompt, {
+        temperature: 0.4,
+        maxTokens: 4096,
       })
-      if (result?.questions?.length) {
-        allQuestions.push(...result.questions)
+
+      // Deduplicate within batch and against existing
+      const newBatch = []
+      for (const q of batch) {
+        const key = q.prompt.toLowerCase().slice(0, 50)
+        if (!seenPrompts.has(key)) {
+          seenPrompts.add(key)
+          newBatch.push({ ...q, difficulty: finalDiff })
+          allQuestions.push({ ...q, difficulty: finalDiff, fromCache: false })
+        }
       }
+
+      // ─── 3. SAVE this batch immediately ───
+      if (newBatch.length > 0) {
+        await saveQuestionsToBank(subject, topic, finalDiff, newBatch)
+        console.log(`[BatchGen] Batch ${batch + 1}/${batchesNeeded}: generated ${newBatch.length}, saved to bank, total ${allQuestions.length}/${requested}`)
+      }
+
+      consecutiveFailures = 0
     } catch (err) {
+      consecutiveFailures++
+      console.error(`[BatchGen] Batch ${batch + 1}/${batchesNeeded} failed (${consecutiveFailures} consecutive):`, err.message)
       errors.push({ batch: batch + 1, error: err.message })
-      // Continue with next batch even if one fails
+      if (consecutiveFailures >= 3) {
+        console.warn(`[BatchGen] 3 consecutive failures — stopping generation`)
+        break
+      }
     }
-    // Small delay between batches to avoid rate limits
-    if (batch < batchesNeeded - 1) {
-      await new Promise(r => setTimeout(r, 1000))
+
+    // Delay between batches for rate limiting
+    if (batch < batchesNeeded - 1 && allQuestions.length < requested) {
+      await new Promise(r => setTimeout(r, 2000))
     }
   }
+
+  // ─── 4. RETURN whatever we have ───
+  if (allQuestions.length === 0) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to generate any questions. AI may be unavailable.',
+      errors,
+    })
+  }
+
+  console.log(`[BatchGen] Complete — ${allQuestions.length}/${requested} questions (${allQuestions.filter(q => q.fromCache).length} from cache, ${allQuestions.filter(q => !q.fromCache).length} from AI)`)
 
   return res.json({
     success: true,
     data: {
       totalGenerated: allQuestions.length,
-      totalRequested: totalQuestions,
+      totalRequested: requested,
       questions: allQuestions,
+      fromCache: bankResult.cachedCount > 0 && allQuestions.every(q => q.fromCache),
       errors: errors.length ? errors : undefined,
       quiz: allQuestions.length > 0 ? {
         id: `batch_${Date.now()}`,
         subject,
         topic,
-        difficulty,
+        difficulty: finalDiff,
         totalQuestions: allQuestions.length,
       } : null,
     },
