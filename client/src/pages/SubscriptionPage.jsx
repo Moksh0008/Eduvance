@@ -78,25 +78,20 @@ const PLANS = [
   },
 ]
 
-function PaymentModal({ plan, onClose }) {
-  const [method, setMethod] = useState('card') // 'card' | 'upi'
+function PaymentModal({ plan, onClose, onSuccess }) {
+  const [method, setMethod] = useState('card')
   const [processing, setProcessing] = useState(false)
   const [success, setSuccess] = useState(false)
-
-  // Card fields
   const [cardNumber, setCardNumber] = useState('')
   const [cardExpiry, setCardExpiry] = useState('')
   const [cardCvv, setCardCvv] = useState('')
   const [cardName, setCardName] = useState('')
-
-  // UPI fields
   const [upiId, setUpiId] = useState('')
 
   function formatCardNumber(val) {
     const v = val.replace(/\D/g, '').slice(0, 16)
     return v.replace(/(\d{4})(?=\d)/g, '$1 ')
   }
-
   function formatExpiry(val) {
     const v = val.replace(/\D/g, '').slice(0, 4)
     if (v.length >= 3) return v.slice(0, 2) + '/' + v.slice(2)
@@ -106,225 +101,115 @@ function PaymentModal({ plan, onClose }) {
   function handleSubmit(e) {
     e.preventDefault()
     setProcessing(true)
-    // Simulate payment processing
     setTimeout(() => {
       setProcessing(false)
       setSuccess(true)
-    }, 2000)
+      if (onSuccess) onSuccess(plan.id)
+      window.dispatchEvent(new Event('subscription-changed'))
+    }, 1500)
   }
 
   if (success) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
-      >
-        <motion.div
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          className="w-full max-w-md rounded-2xl p-8 text-center"
-          style={{ background: 'var(--color-card)', border: '1px solid var(--color-line)' }}
-        >
-          <div className="mb-4 flex justify-center">
-            <div className="h-16 w-16 rounded-full flex items-center justify-center" style={{ background: `${plan.color}20` }}>
-              <Check size={32} style={{ color: plan.color }} />
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}>
+        <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-xs rounded-2xl p-6 text-center" style={{ background: 'var(--color-card)', border: '1px solid var(--color-line)' }}>
+          <div className="mb-3 flex justify-center">
+            <div className="h-14 w-14 rounded-full flex items-center justify-center" style={{ background: `${plan.color}20` }}>
+              <Check size={28} style={{ color: plan.color }} />
             </div>
           </div>
-          <h3 className="text-xl font-bold text-ink">Payment Successful!</h3>
-          <p className="mt-2 text-sm text-ink-2">
-            Welcome to <span style={{ color: plan.color }}>{plan.name}</span>! Your subscription is now active.
-          </p>
-          <p className="mt-1 text-xs text-ink-3">
-            A confirmation has been sent to your email. You can manage your subscription from your profile.
-          </p>
-          <div className="mt-6 rounded-xl p-4" style={{ background: `${plan.color}08` }}>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-ink-2">Plan</span>
-              <span className="font-semibold" style={{ color: plan.color }}>{plan.name}</span>
-            </div>
-            <div className="mt-2 flex items-center justify-between text-sm">
-              <span className="text-ink-2">Amount</span>
-              <span className="font-semibold text-ink">{plan.price}{plan.period}</span>
-            </div>
-            <div className="mt-2 flex items-center justify-between text-sm">
-              <span className="text-ink-2">Payment</span>
-              <span className="text-ink">{method === 'card' ? 'Credit/Debit Card' : 'UPI'}</span>
-            </div>
+          <h3 className="text-lg font-bold text-ink">Payment Successful!</h3>
+          <p className="mt-1.5 text-sm text-ink-2">Welcome to <span style={{ color: plan.color }}>{plan.name}</span>! Your plan is now active.</p>
+          <div className="mt-4 rounded-lg p-3 text-sm" style={{ background: `${plan.color}08` }}>
+            <div className="flex justify-between"><span className="text-ink-3">Plan</span><span className="font-semibold" style={{ color: plan.color }}>{plan.name}</span></div>
+            <div className="mt-1 flex justify-between"><span className="text-ink-3">Amount</span><span className="text-ink">{plan.price}{plan.period}</span></div>
           </div>
-          <Button className="mt-6 w-full" onClick={onClose}>
-            Start Using {plan.name}
-          </Button>
+          <Button className="mt-4 w-full" size="sm" onClick={onClose}>Continue</Button>
         </motion.div>
       </motion.div>
     )
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.9, opacity: 0, y: 20 }}
-        className="w-full max-w-md rounded-2xl overflow-hidden"
-        style={{ background: 'var(--color-card)', border: '1px solid var(--color-line)' }}
-      >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="w-full max-w-sm rounded-2xl overflow-hidden" style={{ background: 'var(--color-card)', border: '1px solid var(--color-line)' }}>
         {/* Header */}
-        <div className="p-6 pb-4" style={{ borderBottom: '1px solid var(--color-line)' }}>
+        <div className="px-4 pt-4 pb-3" style={{ borderBottom: '1px solid var(--color-line)' }}>
           <div className="flex items-center justify-between">
-            <button onClick={onClose} className="flex items-center gap-1 text-sm text-ink-3 hover:text-ink transition-colors">
-              <ChevronLeft size={16} /> Back
+            <button onClick={onClose} className="flex items-center gap-1 text-xs text-ink-3 hover:text-ink transition-colors">
+              <ChevronLeft size={14} /> Back
             </button>
-            <div className="flex items-center gap-1 text-[10px] text-emerald-400">
-              <Lock size={10} /> Secure payment
+            <div className="flex items-center gap-1 text-[9px] text-emerald-400">
+              <Lock size={8} /> Secure
             </div>
           </div>
-          <div className="mt-4 flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl" style={{ background: `${plan.color}15` }}>
-              {plan.icon}
-            </div>
-            <div>
-              <p className="text-lg font-bold" style={{ color: plan.color }}>{plan.name} Plan</p>
-              <p className="text-sm text-ink-3">{plan.price} {plan.period}</p>
+          <div className="mt-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-lg" style={{ color: plan.color }}>{plan.icon}</span>
+              <div>
+                <p className="text-sm font-bold" style={{ color: plan.color }}>{plan.name} Plan</p>
+                <p className="text-[10px] text-ink-3">{plan.price} {plan.period}</p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Payment method tabs */}
         <div className="flex border-b" style={{ borderColor: 'var(--color-line)' }}>
-          <button
-            onClick={() => setMethod('card')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${method === 'card' ? 'text-ink border-b-2' : 'text-ink-3'}`}
-            style={method === 'card' ? { borderColor: plan.color } : {}}
-          >
-            <CreditCard size={16} /> Card
+          <button onClick={() => setMethod('card')} className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors ${method === 'card' ? 'text-ink border-b-2' : 'text-ink-3'}`} style={method === 'card' ? { borderColor: plan.color } : {}}>
+            <CreditCard size={14} /> Card
           </button>
-          <button
-            onClick={() => setMethod('upi')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${method === 'upi' ? 'text-ink border-b-2' : 'text-ink-3'}`}
-            style={method === 'upi' ? { borderColor: plan.color } : {}}
-          >
-            <Smartphone size={16} /> UPI
+          <button onClick={() => setMethod('upi')} className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium transition-colors ${method === 'upi' ? 'text-ink border-b-2' : 'text-ink-3'}`} style={method === 'upi' ? { borderColor: plan.color } : {}}>
+            <Smartphone size={14} /> UPI
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 space-y-3">
           {method === 'card' ? (
             <>
               <div>
-                <label className="block text-xs font-medium text-ink-3 mb-1">Cardholder Name</label>
-                <input
-                  type="text"
-                  value={cardName}
-                  onChange={(e) => setCardName(e.target.value)}
-                  placeholder="Mokshith R"
-                  required
-                  className="input w-full"
-                />
+                <label className="block text-[10px] font-medium text-ink-3 mb-0.5">Name on card</label>
+                <input type="text" value={cardName} onChange={(e) => setCardName(e.target.value)} placeholder="Mokshith R" required className="input w-full !py-2 !text-sm" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-ink-3 mb-1">Card Number</label>
-                <input
-                  type="text"
-                  value={cardNumber}
-                  onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-                  placeholder="4242 4242 4242 4242"
-                  required
-                  maxLength={19}
-                  className="input w-full"
-                />
+                <label className="block text-[10px] font-medium text-ink-3 mb-0.5">Card number</label>
+                <input type="text" value={cardNumber} onChange={(e) => setCardNumber(formatCardNumber(e.target.value))} placeholder="4242 4242 4242 4242" required maxLength={19} className="input w-full !py-2 !text-sm" />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-medium text-ink-3 mb-1">Expiry</label>
-                  <input
-                    type="text"
-                    value={cardExpiry}
-                    onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
-                    placeholder="MM/YY"
-                    required
-                    maxLength={5}
-                    className="input w-full"
-                  />
+                  <label className="block text-[10px] font-medium text-ink-3 mb-0.5">Expiry</label>
+                  <input type="text" value={cardExpiry} onChange={(e) => setCardExpiry(formatExpiry(e.target.value))} placeholder="MM/YY" required maxLength={5} className="input w-full !py-2 !text-sm" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-ink-3 mb-1">CVV</label>
-                  <input
-                    type="password"
-                    value={cardCvv}
-                    onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                    placeholder="•••"
-                    required
-                    maxLength={4}
-                    className="input w-full"
-                  />
+                  <label className="block text-[10px] font-medium text-ink-3 mb-0.5">CVV</label>
+                  <input type="password" value={cardCvv} onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="•••" required maxLength={4} className="input w-full !py-2 !text-sm" />
                 </div>
               </div>
             </>
           ) : (
             <>
               <div>
-                <label className="block text-xs font-medium text-ink-3 mb-1">UPI ID</label>
-                <input
-                  type="text"
-                  value={upiId}
-                  onChange={(e) => setUpiId(e.target.value)}
-                  placeholder="yourname@upi"
-                  required
-                  className="input w-full"
-                />
-                <p className="mt-1 text-[10px] text-ink-3">Enter your UPI ID (e.g. phonepe, gpay, paytm)</p>
-              </div>
-              <div className="rounded-xl p-3" style={{ background: 'var(--color-surface)' }}>
-                <p className="text-xs text-ink-3">You will receive a payment request on your UPI app. Approve it to complete the payment.</p>
+                <label className="block text-[10px] font-medium text-ink-3 mb-0.5">UPI ID</label>
+                <input type="text" value={upiId} onChange={(e) => setUpiId(e.target.value)} placeholder="yourname@upi" required className="input w-full !py-2 !text-sm" />
+                <p className="mt-0.5 text-[9px] text-ink-3">You will receive a payment request on your UPI app</p>
               </div>
             </>
           )}
 
           {/* Order summary */}
-          <div className="rounded-xl p-3" style={{ background: 'var(--color-surface)' }}>
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-ink-2">{plan.name} Plan (monthly)</span>
-              <span className="font-semibold text-ink">{plan.price}</span>
-            </div>
-            <div className="mt-2 flex items-center justify-between text-sm font-bold">
-              <span className="text-ink">Total</span>
-              <span style={{ color: plan.color }}>{plan.price}</span>
+          <div className="rounded-lg p-2.5" style={{ background: 'var(--color-surface)' }}>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-ink-2">Total</span>
+              <span className="font-bold" style={{ color: plan.color }}>{plan.price}</span>
             </div>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full text-white"
-            style={{ background: plan.color }}
-            disabled={processing}
-          >
+          <Button type="submit" className="w-full text-white !py-2.5 !text-sm" style={{ background: plan.color }} disabled={processing}>
             {processing ? (
-              <span className="flex items-center gap-2">
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                Processing...
-              </span>
-            ) : (
-              <>
-                Pay {plan.price}
-                <Lock size={14} />
-              </>
-            )}
+              <span className="flex items-center gap-2"><span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" /> Processing...</span>
+            ) : (<><Lock size={12} /> Pay {plan.price}</>) }
           </Button>
 
-          <p className="text-center text-[10px] text-ink-3">
-            By proceeding, you agree to our Terms of Service and Privacy Policy.
-            Your subscription will auto-renew monthly. Cancel anytime from your profile.
-          </p>
+          <p className="text-center text-[9px] text-ink-3">Auto-renews monthly. Cancel anytime from your profile.</p>
         </form>
       </motion.div>
     </motion.div>
@@ -539,7 +424,7 @@ export function SubscriptionPage() {
       {/* Payment Modal */}
       <AnimatePresence>
         {paymentPlan && (
-          <PaymentModal plan={paymentPlan} onClose={() => setPaymentPlan(null)} />
+          <PaymentModal plan={paymentPlan} onClose={() => setPaymentPlan(null)} onSuccess={(planId) => setCurrentPlan({ plan: planId, isActive: true, status: 'active' })} />
         )}
       </AnimatePresence>
     </div>

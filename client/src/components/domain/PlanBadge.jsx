@@ -29,6 +29,9 @@ export function PlanBadge({ compact = false }) {
     }
 
     load()
+    const onFocus = () => load()
+    window.addEventListener('subscription-changed', onFocus)
+    return () => window.removeEventListener('subscription-changed', onFocus)
   }, [session?.token])
 
   if (!plan) return null
