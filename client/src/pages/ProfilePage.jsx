@@ -149,7 +149,7 @@ export function ProfilePage() {
   }, [])
 
   const subjects = data.subjects || []
-  const totalTopics = subjects.reduce((acc, s) => acc + (s.topics?.length || 0), 0)
+  const totalTopics = subjects.reduce((acc, s) => acc + (s.units || []).reduce((n, u) => n + (u.topics || []).filter(t => t.name).length, 0), 0)
   const hours = data.preferences?.dailyHours || 3
   const examDate = data.preferences?.examDate
   const daysLeft = examDate ? Math.max(0, Math.ceil((new Date(examDate) - new Date()) / 86400000)) : null
