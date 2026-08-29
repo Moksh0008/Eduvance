@@ -153,7 +153,7 @@ export async function generateQuiz({ userId, subject, topic, difficulty, count, 
 
   // 6. Save newly generated questions to the shared QuestionBank cache
   if (newQuestions.length > 0) {
-    await saveQuestionsToBank(subject, topic, finalDifficulty, newQuestions)
+    await saveQuestionsToBank(subject, topic, finalDifficulty, newQuestions, 'ai-generated')
   }
 
   // 7. Combine cached + new questions

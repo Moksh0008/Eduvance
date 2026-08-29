@@ -7,6 +7,7 @@ import { connectDb } from './config/db.js'
 import { authRoutes } from './routes/authRoutes.js'
 import { preparationRoutes } from './routes/preparationRoutes.js'
 import { aiRoutes } from './routes/aiRoutes.js'
+import { adminRoutes } from './routes/adminRoutes.js'
 import { errorHandler, notFound } from './middleware/errorMiddleware.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -85,6 +86,7 @@ export function createApp() {
   app.use('/api/auth', authRoutes)
   app.use('/api/preparation', preparationRoutes)
   app.use('/api/ai', aiRoutes)
+  app.use('/api/admin', adminRoutes)
 
   // ── Serve frontend (Vite build) in production ──
   const distDir = join(__dirname, '..', '..', 'dist')

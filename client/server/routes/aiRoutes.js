@@ -554,7 +554,7 @@ Each object: {"prompt":"question?","options":["A","B","C","D"],"correctAnswer":0
 
       // ─── 4. SAVE this batch immediately + increment usage ───
       if (newBatch.length > 0) {
-        await saveQuestionsToBank(subject, topic, finalDiff, newBatch)
+        await saveQuestionsToBank(subject, topic, finalDiff, newBatch, 'ai-generated')
         // Only increment AFTER successful generation and save
         await incrementAiUsage(req.user.userId)
         aiRequestsMade++

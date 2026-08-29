@@ -7,6 +7,7 @@ import { QuestionBank } from '../models/QuestionBank.js'
 
 /**
  * Find cached questions matching subject/topic/difficulty.
+ * Prioritizes pre-generated questions over ai-generated.
  * Returns an array of randomly-selected questions (up to `count`).
  */
 export async function findCachedQuestions(subject, topic, difficulty, count) {
@@ -14,18 +15,43 @@ export async function findCachedQuestions(subject, topic, difficulty, count) {
   const normTopic = QuestionBank.normalize(topic)
   const normDiff = (difficulty || 'medium').toLowerCase().trim()
 
-  const questions = await QuestionBank.aggregate([
+  // First try to get pre-generated questions
+  const preGenerated = await QuestionBank.aggregate([
     {
       $match: {
         subject: normSubject,
         topic: normTopic,
         difficulty: normDiff,
+        source: 'pre-generated',
       },
     },
-    { $sample: { size: count } }, // random selection
+    { $sample: { size: count } },
   ])
 
-  return questions
+  if (preGenerated.length >= count) return preGenerated
+
+  // If not enough pre-generated, fill with ai-generated
+  const remaining = count - preGenerated.length
+  const aiGenerated = await QuestionBank.aggregate([
+    {
+      $match: {
+        subject: normSubject,
+        topic: normTopic,
+        difficulty: normDiff,
+        source: 'ai-generated',
+      },
+    },
+    { $sample: { size: remaining } },
+  ])
+
+  // Shuffle the combined result so pre-generated aren't always first
+  const combined = [...preGenerated, ...aiGenerated]
+  for (let i = combined.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[combined[i], combined[j]] = [combined[j], combined[i]]
+  }
+
+  return combined
 }
 
 /**
@@ -52,9 +78,10 @@ export async function countCachedQuestions(subject, topic, difficulty) {
 
 /**
  * Save new questions to the bank, skipping duplicates.
+ * @param {string} source - 'pre-generated' or 'ai-generated'
  * Returns the count of newly saved questions.
  */
-export async function saveQuestionsToBank(subject, topic, difficulty, questions) {
+export async function saveQuestionsToBank(subject, topic, difficulty, questions, source = 'ai-generated') {
   const normSubject = QuestionBank.normalize(subject)
   const normTopic = QuestionBank.normalize(topic)
   const normDiff = (difficulty || 'medium').toLowerCase().trim()
@@ -79,6 +106,7 @@ export async function saveQuestionsToBank(subject, topic, difficulty, questions)
             options: q.options,
             correctAnswer: q.correctAnswer,
             explanation: q.explanation || '',
+            source,
             createdAt: new Date(),
           },
         },
@@ -95,7 +123,7 @@ export async function saveQuestionsToBank(subject, topic, difficulty, questions)
     }
   }
 
-  console.log(`[QuestionBank] Saved ${savedCount} questions for ${normSubject} → ${normTopic} (${normDiff})`)
+  console.log(`[QuestionBank] Saved ${savedCount} ${source} questions for ${normSubject} → ${normTopic} (${normDiff})`)
   return savedCount
 }
 
@@ -145,6 +173,7 @@ export async function getQuestionsFromBank(subject, topic, difficulty, count) {
         correctAnswer: q.correctAnswer,
         explanation: q.explanation,
         difficulty: q.difficulty,
+        source: q.source || 'ai-generated',
         fromCache: true,
       })),
       cachedCount: cached.length,
@@ -160,8 +189,10 @@ export async function getQuestionsFromBank(subject, topic, difficulty, count) {
 
   const needGenerate = count - cached.length
 
+  const preGenCount = cached.filter(q => q.source === 'pre-generated').length
+  const aiGenCount = cached.filter(q => q.source === 'ai-generated').length
   if (cached.length > 0) {
-    console.log(`[QuestionBank] Partial cache hit — ${cached.length} cached, need ${needGenerate} more from AI`)
+    console.log(`[QuestionBank] Partial cache hit — ${cached.length} cached (${preGenCount} pre-gen, ${aiGenCount} ai-gen), need ${needGenerate} more from AI`)
   } else {
     console.log(`[QuestionBank] Cache miss — generating all ${needGenerate} questions from AI`)
   }
@@ -174,6 +205,7 @@ export async function getQuestionsFromBank(subject, topic, difficulty, count) {
       correctAnswer: q.correctAnswer,
       explanation: q.explanation,
       difficulty: q.difficulty,
+      source: q.source || 'ai-generated',
       fromCache: true,
     })),
     cachedCount: cached.length,

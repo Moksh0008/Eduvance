@@ -12,6 +12,9 @@ const questionBankSchema = new mongoose.Schema({
   correctAnswer: { type: Number, required: true, min: 0, max: 3 },
   explanation: { type: String, default: '' },
 
+  // Source tracking: 'pre-generated' | 'ai-generated'
+  source: { type: String, enum: ['pre-generated', 'ai-generated'], default: 'ai-generated', index: true },
+
   // Metadata
   hitCount: { type: Number, default: 0 },
   lastUsedAt: { type: Date, default: null },
