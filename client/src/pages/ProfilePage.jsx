@@ -59,8 +59,6 @@ export function ProfilePage() {
         <dl className="text-sm">
           <Row label="📧 Email" value={user?.email || student.email} />
           <Row label="👤 Name" value={user?.name || student.name} />
-          <Row label="🔑 Auth" value="JWT session" />
-          <Row label="💾 Storage" value="MongoDB" />
         </dl>
       </div>
 
