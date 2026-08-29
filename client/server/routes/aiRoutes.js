@@ -280,12 +280,17 @@ aiRoutes.post('/generate-quiz', asyncHandler(async (req, res) => {
 
   const preparation = await Preparation.findOne({ userId: req.user.userId })
 
+  // Enforce plan-based question limit
+  const { getPlanFeatures } = await import('../services/featureGateService.js')
+  const planFeatures = await getPlanFeatures(req.user.userId)
+  const maxQuestions = planFeatures.features.maxQuizQuestions || 15
+
   const result = await agent.generateQuiz({
     userId: req.user.userId,
     subject,
     topic,
     difficulty,
-    count: Math.min(count, 15),
+    count: Math.min(count, maxQuestions),
     preparation,
   })
 

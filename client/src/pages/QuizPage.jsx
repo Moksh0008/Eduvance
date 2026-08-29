@@ -29,13 +29,18 @@ export function QuizPage() {
   const [generating, setGenerating] = useState(false)
   const [generationStatus, setGenerationStatus] = useState('')
   const [aiUsage, setAiUsage] = useState(null)
+  const [plan, setPlan] = useState(null)
 
-  // Load AI usage on mount
+  // Load AI usage and plan on mount
   useEffect(() => {
     async function loadUsage() {
       try {
-        const result = await api.get('/ai/usage')
-        if (result) setAiUsage(result)
+        const [usageResult, subResult] = await Promise.all([
+          api.get('/ai/usage'),
+          api.get('/ai/subscription'),
+        ])
+        if (usageResult) setAiUsage(usageResult)
+        if (subResult) setPlan(subResult)
       } catch (err) {
         console.error('[Quiz] Failed to load AI usage:', err.message)
       }
@@ -344,7 +349,19 @@ export function QuizPage() {
               <option value={5}>5 questions (quick check)</option>
               <option value={10}>10 questions (standard)</option>
               <option value={15}>15 questions (thorough)</option>
+              <option value={20} disabled={!plan || plan.plan === 'free'}>20 questions {plan?.plan === 'free' ? '⭐ Premium' : ''}</option>
+              <option value={25} disabled={!plan || plan.plan === 'free'}>25 questions {plan?.plan === 'free' ? '⭐ Premium' : ''}</option>
+              <option value={30} disabled={!plan || plan.plan === 'free'}>30 questions {plan?.plan === 'free' ? '⭐ Premium' : ''}</option>
+              <option value={35} disabled={!plan || plan.plan === 'free'}>35 questions {plan?.plan === 'free' ? '⭐ Premium' : ''}</option>
+              <option value={40} disabled={!plan || plan.plan === 'free'}>40 questions {plan?.plan === 'free' ? '⭐ Premium' : ''}</option>
+              <option value={45} disabled={!plan || plan.plan === 'free'}>45 questions {plan?.plan === 'free' ? '⭐ Premium' : ''}</option>
+              <option value={50} disabled={!plan || plan.plan === 'free'}>50 questions {plan?.plan === 'free' ? '⭐ Premium' : ''}</option>
             </select>
+            {plan?.plan === 'free' && (
+              <p className="mt-1 text-[10px] text-accent-2">
+                ⭐ Upgrade to Premium for 20-50 question quizzes
+              </p>
+            )}
           </div>
 
           {/* AI usage indicator */}
