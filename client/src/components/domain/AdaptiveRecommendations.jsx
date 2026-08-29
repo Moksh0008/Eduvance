@@ -46,6 +46,7 @@ export function AdaptiveRecommendations() {
     async function load() {
       try {
         const result = await api.get('/ai/recommendations?limit=5')
+        console.log('[Recommendations] API response:', result)
         if (result?.recommendations) {
           setRecommendations(result.recommendations)
         }
