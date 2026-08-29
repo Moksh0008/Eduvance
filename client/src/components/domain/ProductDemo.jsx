@@ -127,7 +127,7 @@ function Char({ src, size = 180, style = {}, anim = {} }) {
     <motion.img
       src={src}
       alt="Student"
-      style={{ width: size, height: size, objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))', ...style }}
+      style={{ width: size, height: size, objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))', ...style }}
       initial={{ opacity: 0, scale: 0.6, y: 30 }}
       animate={{ opacity: 1, scale: 1, y: 0, ...anim }}
       transition={{ type: 'spring', stiffness: 180, damping: 14 }}
@@ -447,7 +447,7 @@ export function ProductDemo() {
   const cur = SCENES[scene]
 
   return (
-    <div ref={ref} style={{ maxWidth: 900, margin: '0 auto', borderRadius: 24, overflow: 'hidden', boxShadow: isDark ? '0 20px 80px rgba(99,102,241,0.2)' : '0 20px 60px rgba(0,0,0,0.15)', background: isDark ? '#0f172a' : '#1a1a2e' }}>
+    <div ref={ref} style={{ maxWidth: 900, margin: '0 auto', borderRadius: 24, overflow: 'hidden', boxShadow: isDark ? '0 20px 80px rgba(99,102,241,0.2)' : '0 20px 60px rgba(0,0,0,0.12)', background: isDark ? '#0f172a' : '#1e1b2e' }}>
       <div style={{ background: cur.bg, minHeight: 480, position: 'relative', zIndex: 1 }}>
         <Comp />
       </div>
