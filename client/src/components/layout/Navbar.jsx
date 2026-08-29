@@ -50,9 +50,6 @@ export function Navbar({ onMenu }) {
         {!demoMode && <PlanBadge compact />}
       </div>
       <div className="flex items-center gap-3">
-        <Link to="/setup" className="hidden text-xs font-medium text-ink-2 hover:text-accent-2 transition-colors sm:inline" data-cursor="click">
-          Edit preparation
-        </Link>
         <BulbToggle />
       </div>
     </header>
