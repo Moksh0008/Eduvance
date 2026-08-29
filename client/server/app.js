@@ -62,7 +62,16 @@ export function createApp() {
     }
 
     // Check AI provider status
-    checks.grok = process.env.XAI_API_KEY ? `xai:${process.env.XAI_MODEL || 'grok-4.6'}` : (process.env.GROQ_API_KEY ? `groq:${process.env.GROQ_MODEL || 'openai/gpt-oss-20b'}` : 'missing')
+    try {
+      const { getProviderStatus } = await import('./services/grokService.js')
+      const aiStatus = getProviderStatus()
+      checks.ai = {
+        primary: `${aiStatus.primary.name}/${aiStatus.primary.model} ${aiStatus.primary.configured ? '✅' : '❌'}`,
+        fallback: aiStatus.fallback ? `${aiStatus.fallback.name}/${aiStatus.fallback.model} ${aiStatus.fallback.configured ? '✅' : '❌'}` : 'none',
+      }
+    } catch {
+      checks.ai = { primary: 'unavailable', fallback: 'none' }
+    }
 
     // Server uptime
     checks.uptime = Math.round(process.uptime()) + 's'

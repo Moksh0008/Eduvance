@@ -1,7 +1,11 @@
 import 'dotenv/config'
 import { app, ensureDb } from './app.js'
+import { logProviderConfig } from './services/grokService.js'
 
 const port = Number(process.env.PORT) || 5000
+
+// Validate AI provider configuration on startup
+logProviderConfig()
 
 try {
   await ensureDb()
