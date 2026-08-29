@@ -39,6 +39,7 @@ export function QuizPlayPage() {
   const [loadingAi, setLoadingAi] = useState(false)
   const [aiError, setAiError] = useState(null)
   const [fromMaterial, setFromMaterial] = useState(false)
+  const [loadingStep, setLoadingStep] = useState(0) // 0=init, 1=cache, 2=generating, 3=ready
   const questions = aiQuestions || localQuestions
   const limit = (config.minutes || 15) * 60
   const [index, setIndex] = useState(0)
@@ -49,6 +50,9 @@ export function QuizPlayPage() {
     if (config.kind !== 'check' || !config.subject || !config.topic) return
     let cancelled = false
     setLoadingAi(true)
+    setLoadingStep(1) // Checking cache
+    // Simulate step progression for better UX
+    const stepTimer1 = setTimeout(() => { if (!cancelled) setLoadingStep(2) }, 800)
     aiApi.generateQuiz(config.subject, config.topic, difficulty, config.count || 10)
       .then(result => {
         if (cancelled || !result?.questions?.length) {
@@ -67,6 +71,7 @@ export function QuizPlayPage() {
           subject: config.subject,
           topic: config.topic,
         }))
+        setLoadingStep(3) // Ready
         setAiQuestions(mapped)
         // Resize answers array to match actual question count
         setAnswers(prev => {
@@ -82,8 +87,11 @@ export function QuizPlayPage() {
         console.error('[Quiz] AI generation failed:', msg)
         setAiError(`AI error: ${msg}`)
       })
-      .finally(() => setLoadingAi(false))
-    return () => { cancelled = true }
+      .finally(() => {
+        clearTimeout(stepTimer1)
+        setLoadingAi(false)
+      })
+    return () => { cancelled = true; clearTimeout(stepTimer1) }
   }, [config.subject, config.topic, difficulty])
   const [left, setLeft] = useState(limit)
   const [mentorEvent, setMentorEvent] = useState({ type: 'enter' })
@@ -183,11 +191,79 @@ export function QuizPlayPage() {
   const ss = String(left % 60).padStart(2, '0')
 
   if (loadingAi && !aiQuestions) {
+    const steps = [
+      { label: 'Checking cache', icon: '🔍', description: 'Looking for existing questions' },
+      { label: 'Generating questions', icon: '🤖', description: `AI creating ${config.count || 10} questions about ${config.topic}` },
+      { label: 'Ready', icon: '✅', description: 'Questions loaded successfully' },
+    ]
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <div className="mb-4 h-10 w-10 animate-spin rounded-full border-4 border-accent border-t-transparent" />
-        <p className="text-sm text-ink-2">Generating AI questions for {config.topic}...</p>
-        <p className="mt-1 text-xs text-ink-3">Analyzing your study material and performance</p>
+      <div className="flex flex-col items-center justify-center py-16">
+        {/* Octo mascot area */}
+        <div className="mb-6 relative">
+          <div className="h-20 w-20 rounded-full flex items-center justify-center" style={{ background: 'var(--color-card)', border: '2px solid var(--color-line)' }}>
+            <span className="text-4xl">🐙</span>
+          </div>
+          {/* Pulse ring */}
+          <div className="absolute inset-0 rounded-full animate-ping opacity-20" style={{ border: '2px solid var(--color-accent)' }} />
+        </div>
+
+        {/* Progress steps */}
+        <div className="w-full max-w-xs space-y-3">
+          {steps.map((step, i) => {
+            const isDone = loadingStep > i + 1 || (loadingStep === 3 && i < 2)
+            const isActive = loadingStep === i + 1 && loadingStep < 3
+            const isCurrent = loadingStep === i + 1
+            return (
+              <div key={i} className="flex items-center gap-3">
+                {/* Step indicator */}
+                <div
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ${
+                    isDone ? 'bg-emerald-500/20 text-emerald-400'
+                    : isActive ? 'bg-accent/20 text-accent'
+                    : 'bg-white/[0.04] text-ink-3/40'
+                  }`}
+                  style={isActive ? { boxShadow: '0 0 12px var(--color-accent)' } : {}}
+                >
+                  {isDone ? '✓' : i + 1}
+                </div>
+                {/* Step text */}
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-medium transition-colors duration-300 ${
+                    isDone ? 'text-emerald-400'
+                    : isActive ? 'text-ink'
+                    : 'text-ink-3/40'
+                  }`}>
+                    {step.icon} {step.label}
+                  </p>
+                  {isCurrent && (
+                    <p className="text-[11px] text-ink-3 mt-0.5 truncate">{step.description}</p>
+                  )}
+                </div>
+                {/* Spinner for active step */}
+                {isActive && (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-accent border-t-transparent shrink-0" />
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Progress bar */}
+        <div className="mt-6 h-1 w-full max-w-xs overflow-hidden rounded-full bg-white/[0.04]">
+          <div
+            className="h-full rounded-full transition-all duration-500 ease-out"
+            style={{
+              width: `${loadingStep === 1 ? '30%' : loadingStep === 2 ? '70%' : '100%'}`,
+              background: loadingStep === 3 ? '#22c55e' : 'var(--color-accent)',
+            }}
+          />
+        </div>
+
+        <p className="mt-4 text-xs text-ink-3">
+          {loadingStep === 1 && 'Searching question bank...'}
+          {loadingStep === 2 && 'This usually takes 5-15 seconds...'}
+          {loadingStep === 3 && 'Starting quiz...'}
+        </p>
       </div>
     )
   }
