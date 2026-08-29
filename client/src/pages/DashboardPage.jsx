@@ -11,6 +11,7 @@ import { ReadinessPanel } from '../components/domain/ReadinessPanel'
 import { AdaptiveLoop } from '../components/domain/AdaptiveLoop'
 import { DemoBanner } from '../components/domain/ModeBanners'
 import { StudyRecommendation } from '../components/domain/StudyRecommendation'
+import { AdaptiveRecommendations } from '../components/domain/AdaptiveRecommendations'
 import { ScrollReveal, StaggerChildren, StaggerItem } from '../components/ui/ScrollReveal'
 import { StreakDisplay, StreakReminder } from '../components/ui/StreakDisplay'
 import { CountUp } from '../components/ui/CountUp'
@@ -244,8 +245,19 @@ export function DashboardPage() {
         </ScrollReveal>
       </div>
 
-      {/* ═══ WEAK TOPICS ═══ */}
-      {progress.weakTopics?.length ? (
+      {/* ═══ ADAPTIVE RECOMMENDATIONS ═══ */}
+      <ScrollReveal>
+        <div className="flex items-center gap-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-3">What to study next</p>
+          <div className="h-px flex-1" style={{ background: 'var(--color-line)' }} />
+        </div>
+        <div className="mt-4">
+          <AdaptiveRecommendations />
+        </div>
+      </ScrollReveal>
+
+      {/* ═══ WEAK TOPICS (fallback if no recommendations) ═══ */}
+      {!data.isDemo && progress.weakTopics?.length ? (
         <ScrollReveal>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-3">Topics needing attention</p>
           <StaggerChildren className="mt-4 space-y-2" staggerDelay={0.04}>

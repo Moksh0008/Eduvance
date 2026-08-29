@@ -681,3 +681,26 @@ aiRoutes.get('/usage', asyncHandler(async (req, res) => {
   const status = await getUsageStatus(req.user.userId)
   return res.json({ success: true, data: status })
 }))
+
+// ═══ GET ADAPTIVE RECOMMENDATIONS ═══
+aiRoutes.get('/recommendations', asyncHandler(async (req, res) => {
+  const { getRecommendations, getTopicSummary } = await import('../services/adaptiveLearningService.js')
+  const limit = Math.min(parseInt(req.query.limit, 10) || 5, 10)
+
+  const [recommendations, summary] = await Promise.all([
+    getRecommendations(req.user.userId, limit),
+    getTopicSummary(req.user.userId),
+  ])
+
+  return res.json({
+    success: true,
+    data: {
+      recommendations,
+      summary,
+      config: {
+        weakThreshold: parseInt(process.env.ADAPTIVE_WEAK_THRESHOLD, 10) || 50,
+        strongThreshold: parseInt(process.env.ADAPTIVE_STRONG_THRESHOLD, 10) || 75,
+      },
+    },
+  })
+}))
