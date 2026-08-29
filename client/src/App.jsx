@@ -36,6 +36,7 @@ const TheLoopPage = lazy(() => import('./pages/TheLoopPage').then(m => ({ defaul
 const ProblemPage = lazy(() => import('./pages/ProblemPage').then(m => ({ default: m.ProblemPage })))
 const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage').then(m => ({ default: m.HowItWorksPage })))
 const WhyEduvancePage = lazy(() => import('./pages/WhyEduvancePage').then(m => ({ default: m.WhyEduvancePage })))
+const SubscriptionPage = lazy(() => import('./pages/SubscriptionPage').then(m => ({ default: m.SubscriptionPage })))
 const AppShell = lazy(() => import('./components/layout/AppShell').then(m => ({ default: m.AppShell })))
 
 function PageLoader() {
@@ -106,6 +107,7 @@ export default function App() {
           <Route path="/revision" element={<AnimatedPage><RevisionPage /></AnimatedPage>} />
           <Route path="/profile" element={<AnimatedPage><ProfilePage /></AnimatedPage>} />
           <Route path="/settings" element={<AnimatedPage><SettingsPage /></AnimatedPage>} />
+          <Route path="/subscription" element={<AnimatedPage><SubscriptionPage /></AnimatedPage>} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

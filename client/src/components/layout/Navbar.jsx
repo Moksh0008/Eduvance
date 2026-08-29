@@ -30,7 +30,7 @@ export function Navbar({ onMenu }) {
           <p className="text-sm text-ink-2">
             <Link to="/profile" className="text-ink hover:text-accent-2 transition-colors" data-cursor="click">{user?.name}</Link>
             <span className="mx-2 text-ink-3">·</span>
-            <span className="text-ink-3">{hours}h / day</span>
+            <Link to="/subscription" className="text-ink-3 hover:text-accent-2 transition-colors" data-cursor="click">Free Plan</Link>
           </p>
         </div>
         {demoMode ? <Badge tone="accent">Demo</Badge> : null}

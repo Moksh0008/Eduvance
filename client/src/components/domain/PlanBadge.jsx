@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { api } from '../../services/api'
 import { useAppState } from '../../context/AppState'
 
@@ -38,15 +39,15 @@ export function PlanBadge({ compact = false }) {
 
   if (compact) {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider">
+      <Link to="/subscription" className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider hover:opacity-80 transition-opacity">
         <span
           className="h-1.5 w-1.5 rounded-full"
           style={{ background: isPremium ? '#a78bfa' : 'var(--color-ink-3)' }}
         />
         <span style={{ color: isPremium ? '#a78bfa' : 'var(--color-ink-3)' }}>
-          {isPremium ? 'Premium' : 'Free'}
+          {isPremium ? 'Premium' : 'Free Plan'}
         </span>
-      </span>
+      </Link>
     )
   }
 
