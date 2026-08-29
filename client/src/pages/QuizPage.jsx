@@ -341,7 +341,8 @@ export function QuizPage() {
             <label className="block text-xs font-medium uppercase tracking-wider text-ink-3 mb-1">
               Number of questions
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
+              {/* Free tier: 5, 10, 15 */}
               {[5, 10, 15].map(n => (
                 <button
                   key={n}
@@ -352,10 +353,12 @@ export function QuizPage() {
                       : 'border-white/[0.06] bg-white/[0.03] text-ink-2 hover:border-white/[0.12] hover:bg-white/[0.05]'
                   }`}
                 >
-                  {n} questions
+                  {n}
                 </button>
               ))}
-              {[20, 25, 30, 35, 40, 45, 50].map(n => (
+
+              {/* Pro tier: 20, 25, 30 */}
+              {[20, 25, 30].map(n => (
                 <button
                   key={n}
                   onClick={() => {
@@ -367,24 +370,68 @@ export function QuizPage() {
                   }}
                   className={`relative rounded-xl border px-3 py-2.5 text-sm font-medium transition-all ${
                     questionCount === n && plan?.plan !== 'free'
-                      ? 'border-accent bg-accent/10 text-accent ring-1 ring-accent/30'
+                      ? 'border-blue-400 bg-blue-500/10 text-blue-400 ring-1 ring-blue-400/30'
                       : 'border-white/[0.06] bg-white/[0.03] text-ink-3 hover:border-white/[0.12] hover:bg-white/[0.05]'
                   }`}
                 >
-                  <span className="flex items-center justify-between gap-1">
-                    <span>{n} questions</span>
-                    <span className="shrink-0 rounded-md bg-gradient-to-r from-amber-500/20 to-orange-500/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-400">
+                  <span className="flex items-center justify-center gap-1">
+                    <span>{n}</span>
+                    <span className="shrink-0 rounded bg-blue-500/20 px-1 py-px text-[8px] font-bold uppercase tracking-wider text-blue-400">
                       Pro
                     </span>
                   </span>
                 </button>
               ))}
+
+              {/* Premium tier: 35, 40, 45, 50 */}
+              {[35, 40, 45, 50].map(n => (
+                <button
+                  key={n}
+                  onClick={() => {
+                    if (!plan || plan.plan === 'free' || plan.plan === 'pro') {
+                      navigate('/subscription')
+                    } else {
+                      setQuestionCount(n)
+                    }
+                  }}
+                  className={`relative rounded-xl border px-3 py-2.5 text-sm font-medium transition-all ${
+                    questionCount === n && plan?.plan === 'premium'
+                      ? 'border-purple-400 bg-purple-500/10 text-purple-400 ring-1 ring-purple-400/30'
+                      : 'border-white/[0.06] bg-white/[0.03] text-ink-3 hover:border-white/[0.12] hover:bg-white/[0.05]'
+                  }`}
+                >
+                  <span className="flex items-center justify-center gap-1">
+                    <span>{n}</span>
+                    <span className="shrink-0 rounded bg-purple-500/20 px-1 py-px text-[8px] font-bold uppercase tracking-wider text-purple-400">
+                      Premium
+                    </span>
+                  </span>
+                </button>
+              ))}
             </div>
+
+            {/* Plan labels row */}
+            <div className="mt-2 flex items-center gap-3 text-[10px] text-ink-3">
+              <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-accent" /> Free</span>
+              <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-blue-400" /> Pro ₹99/mo</span>
+              <span className="flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-purple-400" /> Premium ₹199/mo</span>
+            </div>
+
             {plan?.plan === 'free' && (
-              <div className="mt-3 flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: 'rgba(251,191,36,0.06)' }}>
-                <span className="text-sm">✨</span>
+              <div className="mt-3 flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: 'rgba(59,130,246,0.06)' }}>
+                <span className="text-sm">⚡</span>
                 <p className="text-[11px] text-ink-2">
-                  <span className="font-medium text-amber-400">Pro plan</span> — unlock 20-50 question quizzes and more AI generations.{' '}
+                  <span className="font-medium text-blue-400">Pro</span> unlocks up to 30 questions.{' '}
+                  <span className="font-medium text-purple-400">Premium</span> unlocks up to 50.{' '}
+                  <Link to="/subscription" className="font-semibold text-accent-2 underline decoration-accent-2/30 underline-offset-2 hover:decoration-accent-2/60">Compare plans →</Link>
+                </p>
+              </div>
+            )}
+            {plan?.plan === 'pro' && (
+              <div className="mt-3 flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: 'rgba(167,139,250,0.06)' }}>
+                <span className="text-sm">👑</span>
+                <p className="text-[11px] text-ink-2">
+                  <span className="font-medium text-purple-400">Premium</span> unlocks 35-50 questions and AI explanations.{' '}
                   <Link to="/subscription" className="font-semibold text-accent-2 underline decoration-accent-2/30 underline-offset-2 hover:decoration-accent-2/60">Upgrade →</Link>
                 </p>
               </div>

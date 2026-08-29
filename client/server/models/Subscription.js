@@ -3,8 +3,8 @@ import mongoose from 'mongoose'
 const subscriptionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true, index: true },
 
-  // Plan: 'free' or 'premium'
-  plan: { type: String, enum: ['free', 'premium'], default: 'free', required: true },
+  // Plan: 'free', 'pro', or 'premium'
+  plan: { type: String, enum: ['free', 'pro', 'premium'], default: 'free', required: true },
 
   // Status: active, inactive, cancelled, expired
   status: { type: String, enum: ['active', 'inactive', 'cancelled', 'expired'], default: 'active', required: true },

@@ -16,8 +16,17 @@ const PLAN_CONFIG = {
   free: {
     label: 'Free',
     dailyAiLimit: parseInt(process.env.FREE_DAILY_AI_LIMIT, 10) || 3,
-    maxQuizQuestions: parseInt(process.env.FREE_MAX_QUIZ_QUESTIONS, 10) || 10,
+    maxQuizQuestions: parseInt(process.env.FREE_MAX_QUIZ_QUESTIONS, 10) || 15,
     advancedAnalytics: false,
+    advancedExplanations: false,
+    enhancedPlanning: false,
+    prioritySupport: false,
+  },
+  pro: {
+    label: 'Pro',
+    dailyAiLimit: parseInt(process.env.PRO_DAILY_AI_LIMIT, 10) || 10,
+    maxQuizQuestions: parseInt(process.env.PRO_MAX_QUIZ_QUESTIONS, 10) || 30,
+    advancedAnalytics: true,
     advancedExplanations: false,
     enhancedPlanning: false,
     prioritySupport: false,
@@ -35,6 +44,7 @@ const PLAN_CONFIG = {
 
 console.log('[FeatureGate] Plan config:', {
   free: { dailyAiLimit: PLAN_CONFIG.free.dailyAiLimit },
+  pro: { dailyAiLimit: PLAN_CONFIG.pro.dailyAiLimit },
   premium: { dailyAiLimit: PLAN_CONFIG.premium.dailyAiLimit },
 })
 
@@ -187,13 +197,15 @@ export async function getDailyAiLimit(userId) {
 // ═══ ADMIN FUNCTIONS ═══
 
 /**
- * Upgrade a user to premium. (For future payment integration)
+ * Upgrade a user to a plan. (For future payment integration)
  */
-export async function upgradeToPremium(userId, options = {}) {
+export async function upgradeToPlan(userId, plan, options = {}) {
   const { durationDays = 30, paymentId = null, paymentProvider = null } = options
+  const validPlans = ['free', 'pro', 'premium']
+  if (!validPlans.includes(plan)) throw new Error(`Invalid plan: ${plan}`)
 
   const sub = await getOrCreateSubscription(userId)
-  sub.plan = 'premium'
+  sub.plan = plan
   sub.status = 'active'
   sub.startDate = new Date()
   sub.endDate = durationDays
@@ -204,8 +216,15 @@ export async function upgradeToPremium(userId, options = {}) {
   sub.cancelledAt = null
   await sub.save()
 
-  console.log(`[FeatureGate] User ${userId} upgraded to premium (expires: ${sub.endDate || 'never'})`)
+  console.log(`[FeatureGate] User ${userId} upgraded to ${plan} (expires: ${sub.endDate || 'never'})`)
   return sub
+}
+
+/**
+ * @deprecated Use upgradeToPlan instead
+ */
+export async function upgradeToPremium(userId, options = {}) {
+  return upgradeToPlan(userId, 'premium', options)
 }
 
 /**

@@ -33,38 +33,35 @@ export function PlanBadge({ compact = false }) {
 
   if (!plan) return null
 
-  const isPremium = plan.plan === 'premium' && plan.isActive
+  const planId = plan.plan || 'free'
+  const isActive = plan.isActive
   const remaining = usage?.remaining ?? '?'
   const limit = usage?.limit ?? '?'
+
+  const planColor = planId === 'premium' ? '#a78bfa' : planId === 'pro' ? '#3b82f6' : 'var(--color-ink-3)'
+  const planIcon = planId === 'premium' ? '👑' : planId === 'pro' ? '⚡' : '○'
+  const planLabel = planId === 'premium' ? 'Premium' : planId === 'pro' ? 'Pro' : 'Free'
 
   if (compact) {
     return (
       <Link to="/subscription" className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider hover:opacity-80 transition-opacity">
-        <span
-          className="h-1.5 w-1.5 rounded-full"
-          style={{ background: isPremium ? '#a78bfa' : 'var(--color-ink-3)' }}
-        />
-        <span style={{ color: isPremium ? '#a78bfa' : 'var(--color-ink-3)' }}>
-          {isPremium ? 'Premium' : 'Free Plan'}
-        </span>
+        <span className="h-1.5 w-1.5 rounded-full" style={{ background: planColor }} />
+        <span style={{ color: planColor }}>{planLabel} Plan</span>
       </Link>
     )
   }
 
   return (
     <div className="flex items-center gap-3 rounded-xl px-3 py-2" style={{ background: 'var(--color-card)' }}>
-      {/* Plan badge */}
       <span
         className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
         style={{
-          background: isPremium ? 'rgba(167,139,250,0.15)' : 'var(--color-surface)',
-          color: isPremium ? '#a78bfa' : 'var(--color-ink-3)',
+          background: `${planColor}20`,
+          color: planColor,
         }}
       >
-        {isPremium ? '⭐' : '○'} {isPremium ? 'Premium' : 'Free'}
+        {planIcon} {planLabel}
       </span>
-
-      {/* AI usage */}
       {usage && (
         <span className="text-[10px] text-ink-3">
           AI: <span className={remaining === 0 ? 'text-red-400 font-medium' : 'text-ink-2'}>{remaining}</span>/{limit} today
