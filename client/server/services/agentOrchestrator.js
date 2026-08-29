@@ -111,18 +111,9 @@ export async function generateQuiz({ userId, subject, topic, difficulty, count, 
   let chunks = []
 
   if (aiLimit.allowed && bankResult.needGenerate > 0) {
-    // Only fetch RAG context if user has uploaded study material
-    // Skip the expensive regex queries when generating standard quiz questions
-    const skipRag = bankResult.cachedCount > 0
-    if (!skipRag) {
-      chunks = await retrieveRelevantChunks(userId, subject, topic, 3)
-    }
-    const context = buildContextString(chunks)
-
-    // Get previous prompts to avoid duplicates (lightweight query)
     const excludePrompts = bankResult.cached.map(q => q.prompt)
 
-    console.log(`[QuizGen] Generating ${bankResult.needGenerate} missing questions via AI${context ? ' with study context' : ''}`)
+    console.log(`[QuizGen] Generating ${bankResult.needGenerate} questions via AI`)
 
     try {
       newQuestions = await generateQuizQuestions({
@@ -130,7 +121,7 @@ export async function generateQuiz({ userId, subject, topic, difficulty, count, 
         topic,
         difficulty: finalDifficulty,
         count: bankResult.needGenerate,
-        context,
+        context: '',
         previousQuestions: excludePrompts,
       })
       console.log(`[QuizGen] AI generated ${newQuestions.length} validated questions`)

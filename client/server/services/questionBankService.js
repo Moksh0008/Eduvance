@@ -153,20 +153,29 @@ export async function getQuestionsFromBank(subject, topic, difficulty, count) {
   const normTopic = QuestionBank.normalize(topic)
   const normDiff = (difficulty || 'medium').toLowerCase().trim()
 
-  // Count available
-  const totalCached = await countCachedQuestions(subject, topic, difficulty)
-  console.log(`[QuestionBank] Cache check: ${totalCached} questions for "${normSubject}" → "${normTopic}" (${normDiff})`)
+  // Single query: fetch all available questions (pre-generated first, then ai-generated)
+  const allAvailable = await QuestionBank.aggregate([
+    {
+      $match: {
+        subject: normSubject,
+        topic: normTopic,
+        difficulty: normDiff,
+      },
+    },
+    { $sample: { size: count } },
+  ])
+
+  const totalCached = allAvailable.length
+  const preGenCount = allAvailable.filter(q => q.source === 'pre-generated').length
+  const aiGenCount = allAvailable.filter(q => q.source === 'ai-generated').length
+
+  console.log(`[QuestionBank] Cache: ${totalCached} questions (${preGenCount} pre-gen, ${aiGenCount} ai-gen) for "${normSubject}" → "${normTopic}" (${normDiff})`)
 
   if (totalCached >= count) {
-    // Cache HIT — enough questions exist
-    const cached = await findCachedQuestions(subject, topic, difficulty, count)
-    console.log(`[QuestionBank] Cache hit — returning ${cached.length} questions from bank`)
-
-    // Mark as used
-    await markQuestionsUsed(cached.map(q => q._id))
-
+    console.log(`[QuestionBank] Cache hit — returning ${count} questions`)
+    await markQuestionsUsed(allAvailable.slice(0, count).map(q => q._id))
     return {
-      cached: cached.map(q => ({
+      cached: allAvailable.slice(0, count).map(q => ({
         id: q._id,
         prompt: q.prompt,
         options: q.options,
@@ -176,29 +185,17 @@ export async function getQuestionsFromBank(subject, topic, difficulty, count) {
         source: q.source || 'ai-generated',
         fromCache: true,
       })),
-      cachedCount: cached.length,
+      cachedCount: count,
       totalCount: totalCached,
       needGenerate: 0,
     }
   }
 
-  // Cache MISS — return what exists, report how many to generate
-  const cached = totalCached > 0
-    ? await findCachedQuestions(subject, topic, difficulty, totalCached)
-    : []
-
-  const needGenerate = count - cached.length
-
-  const preGenCount = cached.filter(q => q.source === 'pre-generated').length
-  const aiGenCount = cached.filter(q => q.source === 'ai-generated').length
-  if (cached.length > 0) {
-    console.log(`[QuestionBank] Partial cache hit — ${cached.length} cached (${preGenCount} pre-gen, ${aiGenCount} ai-gen), need ${needGenerate} more from AI`)
-  } else {
-    console.log(`[QuestionBank] Cache miss — generating all ${needGenerate} questions from AI`)
-  }
+  const needGenerate = count - totalCached
+  console.log(`[QuestionBank] ${totalCached > 0 ? 'Partial cache hit' : 'Cache miss'} — need ${needGenerate} from AI`)
 
   return {
-    cached: cached.map(q => ({
+    cached: allAvailable.map(q => ({
       id: q._id,
       prompt: q.prompt,
       options: q.options,
@@ -208,7 +205,7 @@ export async function getQuestionsFromBank(subject, topic, difficulty, count) {
       source: q.source || 'ai-generated',
       fromCache: true,
     })),
-    cachedCount: cached.length,
+    cachedCount: totalCached,
     totalCount: totalCached,
     needGenerate,
   }

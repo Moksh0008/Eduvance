@@ -184,7 +184,7 @@ function isFallbackEligible(errorType) {
  * Returns { content, error, errorType }
  */
 async function callProvider(provider, model, systemPrompt, userPrompt, options = {}) {
-  const { temperature = 0.7, maxTokens = 4096, timeoutMs = 60000 } = options
+  const { temperature = 0.7, maxTokens = 4096, timeoutMs = 45000 } = options
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
 
@@ -257,7 +257,7 @@ async function callProvider(provider, model, systemPrompt, userPrompt, options =
  * This is the main entry point for all AI calls.
  */
 export async function callGrok(systemPrompt, userPrompt, options = {}) {
-  const { temperature = 0.7, maxTokens = 4096, timeoutMs = 60000 } = options
+  const { temperature = 0.7, maxTokens = 4096, timeoutMs = 45000 } = options
 
   const providers = []
   // Primary provider
@@ -510,7 +510,7 @@ export async function generateAndValidateQuestions(systemPrompt, userPrompt, opt
  * Generates in batches of 10 to stay within token limits.
  */
 export async function generateQuizQuestions({ subject, topic, difficulty, count, context, previousQuestions = [] }) {
-  const BATCH_SIZE = 10
+  const BATCH_SIZE = 15
   const allQuestions = []
   const seenPrompts = new Set()
   let attempts = 0
@@ -535,8 +535,8 @@ Return ONLY a JSON array. No text before/after.
 
     try {
       const batch = await generateAndValidateQuestions(systemPrompt, userPrompt, {
-        temperature: 0.4,
-        maxTokens: 2048,
+        temperature: 0.5,
+        maxTokens: 1536,
       })
 
       for (const q of batch) {
