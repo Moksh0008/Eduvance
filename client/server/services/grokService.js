@@ -42,6 +42,19 @@ const PROVIDER_REGISTRY = {
     getKey: (cfg) => cfg.primaryApiKey || process.env.OPENAI_API_KEY,
     getFallbackKey: (cfg) => cfg.fallbackApiKey || null,
   },
+  // Generic OpenAI-compatible provider for any self-hosted or hosted
+  // open-source model (Together AI, Hugging Face, Ollama, etc.)
+  // Configure via: AI_PROVIDER=openai-compatible
+  //               PRIMARY_AI_BASE_URL=https://api.together.xyz/v1
+  //               PRIMARY_AI_API_KEY=...
+  //               PRIMARY_AI_MODEL=meta-llama/Llama-3-8b-chat-hf
+  'openai-compatible': {
+    name: 'OpenAI-Compatible',
+    baseUrl: process.env.PRIMARY_AI_BASE_URL || 'http://localhost:11434/v1',
+    defaultModel: 'llama-3.1-8b-instant',
+    getKey: (cfg) => cfg.primaryApiKey || process.env.OPENAI_COMPATIBLE_API_KEY,
+    getFallbackKey: (cfg) => cfg.fallbackApiKey || null,
+  },
 }
 
 // ═══ CONFIGURATION ═══
@@ -59,6 +72,7 @@ function resolveConfig() {
   const primary = primaryRegistry || PROVIDER_REGISTRY.xai
   const primaryModel = process.env.PRIMARY_AI_MODEL || process.env.XAI_MODEL || primary.defaultModel
   const primaryApiKey = process.env.PRIMARY_AI_API_KEY || process.env.XAI_API_KEY || primary.getKey({})
+  const primaryBaseUrl = process.env.PRIMARY_AI_BASE_URL || null
 
   // Determine fallback provider
   const fallbackName = (process.env.FALLBACK_AI_PROVIDER || '').toLowerCase() || null
@@ -72,9 +86,14 @@ function resolveConfig() {
     fallbackApiKey = process.env.FALLBACK_AI_API_KEY || process.env.GROQ_API_KEY || fallback.getFallbackKey({})
   }
 
+  // Override baseUrl if PRIMARY_AI_BASE_URL is set (for openai-compatible)
+  const resolvedPrimary = primaryBaseUrl
+    ? { ...primary, baseUrl: primaryBaseUrl }
+    : primary
+
   return {
     primary: {
-      ...primary,
+      ...resolvedPrimary,
       model: primaryModel,
       apiKey: primaryApiKey,
     },
@@ -97,6 +116,9 @@ export function logProviderConfig() {
   console.log('════════════════════════════════════════')
   console.log('[AI] Provider Configuration')
   console.log(`  Primary:   ${p.name} / ${p.model} ${p.apiKey ? '✅ configured' : '❌ no API key'}`)
+  if (p.name === 'OpenAI-Compatible') {
+    console.log(`  Base URL:  ${p.baseUrl}`)
+  }
   if (f) {
     console.log(`  Fallback:  ${f.name} / ${f.model} ${f.apiKey ? '✅ configured' : '❌ no API key'}`)
   } else {
