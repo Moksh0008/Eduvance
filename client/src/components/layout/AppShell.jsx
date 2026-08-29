@@ -57,7 +57,7 @@ export function AppShell() {
               loading="lazy"
               width="1920"
               height="1080"
-              style={{ opacity: isDark ? 0.15 : 0.45, filter: isDark ? 'none' : 'saturate(0.6) brightness(1.05)' }}
+              style={{ opacity: isDark ? 0.15 : 0.55, filter: isDark ? 'none' : 'blur(4px) saturate(0.65) brightness(1.05)' }}
             />
       </div>
 
@@ -110,7 +110,7 @@ export function AppShell() {
         {/* Desktop sidebar — borderless, floating feel */}
         <aside className="sticky top-0 hidden h-screen w-[15.5rem] shrink-0 backdrop-blur-lg lg:block" style={{ background: isDark ? 'rgba(10,14,28,0.92)' : 'rgba(255,255,255,0.92)', borderRight: isDark ? '1px solid rgba(148,163,184,0.1)' : '1px solid rgba(0,0,0,0.06)' }}>
           <div className="flex h-14 items-center px-4">
-            <Logo to="/dashboard" />
+            <Logo to="/" />
           </div>
           <Sidebar />
         </aside>
@@ -134,7 +134,7 @@ export function AppShell() {
                 transition={{ type: 'spring', stiffness: 350, damping: 30 }}
               >
                 <div className="flex h-14 items-center px-4">
-                  <Logo to="/dashboard" />
+                  <Logo to="/" />
                 </div>
                 <Sidebar onNavigate={() => setOpen(false)} />
               </motion.aside>

@@ -23,7 +23,7 @@ export function Navbar({ onMenu }) {
         <Button variant="ghost" size="sm" className="lg:hidden" onClick={onMenu} aria-label="Open navigation">
           <Menu size={18} />
         </Button>
-        <Logo to="/dashboard" className="lg:hidden" />
+        <Logo to="/" className="lg:hidden" />
         <div className="hidden items-center gap-2 sm:flex">
           <AvatarDisplay avatarId={avatarId} size={28} />
           <div className="h-1.5 w-1.5 rounded-full bg-success animate-pulse" />
