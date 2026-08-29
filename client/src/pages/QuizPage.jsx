@@ -28,6 +28,20 @@ export function QuizPage() {
   const [questionCount, setQuestionCount] = useState(10)
   const [generating, setGenerating] = useState(false)
   const [generationStatus, setGenerationStatus] = useState('')
+  const [aiUsage, setAiUsage] = useState(null)
+
+  // Load AI usage on mount
+  useEffect(() => {
+    async function loadUsage() {
+      try {
+        const result = await api.get('/ai/usage')
+        if (result) setAiUsage(result)
+      } catch (err) {
+        console.error('[Quiz] Failed to load AI usage:', err.message)
+      }
+    }
+    if (!data.isDemo) loadUsage()
+  }, [session?.token])
 
   // Load topics from backend on mount AND on page focus (refresh after setup changes)
   useEffect(() => {
@@ -332,6 +346,16 @@ export function QuizPage() {
               <option value={15}>15 questions (thorough)</option>
             </select>
           </div>
+
+          {/* AI usage indicator */}
+          {aiUsage && (
+            <div className="flex items-center gap-2 rounded-lg bg-surface/50 px-3 py-2">
+              <span className="text-[11px] text-ink-3">⚡</span>
+              <span className="text-[11px] text-ink-2">
+                AI generations remaining today: <span className={`font-semibold ${aiUsage.remaining === 0 ? 'text-red-400' : aiUsage.remaining <= 1 ? 'text-amber-400' : 'text-emerald-400'}`}>{aiUsage.remaining}</span> / {aiUsage.limit}
+              </span>
+            </div>
+          )}
 
           {/* Start quiz button */}
           <div className="flex items-center gap-3">

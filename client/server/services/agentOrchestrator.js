@@ -7,6 +7,7 @@ import { callGrokJSON, callGrok, generateAndValidateQuestions, generateQuizQuest
 import { retrieveRelevantChunks, buildContextString } from './ragService.js'
 import { TopicMastery, QuizAttempt, Question, Quiz, Insight } from '../models/index.js'
 import { getQuestionsFromBank, saveQuestionsToBank } from './questionBankService.js'
+import { checkAiLimit, incrementAiUsage } from './aiUsageService.js'
 import {
   calculateTopicPriority,
   rankTopicsForUser,
@@ -91,49 +92,71 @@ export async function generateQuiz({ userId, subject, topic, difficulty, count, 
     }
   }
 
-  // 4. ─── CACHE MISS — generate missing questions via AI ───
-  const chunks = await retrieveRelevantChunks(userId, subject, topic, 3)
-  const context = buildContextString(chunks)
+  // 4. ─── CHECK AI USAGE LIMIT ───
+  const aiLimit = await checkAiLimit(userId)
+  console.log(`[QuizGen] AI limit: ${aiLimit.used}/${aiLimit.limit} used, ${aiLimit.remaining} remaining`)
 
-  const previousQuestions = await Question.find({ userId, subject, topic })
-    .sort({ createdAt: -1 })
-    .limit(20)
-    .select('prompt')
-
-  const prevPrompts = previousQuestions.map(q => q.prompt)
-  // Also exclude cached prompts to avoid overlap
-  const cachedPrompts = bankResult.cached.map(q => q.prompt)
-  const allExclude = [...prevPrompts, ...cachedPrompts]
-
-  console.log(`[QuizGen] Generating ${bankResult.needGenerate} missing questions via AI`)
-
-  let newQuestions = []
-  try {
-    newQuestions = await generateQuizQuestions({
-      subject,
-      topic,
-      difficulty: finalDifficulty,
-      count: bankResult.needGenerate,
-      context,
-      previousQuestions: allExclude,
-    })
-    console.log(`[QuizGen] AI generated ${newQuestions.length} validated questions`)
-  } catch (err) {
-    console.error('[QuizGen] AI generation failed:', err.message)
-    // If we have cached questions, fall back to them
+  if (!aiLimit.allowed) {
+    // At daily limit — cannot call AI
     if (bankResult.cached.length > 0) {
-      console.log(`[QuizGen] Falling back to ${bankResult.cached.length} cached questions`)
+      console.log(`[QuizGen] At daily AI limit — using ${bankResult.cached.length} cached questions`)
+      // Fall through to use cached questions below
     } else {
-      throw new Error(`AI question generation failed: ${err.message}`)
+      throw new Error(
+        `You have reached today's AI generation limit (${aiLimit.limit}/${aiLimit.limit}). ` +
+        `You can still practice topics with available questions. Your limit will reset tomorrow.`
+      )
     }
   }
 
-  // 5. Save newly generated questions to the shared QuestionBank cache
+  // 5. ─── CACHE MISS — generate missing questions via AI (if allowed) ───
+  let newQuestions = []
+
+  if (aiLimit.allowed && bankResult.needGenerate > 0) {
+    const chunks = await retrieveRelevantChunks(userId, subject, topic, 3)
+    const context = buildContextString(chunks)
+
+    const previousQuestions = await Question.find({ userId, subject, topic })
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .select('prompt')
+
+    const prevPrompts = previousQuestions.map(q => q.prompt)
+    const cachedPrompts = bankResult.cached.map(q => q.prompt)
+    const allExclude = [...prevPrompts, ...cachedPrompts]
+
+    console.log(`[QuizGen] Generating ${bankResult.needGenerate} missing questions via AI`)
+
+    try {
+      newQuestions = await generateQuizQuestions({
+        subject,
+        topic,
+        difficulty: finalDifficulty,
+        count: bankResult.needGenerate,
+        context,
+        previousQuestions: allExclude,
+      })
+      console.log(`[QuizGen] AI generated ${newQuestions.length} validated questions`)
+
+      // ─── INCREMENT USAGE ONLY AFTER SUCCESSFUL GENERATION ───
+      await incrementAiUsage(userId)
+    } catch (err) {
+      console.error('[QuizGen] AI generation failed:', err.message)
+      // Do NOT increment usage for failed requests
+      if (bankResult.cached.length > 0) {
+        console.log(`[QuizGen] Falling back to ${bankResult.cached.length} cached questions`)
+      } else {
+        throw new Error(`AI question generation failed: ${err.message}`)
+      }
+    }
+  }
+
+  // 6. Save newly generated questions to the shared QuestionBank cache
   if (newQuestions.length > 0) {
     await saveQuestionsToBank(subject, topic, finalDifficulty, newQuestions)
   }
 
-  // 6. Combine cached + new questions
+  // 7. Combine cached + new questions
   const allQuestions = [
     ...bankResult.cached,
     ...newQuestions.slice(0, requestedCount - bankResult.cachedCount),

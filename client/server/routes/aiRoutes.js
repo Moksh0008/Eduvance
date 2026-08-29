@@ -8,6 +8,7 @@ import * as ragService from '../services/ragService.js'
 import * as agent from '../services/agentOrchestrator.js'
 import * as decisionEngine from '../services/decisionEngine.js'
 import { getQuestionsFromBank, saveQuestionsToBank } from '../services/questionBankService.js'
+import { checkAiLimit, incrementAiUsage } from '../services/aiUsageService.js'
 
 export const aiRoutes = Router()
 aiRoutes.use(authMiddleware)
@@ -288,7 +289,11 @@ aiRoutes.post('/generate-quiz', asyncHandler(async (req, res) => {
     preparation,
   })
 
-  return res.json({ success: true, data: result })
+  // Include AI usage status in response
+  const { getUsageStatus } = await import('../services/aiUsageService.js')
+  const usage = await getUsageStatus(req.user.userId)
+
+  return res.json({ success: true, data: { ...result, aiUsage: usage }) })
 }))
 
 // ═══ EVALUATE ANSWER ═══
@@ -471,16 +476,54 @@ aiRoutes.post('/generate-quiz-batch', asyncHandler(async (req, res) => {
     })
   }
 
-  // ─── 2. GENERATE MISSING in batches of aiBatchSize ───
+  // ─── 2. CHECK AI USAGE LIMIT ───
+  const aiLimit = await checkAiLimit(req.user.userId)
+  console.log(`[BatchGen] AI limit: ${aiLimit.used}/${aiLimit.limit} used, ${aiLimit.remaining} remaining`)
+
+  if (!aiLimit.allowed) {
+    // At daily limit — cannot call AI, return what cache has
+    if (allQuestions.length > 0) {
+      console.log(`[BatchGen] At daily AI limit — returning ${allQuestions.length} cached questions`)
+      return res.json({
+        success: true,
+        data: {
+          totalGenerated: allQuestions.length,
+          totalRequested: requested,
+          questions: allQuestions,
+          fromCache: true,
+          aiLimitReached: true,
+          aiLimitMessage: `You have reached today's AI generation limit (${aiLimit.limit}/${aiLimit.limit}). You can still practice topics with available questions. Your limit will reset tomorrow.`,
+          quiz: allQuestions.length > 0 ? { id: `batch_${Date.now()}`, subject, topic, difficulty: finalDiff, totalQuestions: allQuestions.length } : null,
+        },
+      })
+    }
+    return res.status(429).json({
+      success: false,
+      message: `You have reached today's AI generation limit (${aiLimit.limit}/${aiLimit.limit}). You can still practice topics with available questions. Your limit will reset tomorrow.`,
+      aiLimitReached: true,
+      remaining: 0,
+      limit: aiLimit.limit,
+    })
+  }
+
+  // ─── 3. GENERATE MISSING in batches of aiBatchSize ───
   const batchesNeeded = Math.ceil(needGenerate / aiBatchSize)
   const seenPrompts = new Set(allQuestions.map(q => q.prompt.toLowerCase().slice(0, 50)))
   const errors = []
   let consecutiveFailures = 0
+  let aiRequestsMade = 0
 
   for (let batch = 0; batch < batchesNeeded; batch++) {
     const remaining = requested - allQuestions.length
     if (remaining <= 0) break
     const thisBatchSize = Math.min(aiBatchSize, remaining)
+
+    // Check remaining AI limit before each batch
+    const currentLimit = await checkAiLimit(req.user.userId)
+    if (!currentLimit.allowed) {
+      console.log(`[BatchGen] AI limit reached mid-generation — stopping after ${allQuestions.length}/${requested} questions`)
+      break
+    }
 
     const systemPrompt = `Generate exactly ${thisBatchSize} MCQ questions about ${topic} (${subject}). Difficulty: ${finalDiff}.
 
@@ -509,9 +552,12 @@ Each object: {"prompt":"question?","options":["A","B","C","D"],"correctAnswer":0
         }
       }
 
-      // ─── 3. SAVE this batch immediately ───
+      // ─── 4. SAVE this batch immediately + increment usage ───
       if (newBatch.length > 0) {
         await saveQuestionsToBank(subject, topic, finalDiff, newBatch)
+        // Only increment AFTER successful generation and save
+        await incrementAiUsage(req.user.userId)
+        aiRequestsMade++
         console.log(`[BatchGen] Batch ${batch + 1}/${batchesNeeded}: generated ${newBatch.length}, saved to bank, total ${allQuestions.length}/${requested}`)
       }
 
@@ -520,6 +566,7 @@ Each object: {"prompt":"question?","options":["A","B","C","D"],"correctAnswer":0
       consecutiveFailures++
       console.error(`[BatchGen] Batch ${batch + 1}/${batchesNeeded} failed (${consecutiveFailures} consecutive):`, err.message)
       errors.push({ batch: batch + 1, error: err.message })
+      // Do NOT increment usage for failed requests
       if (consecutiveFailures >= 3) {
         console.warn(`[BatchGen] 3 consecutive failures — stopping generation`)
         break
@@ -626,4 +673,11 @@ aiRoutes.post('/generate-topics', asyncHandler(async (req, res) => {
     console.error('[GenerateTopics] AI error:', err.message)
     return res.status(500).json({ success: false, message: 'AI topic generation failed. The AI service may be starting up.' })
   }
+}))
+
+// ═══ GET AI USAGE STATUS ═══
+aiRoutes.get('/usage', asyncHandler(async (req, res) => {
+  const { getUsageStatus } = await import('../services/aiUsageService.js')
+  const status = await getUsageStatus(req.user.userId)
+  return res.json({ success: true, data: status })
 }))
