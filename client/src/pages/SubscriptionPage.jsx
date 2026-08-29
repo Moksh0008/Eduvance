@@ -111,7 +111,7 @@ function PaymentModal({ plan, onClose, onSuccess }) {
 
   if (success) {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="fixed inset-0 z-50 flex items-start justify-center pt-[8vh] p-4" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}>
         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="w-full max-w-xs rounded-2xl p-6 text-center" style={{ background: 'var(--color-card)', border: '1px solid var(--color-line)' }}>
           <div className="mb-3 flex justify-center">
             <div className="h-14 w-14 rounded-full flex items-center justify-center" style={{ background: `${plan.color}20` }}>
@@ -131,8 +131,8 @@ function PaymentModal({ plan, onClose, onSuccess }) {
   }
 
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="w-full max-w-sm rounded-2xl overflow-hidden" style={{ background: 'var(--color-card)', border: '1px solid var(--color-line)' }}>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-start justify-center pt-[8vh] p-4" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }} onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="w-full max-w-sm rounded-2xl overflow-hidden max-h-[85vh] overflow-y-auto" style={{ background: 'var(--color-card)', border: '1px solid var(--color-line)' }}>
         {/* Header */}
         <div className="px-4 pt-4 pb-3" style={{ borderBottom: '1px solid var(--color-line)' }}>
           <div className="flex items-center justify-between">
