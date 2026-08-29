@@ -71,33 +71,33 @@
 
 /* === Light theme overrides === */
 [data-theme="light"] {
-  --color-canvas: #f0ede8;
-  --color-canvas-2: #e8e4dd;
-  --color-surface: #ffffff;
-  --color-surface-2: #f7f5f2;
-  --color-surface-3: #eeebe6;
-  --color-ink: #111827;
-  --color-ink-2: #374151;
-  --color-ink-3: #4b5563;
-  --color-line: rgba(0, 0, 0, 0.08);
-  --color-line-2: rgba(0, 0, 0, 0.14);
-  --color-accent: #4f46e5;
-  --color-accent-2: #4338ca;
-  --color-accent-soft: rgba(79, 70, 229, 0.08);
-  --color-accent-glow: rgba(79, 70, 229, 0.15);
-  --color-high: #ea580c;
-  --color-high-bg: rgba(234, 88, 12, 0.1);
-  --color-med: #ca8a04;
-  --color-med-bg: rgba(202, 138, 4, 0.1);
+  --color-canvas: #f4f1ec;
+  --color-canvas-2: #ece8e1;
+  --color-surface: rgba(255, 255, 255, 0.72);
+  --color-surface-2: rgba(255, 255, 255, 0.55);
+  --color-surface-3: rgba(245, 243, 240, 0.8);
+  --color-ink: #1a1d2e;
+  --color-ink-2: #3d4155;
+  --color-ink-3: #6b7084;
+  --color-line: rgba(0, 0, 0, 0.06);
+  --color-line-2: rgba(0, 0, 0, 0.1);
+  --color-accent: #5b4cdb;
+  --color-accent-2: #4f46e5;
+  --color-accent-soft: rgba(91, 76, 219, 0.07);
+  --color-accent-glow: rgba(91, 76, 219, 0.12);
+  --color-high: #e85d04;
+  --color-high-bg: rgba(232, 93, 4, 0.08);
+  --color-med: #d4a017;
+  --color-med-bg: rgba(212, 160, 23, 0.08);
   --color-low: #0891b2;
-  --color-low-bg: rgba(8, 145, 178, 0.1);
+  --color-low-bg: rgba(8, 145, 178, 0.08);
   --color-risk: #dc2626;
-  --color-risk-bg: rgba(220, 38, 38, 0.1);
+  --color-risk-bg: rgba(220, 38, 38, 0.08);
   --color-success: #16a34a;
-  --color-success-bg: rgba(22, 163, 74, 0.1);
-  --color-glow: rgba(79, 70, 229, 0.08);
-  --color-card: #ffffff;
-  --color-card-border: rgba(0, 0, 0, 0.08);
+  --color-success-bg: rgba(22, 163, 74, 0.08);
+  --color-glow: rgba(91, 76, 219, 0.06);
+  --color-card: rgba(255, 255, 255, 0.65);
+  --color-card-border: rgba(255, 255, 255, 0.5);
   color-scheme: light;
 }
 
@@ -242,12 +242,12 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 /* DEPTH-BASED card — visible border + shadow for clear segmentation */
 @utility card {
   background: var(--color-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
   border: 1px solid var(--color-card-border);
   border-radius: 1rem;
   padding: 1.25rem;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.03);
   transition: box-shadow 0.3s cubic-bezier(0.22,1,0.36,1), transform 0.3s cubic-bezier(0.22,1,0.36,1);
 }
 
@@ -372,4 +372,28 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
 .icon-breathe {
   animation: icon-breathe 3s ease-in-out infinite;
+}
+
+/* ═══ LIGHT THEME POLISH ═══ */
+[data-theme="light"] .card {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 24px rgba(0,0,0,0.03);
+}
+
+[data-theme="light"] .card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05), 0 8px 40px rgba(91,76,219,0.04);
+}
+
+[data-theme="light"] .input {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] select.input {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="light"] button {
+  transition: all 0.2s ease;
 }
