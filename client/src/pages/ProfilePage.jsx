@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Button } from '../components/ui/Button'
@@ -6,6 +6,7 @@ import { AvatarDisplay, AvatarPicker } from '../components/ui/AvatarPicker'
 import { useAuth } from '../context/AppState'
 import { useAppData } from '../hooks/useAppData'
 import { DemoBanner } from '../components/domain/ModeBanners'
+import { api } from '../services/api'
 
 export function ProfilePage() {
   const { user, logout } = useAuth()
@@ -13,6 +14,7 @@ export function ProfilePage() {
   const navigate = useNavigate()
   const student = data.student
   const [showPicker, setShowPicker] = useState(false)
+  const [subscription, setSubscription] = useState(null)
   const [avatarId, setAvatarId] = useState(() => {
     try { return localStorage.getItem('edu-avatar') || null } catch { return null }
   })
@@ -22,6 +24,18 @@ export function ProfilePage() {
     try { localStorage.setItem('edu-avatar', id) } catch {}
     window.dispatchEvent(new Event('avatar-changed'))
   }
+
+  useEffect(() => {
+    async function loadSubscription() {
+      try {
+        const result = await api.get('/ai/subscription')
+        if (result) setSubscription(result)
+      } catch (err) {
+        console.error('[Profile] Failed to load subscription:', err.message)
+      }
+    }
+    loadSubscription()
+  }, [])
 
   const subjects = data.subjects || []
   const totalTopics = subjects.reduce((acc, s) => acc + (s.topics?.length || 0), 0)
@@ -61,6 +75,39 @@ export function ProfilePage() {
           <Row label="👤 Name" value={user?.name || student.name} />
         </dl>
       </div>
+
+      {/* Subscription card */}
+      {subscription && (
+        <div className="card max-w-lg p-6 mb-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-ink-3 mb-3">Subscription</h2>
+          <dl className="text-sm">
+            <Row
+              label="📋 Plan"
+              value={
+                <span className="flex items-center gap-2">
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase"
+                    style={{
+                      background: subscription.plan === 'premium' ? 'rgba(167,139,250,0.15)' : 'var(--color-surface)',
+                      color: subscription.plan === 'premium' ? '#a78bfa' : 'var(--color-ink-3)',
+                    }}
+                  >
+                    {subscription.plan === 'premium' ? '⭐' : '○'} {subscription.plan === 'premium' ? 'Premium' : 'Free'}
+                  </span>
+                </span>
+              }
+            />
+            <Row label="📊 Status" value={subscription.status || 'active'} />
+            <Row label="⚡ AI limit" value={`${subscription.features?.dailyAiLimit || 3}/day`} />
+            <Row label="📝 Max questions" value={`${subscription.features?.maxQuizQuestions || 15} per quiz`} />
+            {subscription.plan === 'free' && (
+              <div className="mt-3 rounded-lg p-3" style={{ background: 'rgba(167,139,250,0.08)' }}>
+                <p className="text-xs text-ink-2">⭐ <strong>Upgrade to Premium</strong> for more AI generations, longer quizzes, and advanced features.</p>
+              </div>
+            )}
+          </dl>
+        </div>
+      )}
 
       {/* Study profile card */}
       <div className="card max-w-lg p-6 mb-4">

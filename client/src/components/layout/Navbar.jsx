@@ -5,6 +5,7 @@ import { Button } from '../ui/Button'
 import { Badge } from '../ui/Badge'
 import { BulbToggle } from '../ui/BulbToggle'
 import { AvatarDisplay } from '../ui/AvatarPicker'
+import { PlanBadge } from '../domain/PlanBadge'
 import { useAppState } from '../../context/AppState'
 import { useAppData } from '../../hooks/useAppData'
 
@@ -33,6 +34,7 @@ export function Navbar({ onMenu }) {
           </p>
         </div>
         {demoMode ? <Badge tone="accent">Demo</Badge> : null}
+        {!demoMode && <PlanBadge compact />}
       </div>
       <div className="flex items-center gap-3">
         <Link to="/setup" className="hidden text-xs font-medium text-ink-2 hover:text-accent-2 transition-colors sm:inline" data-cursor="click">
