@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { useTheme } from '../../context/ThemeContext'
@@ -22,14 +23,45 @@ const STEPS = [
 const RADIUS_DESKTOP = 140
 const RADIUS_MOBILE = 90
 
+// Map routes to step indices
+const ROUTE_STEP_MAP = {
+  '/setup': 0,      // Analyze
+  '/syllabus': 0,   // Analyze
+  '/subjects': 0,   // Analyze
+  '/dashboard': 3,  // Study
+  '/planner': 2,    // Plan
+  '/revision': 3,   // Study
+  '/quiz': 4,       // Quiz
+  '/quiz/play': 4,  // Quiz
+  '/quiz/result': 5,// Evaluate
+  '/progress': 6,   // Replan
+  '/analytics': 5,  // Evaluate
+  '/insights': 6,   // Replan
+  '/question-papers': 4, // Quiz
+}
+
 function useActiveStep() {
+  const location = useLocation()
   const [step, setStep] = useState(0)
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setStep((s) => (s + 1) % STEPS.length)
-    }, 3000)
-    return () => clearInterval(interval)
-  }, [])
+    const path = location.pathname
+    // Check exact match first, then partial match
+    if (ROUTE_STEP_MAP[path] != null) {
+      setStep(ROUTE_STEP_MAP[path])
+    } else {
+      // Partial match: /quiz/play → 4, /setup/* → 0, etc.
+      for (const [route, idx] of Object.entries(ROUTE_STEP_MAP)) {
+        if (path.startsWith(route + '/')) {
+          setStep(idx)
+          return
+        }
+      }
+      // Default: cycle for unmatched pages
+      setStep(3) // Study as default
+    }
+  }, [location.pathname])
+
   return step
 }
 
