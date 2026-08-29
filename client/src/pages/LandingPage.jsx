@@ -21,8 +21,8 @@ export function LandingPage() {
           alt=""
           className="h-full w-full object-cover object-center"
           style={{
-            opacity: isDark ? 0.12 : 0.08,
-            filter: isDark ? 'none' : 'blur(24px) saturate(0.3) brightness(1.05)',
+            opacity: isDark ? 0.15 : 0.45,
+            filter: isDark ? 'none' : 'saturate(0.6) brightness(1.05)',
           }}
         />
       </div>

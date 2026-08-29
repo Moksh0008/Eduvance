@@ -16,7 +16,7 @@ export function HowItWorksPage() {
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-canvas)' }}>
       <div className="fixed inset-0 z-0">
-        <img src={isDark ? '/dark-theme-bg.webp' : '/light-theme-bg.webp'} alt="" className="h-full w-full object-cover" style={{ opacity: isDark ? 0.12 : 0.08, filter: isDark ? 'none' : 'blur(24px) saturate(0.3) brightness(1.05)' }} />
+        <img src={isDark ? '/dark-theme-bg.webp' : '/light-theme-bg.webp'} alt="" className="h-full w-full object-cover" style={{ opacity: isDark ? 0.15 : 0.45, filter: isDark ? 'none' : 'saturate(0.6) brightness(1.05)' }} />
       </div>
 
       <div className="relative z-10 max-w-3xl mx-auto px-4 py-16 sm:px-6">

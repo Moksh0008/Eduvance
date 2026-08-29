@@ -57,7 +57,7 @@ export function AppShell() {
               loading="lazy"
               width="1920"
               height="1080"
-              style={{ opacity: isDark ? 0.12 : 0.08, filter: isDark ? 'none' : 'blur(24px) saturate(0.3) brightness(1.05)' }}
+              style={{ opacity: isDark ? 0.15 : 0.45, filter: isDark ? 'none' : 'saturate(0.6) brightness(1.05)' }}
             />
       </div>
 
