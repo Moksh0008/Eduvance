@@ -6,6 +6,8 @@
 import { Router } from 'express'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { QuestionBank } from '../models/QuestionBank.js'
+import { User } from '../models/User.js'
+import { Subscription } from '../models/Subscription.js'
 import { preGeneratedQuestions, getPreGeneratedTopics } from '../data/preGeneratedQuestions.js'
 
 export const adminRoutes = Router()
@@ -144,6 +146,29 @@ adminRoutes.get('/question-bank-stats', asyncHandler(async (req, res) => {
       breakdown: stats,
     },
   })
+}))
+
+// ═══ UPGRADE USER TO PREMIUM ═══
+adminRoutes.post('/upgrade-user', asyncHandler(async (req, res) => {
+  const { email, plan = 'premium' } = req.body
+  if (!email) return res.status(400).json({ success: false, message: 'email is required' })
+
+  const user = await User.findOne({ email: email.toLowerCase() })
+  if (!user) return res.status(404).json({ success: false, message: `User not found: ${email}` })
+
+  let sub = await Subscription.findOne({ userId: user._id })
+  if (!sub) {
+    sub = await Subscription.create({ userId: user._id, plan, status: 'active', startDate: new Date() })
+  } else {
+    sub.plan = plan
+    sub.status = 'active'
+    sub.startDate = new Date()
+    sub.endDate = null
+    await sub.save()
+  }
+
+  console.log(`[Admin] Upgraded ${email} to ${plan}`)
+  return res.json({ success: true, data: { email, plan: sub.plan, status: sub.status } })
 }))
 
 // ═══ DELETE ALL AI-GENERATED QUESTIONS ═══

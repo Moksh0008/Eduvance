@@ -54,6 +54,13 @@ export function buildUserView(workspace, user) {
   }))
   const ranked = [...subjectAccuracy].filter((s) => s.attempts).sort((a, b) => b.accuracy - a.accuracy)
 
+  // Separate weakest (< 70%) and strongest (>= 70%) — no overlap
+  const weakList = ranked.filter((s) => s.accuracy < 70)
+  const strongList = ranked.filter((s) => s.accuracy >= 70)
+  // If all subjects are in one bucket, split at the midpoint
+  const effectiveWeakest = weakList.length > 0 ? weakList.slice(0, 3) : ranked.slice(Math.ceil(ranked.length / 2))
+  const effectiveStrongest = strongList.length > 0 ? strongList.slice(0, 3) : ranked.slice(0, Math.ceil(ranked.length / 2))
+
   const weakTopics = (workspace.weakTopics || []).length
     ? workspace.weakTopics
     : history.filter((q) => q.score < 70).map((q) => ({ name: q.topic, subject: q.subject, mastery: q.score }))
@@ -111,8 +118,8 @@ export function buildUserView(workspace, user) {
       overallAccuracy: quizAverage,
       subjectAccuracy,
       topicAccuracy,
-      strongest: ranked.slice(0, 3),
-      weakest: [...ranked].reverse().slice(0, 3),
+      strongest: effectiveStrongest,
+      weakest: effectiveWeakest,
       history,
       trend: history.map((q, i) => ({ attempt: i + 1, accuracy: q.score, label: q.topic })),
     },
