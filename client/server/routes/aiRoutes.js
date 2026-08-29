@@ -530,20 +530,17 @@ aiRoutes.post('/generate-quiz-batch', asyncHandler(async (req, res) => {
       break
     }
 
-    const systemPrompt = `Generate exactly ${thisBatchSize} MCQ questions about ${topic} (${subject}). Difficulty: ${finalDiff}.
+    const systemPrompt = `Generate ${thisBatchSize} MCQ questions about ${topic} (${subject}). Difficulty: ${finalDiff}. All text in English.
+Return ONLY a JSON array. No text before/after.
+[{"prompt":"?","options":["A","B","C","D"],"correctAnswer":0,"explanation":"why"}]`
 
-CRITICAL: All questions, options, and explanations MUST be in English.
-
-Return ONLY a JSON array of exactly ${thisBatchSize} objects. No text before or after.
-Each object: {"prompt":"question?","options":["A","B","C","D"],"correctAnswer":0,"explanation":"why"}`
-
-    const prevPrompts = allQuestions.slice(-5).map(q => q.prompt.slice(0, 40)).join('; ')
-    const userPrompt = `Generate exactly ${thisBatchSize} ${finalDiff} MCQ questions about "${topic}" in ${subject}.${prevPrompts ? ` Avoid: ${prevPrompts}` : ''}`
+    const prevPrompts = allQuestions.slice(-2).map(q => q.prompt.slice(0, 30)).join('; ')
+    const userPrompt = `${thisBatchSize} ${finalDiff} MCQs on "${topic}" in ${subject}${prevPrompts ? ` avoid: ${prevPrompts}` : ''}`
 
     try {
       const batch = await generateAndValidateQuestions(systemPrompt, userPrompt, {
         temperature: 0.4,
-        maxTokens: 4096,
+        maxTokens: 2048,
       })
 
       // Deduplicate within batch and against existing
@@ -580,7 +577,7 @@ Each object: {"prompt":"question?","options":["A","B","C","D"],"correctAnswer":0
 
     // Delay between batches for rate limiting
     if (batch < batchesNeeded - 1 && allQuestions.length < requested) {
-      await new Promise(r => setTimeout(r, 2000))
+      await new Promise(r => setTimeout(r, 1000))
     }
   }
 

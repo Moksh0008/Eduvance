@@ -17,5 +17,6 @@ const materialChunkSchema = new mongoose.Schema({
 materialChunkSchema.index({ userId: 1, materialId: 1 })
 materialChunkSchema.index({ userId: 1, subject: 1 })
 materialChunkSchema.index({ userId: 1, topic: 1 })
+materialChunkSchema.index({ userId: 1, subject: 1, topic: 1, chunkIndex: 1 })
 
 export const MaterialChunk = mongoose.model('MaterialChunk', materialChunkSchema)

@@ -524,22 +524,19 @@ export async function generateQuizQuestions({ subject, topic, difficulty, count,
     const remaining = count - allQuestions.length
     const batchSize = Math.min(BATCH_SIZE, remaining)
 
-    const systemPrompt = `Generate exactly ${batchSize} MCQ questions about ${topic} (${subject}). Difficulty: ${difficulty}.
+    const systemPrompt = `Generate ${batchSize} MCQ questions about ${topic} (${subject}). Difficulty: ${difficulty}. All text in English.
+Return ONLY a JSON array. No text before/after.
+[{"prompt":"?","options":["A","B","C","D"],"correctAnswer":0,"explanation":"why"}]`
 
-CRITICAL: All questions, options, and explanations MUST be written in English. Do NOT use any other language.
-
-Return ONLY a JSON array of exactly ${batchSize} objects. No text before or after.
-Each object: {"prompt":"question?","options":["A","B","C","D"],"correctAnswer":0,"explanation":"why"}`
-
-    const prevSlice = allQuestions.slice(-3).map(q => q.prompt.slice(0, 40)).join('; ')
+    const prevSlice = allQuestions.slice(-2).map(q => q.prompt.slice(0, 30)).join('; ')
     const userPrompt = context
-      ? `Study material:\n${context.slice(0, 1500)}\n\nGenerate exactly ${batchSize} questions about "${topic}".${prevSlice ? ` Avoid: ${prevSlice}` : ''}`
-      : `Generate exactly ${batchSize} ${difficulty} MCQ questions about "${topic}" in ${subject}.${prevSlice ? ` Avoid: ${prevSlice}` : ''}`
+      ? `Context:\n${context.slice(0, 800)}\n\n${batchSize} ${difficulty} MCQs on "${topic}"${prevSlice ? ` avoid: ${prevSlice}` : ''}`
+      : `${batchSize} ${difficulty} MCQs on "${topic}" in ${subject}${prevSlice ? ` avoid: ${prevSlice}` : ''}`
 
     try {
       const batch = await generateAndValidateQuestions(systemPrompt, userPrompt, {
         temperature: 0.4,
-        maxTokens: 4096,
+        maxTokens: 2048,
       })
 
       for (const q of batch) {
@@ -558,7 +555,7 @@ Each object: {"prompt":"question?","options":["A","B","C","D"],"correctAnswer":0
     }
 
     if (allQuestions.length < count && attempts < maxAttempts) {
-      await new Promise(r => setTimeout(r, 3000))
+      await new Promise(r => setTimeout(r, 1500))
     }
   }
 

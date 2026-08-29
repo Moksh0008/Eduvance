@@ -49,21 +49,18 @@ export async function generateQuiz({ userId, subject, topic, difficulty, count, 
   if (bankResult.needGenerate === 0) {
     console.log(`[QuizGen] Cache hit — using ${bankResult.cachedCount} cached questions`)
 
-    // Store per-user copies for QuizAttempt tracking
-    const storedQuestions = []
-    for (const q of bankResult.cached) {
-      const stored = await Question.create({
-        userId,
-        subject,
-        topic,
-        prompt: q.prompt,
-        options: q.options,
-        correctAnswer: q.correctAnswer,
-        explanation: q.explanation,
-        difficulty: q.difficulty || finalDifficulty,
-      })
-      storedQuestions.push(stored)
-    }
+    // Store per-user copies for QuizAttempt tracking (batch insert)
+    const questionDocs = bankResult.cached.map(q => ({
+      userId,
+      subject,
+      topic,
+      prompt: q.prompt,
+      options: q.options,
+      correctAnswer: q.correctAnswer,
+      explanation: q.explanation,
+      difficulty: q.difficulty || finalDifficulty,
+    }))
+    const storedQuestions = await Question.insertMany(questionDocs)
 
     const quiz = await Quiz.create({
       userId,
@@ -111,21 +108,21 @@ export async function generateQuiz({ userId, subject, topic, difficulty, count, 
 
   // 5. ─── CACHE MISS — generate missing questions via AI (if allowed) ───
   let newQuestions = []
+  let chunks = []
 
   if (aiLimit.allowed && bankResult.needGenerate > 0) {
-    const chunks = await retrieveRelevantChunks(userId, subject, topic, 3)
+    // Only fetch RAG context if user has uploaded study material
+    // Skip the expensive regex queries when generating standard quiz questions
+    const skipRag = bankResult.cachedCount > 0
+    if (!skipRag) {
+      chunks = await retrieveRelevantChunks(userId, subject, topic, 3)
+    }
     const context = buildContextString(chunks)
 
-    const previousQuestions = await Question.find({ userId, subject, topic })
-      .sort({ createdAt: -1 })
-      .limit(20)
-      .select('prompt')
+    // Get previous prompts to avoid duplicates (lightweight query)
+    const excludePrompts = bankResult.cached.map(q => q.prompt)
 
-    const prevPrompts = previousQuestions.map(q => q.prompt)
-    const cachedPrompts = bankResult.cached.map(q => q.prompt)
-    const allExclude = [...prevPrompts, ...cachedPrompts]
-
-    console.log(`[QuizGen] Generating ${bankResult.needGenerate} missing questions via AI`)
+    console.log(`[QuizGen] Generating ${bankResult.needGenerate} missing questions via AI${context ? ' with study context' : ''}`)
 
     try {
       newQuestions = await generateQuizQuestions({
@@ -134,7 +131,7 @@ export async function generateQuiz({ userId, subject, topic, difficulty, count, 
         difficulty: finalDifficulty,
         count: bankResult.needGenerate,
         context,
-        previousQuestions: allExclude,
+        previousQuestions: excludePrompts,
       })
       console.log(`[QuizGen] AI generated ${newQuestions.length} validated questions`)
 
@@ -166,23 +163,20 @@ export async function generateQuiz({ userId, subject, topic, difficulty, count, 
     throw new Error('Failed to generate any valid questions')
   }
 
-  // 7. Store per-user copies for QuizAttempt tracking
-  const storedQuestions = []
-  for (const q of allQuestions) {
-    const stored = await Question.create({
-      userId,
-      subject,
-      topic,
-      prompt: q.prompt,
-      options: q.options,
-      correctAnswer: q.correctAnswer,
-      explanation: q.explanation,
-      difficulty: q.difficulty || finalDifficulty,
-      sourceMaterialId: chunks[0]?.chunkId || null,
-      sourceContext: q.sourceContext || '',
-    })
-    storedQuestions.push(stored)
-  }
+  // 7. Store per-user copies for QuizAttempt tracking (batch insert)
+  const questionDocs = allQuestions.map(q => ({
+    userId,
+    subject,
+    topic,
+    prompt: q.prompt,
+    options: q.options,
+    correctAnswer: q.correctAnswer,
+    explanation: q.explanation,
+    difficulty: q.difficulty || finalDifficulty,
+    sourceMaterialId: chunks[0]?.chunkId || null,
+    sourceContext: q.sourceContext || '',
+  }))
+  const storedQuestions = await Question.insertMany(questionDocs)
 
   // 8. Create quiz session
   const quiz = await Quiz.create({
