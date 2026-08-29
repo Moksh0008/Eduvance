@@ -16,7 +16,7 @@ const PLAN_CONFIG = {
   free: {
     label: 'Free',
     dailyAiLimit: parseInt(process.env.FREE_DAILY_AI_LIMIT, 10) || 3,
-    maxQuizQuestions: parseInt(process.env.FREE_MAX_QUIZ_QUESTIONS, 10) || 15,
+    maxQuizQuestions: parseInt(process.env.FREE_MAX_QUIZ_QUESTIONS, 10) || 10,
     advancedAnalytics: false,
     advancedExplanations: false,
     enhancedPlanning: false,

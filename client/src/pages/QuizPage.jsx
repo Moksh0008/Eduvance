@@ -346,21 +346,19 @@ export function QuizPage() {
               onChange={(e) => setQuestionCount(Number(e.target.value))}
               className="input w-full"
             >
-              <option value={5}>5 questions (quick check)</option>
-              <option value={10}>10 questions (standard)</option>
-              <option value={15}>15 questions (thorough)</option>
+              <option value={10}>10 questions</option>
               <option value={20} disabled={!plan || plan.plan === 'free'}>20 questions {plan?.plan === 'free' ? '⭐ Premium' : ''}</option>
-              <option value={25} disabled={!plan || plan.plan === 'free'}>25 questions {plan?.plan === 'free' ? '⭐ Premium' : ''}</option>
               <option value={30} disabled={!plan || plan.plan === 'free'}>30 questions {plan?.plan === 'free' ? '⭐ Premium' : ''}</option>
-              <option value={35} disabled={!plan || plan.plan === 'free'}>35 questions {plan?.plan === 'free' ? '⭐ Premium' : ''}</option>
               <option value={40} disabled={!plan || plan.plan === 'free'}>40 questions {plan?.plan === 'free' ? '⭐ Premium' : ''}</option>
-              <option value={45} disabled={!plan || plan.plan === 'free'}>45 questions {plan?.plan === 'free' ? '⭐ Premium' : ''}</option>
               <option value={50} disabled={!plan || plan.plan === 'free'}>50 questions {plan?.plan === 'free' ? '⭐ Premium' : ''}</option>
             </select>
             {plan?.plan === 'free' && (
-              <p className="mt-1 text-[10px] text-accent-2">
-                ⭐ Upgrade to Premium for 20-50 question quizzes
-              </p>
+              <div className="mt-2 flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: 'rgba(167,139,250,0.08)' }}>
+                <span className="text-sm">⭐</span>
+                <p className="text-[11px] text-ink-2">
+                  <span className="font-medium text-accent-2">Premium</span> — get 20-50 question quizzes, more AI generations, and advanced features
+                </p>
+              </div>
             )}
           </div>
 
