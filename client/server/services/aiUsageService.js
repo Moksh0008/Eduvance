@@ -5,12 +5,7 @@
    ═══════════════════════════════════════════════════ */
 
 import { AiUsage } from '../models/AiUsage.js'
-
-// Configurable daily limit via environment variable
-// Defaults to 3 if not set
-const DAILY_LIMIT = Math.max(1, parseInt(process.env.DAILY_AI_GENERATION_LIMIT, 10) || 3)
-
-console.log(`[AiUsage] Daily AI generation limit: ${DAILY_LIMIT}`)
+import { getDailyAiLimit } from './featureGateService.js'
 
 /**
  * Get today's date string in UTC.
@@ -60,10 +55,12 @@ async function getOrCreateUsage(userId) {
 
 /**
  * Check if the user can make an AI request.
+ * Uses plan-based limits from featureGateService.
  * Returns { allowed, remaining, used, limit }
  */
 export async function checkAiLimit(userId) {
   const usage = await getOrCreateUsage(userId)
+  const DAILY_LIMIT = await getDailyAiLimit(userId)
   const remaining = Math.max(0, DAILY_LIMIT - usage.aiRequestsUsed)
 
   return {
@@ -77,20 +74,20 @@ export async function checkAiLimit(userId) {
 
 /**
  * Atomically increment AI usage after a successful AI generation.
- * Uses $inc for race-condition safety — concurrent requests
- * won't bypass the limit.
+ * Uses plan-based limits and $inc for race-condition safety.
  *
  * Returns { allowed, remaining, used, limit } after increment.
  */
 export async function incrementAiUsage(userId) {
   const today = getTodayUTC()
+  const DAILY_LIMIT = await getDailyAiLimit(userId)
 
   // Atomic read-modify-write: only increment if under limit
   const usage = await AiUsage.findOneAndUpdate(
     {
       userId,
       date: today,
-      aiRequestsUsed: { $lt: DAILY_LIMIT }, // only if under limit
+      aiRequestsUsed: { $lt: DAILY_LIMIT },
     },
     {
       $inc: { aiRequestsUsed: 1 },
@@ -100,15 +97,11 @@ export async function incrementAiUsage(userId) {
   )
 
   if (!usage) {
-    // Either record doesn't exist or limit already reached
-    // Try to create the record first
     const existing = await AiUsage.findOne({ userId, date: today })
     if (!existing) {
-      // Shouldn't happen if checkAiLimit was called first, but handle gracefully
       console.warn(`[AiUsage] No usage record for ${userId} on ${today}`)
       return { allowed: false, remaining: 0, used: DAILY_LIMIT, limit: DAILY_LIMIT, date: today }
     }
-    // Limit already reached
     const remaining = Math.max(0, DAILY_LIMIT - existing.aiRequestsUsed)
     console.log(`[AiUsage] User ${userId} at daily limit: ${existing.aiRequestsUsed}/${DAILY_LIMIT}`)
     return {
@@ -134,10 +127,12 @@ export async function incrementAiUsage(userId) {
 
 /**
  * Get current usage status without incrementing.
+ * Uses plan-based limits.
  * Safe to call from frontend.
  */
 export async function getUsageStatus(userId) {
   const usage = await getOrCreateUsage(userId)
+  const DAILY_LIMIT = await getDailyAiLimit(userId)
   const remaining = Math.max(0, DAILY_LIMIT - usage.aiRequestsUsed)
 
   return {

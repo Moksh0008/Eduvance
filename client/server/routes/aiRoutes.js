@@ -682,6 +682,14 @@ aiRoutes.get('/usage', asyncHandler(async (req, res) => {
   return res.json({ success: true, data: status })
 }))
 
+// ═══ GET SUBSCRIPTION / PLAN STATUS ═══
+aiRoutes.get('/subscription', asyncHandler(async (req, res) => {
+  const { getPlanFeatures, getPlanConfig } = await import('../services/featureGateService.js')
+  const features = await getPlanFeatures(req.user.userId)
+  const plans = getPlanConfig()
+  return res.json({ success: true, data: { ...features, plans } })
+}))
+
 // ═══ GET ADAPTIVE RECOMMENDATIONS ═══
 aiRoutes.get('/recommendations', asyncHandler(async (req, res) => {
   const { getRecommendations, getTopicSummary } = await import('../services/adaptiveLearningService.js')
