@@ -91,7 +91,7 @@ export function Cursor() {
         style={{ x, y, translateX: '-50%', translateY: '-50%' }}
       >
         <img
-          src="/cursors/pen-cursor-32.png"
+          src="/cursors/pen-32.png"
           alt=""
           draggable={false}
           style={{
