@@ -84,37 +84,23 @@ export function Cursor() {
         />
       </motion.div>
 
-      {/* Center pen-nib dot — tracks exact cursor */}
+      {/* Center pen-nib cursor image — tracks exact cursor */}
       <motion.div
         aria-hidden="true"
         className="pointer-events-none fixed left-0 top-0 z-[81] hidden md:block"
         style={{ x, y, translateX: '-50%', translateY: '-50%' }}
       >
-        <div
+        <img
+          src="/cursors/pen-cursor-32.png"
+          alt=""
+          draggable={false}
           style={{
-            width: isHover ? 6 : 5,
-            height: isHover ? 6 : 5,
-            borderRadius: '50%',
-            background: accent,
-            transform: down ? 'scale(0.5)' : 'scale(1)',
-            transition: 'transform 80ms ease, width 150ms ease, height 150ms ease, background 0.5s ease',
-            boxShadow: `0 0 8px ${accentSoft}`,
-          }}
-        />
-        {/* Pen-nib pointer triangle (subtle) */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 7,
-            left: '50%',
-            width: 0,
-            height: 0,
-            borderLeft: '2.5px solid transparent',
-            borderRight: '2.5px solid transparent',
-            borderTop: `4px solid ${accent}`,
-            transform: 'translateX(-50%)',
-            opacity: isHover ? 0 : 0.5,
-            transition: 'opacity 200ms ease',
+            width: isHover ? 36 : 28,
+            height: isHover ? 36 : 28,
+            objectFit: 'contain',
+            transform: down ? 'scale(0.75)' : 'scale(1)',
+            transition: 'transform 80ms ease, width 150ms ease, height 150ms ease',
+            filter: isHover ? `drop-shadow(0 0 8px ${accentSoft})` : 'none',
           }}
         />
       </motion.div>
