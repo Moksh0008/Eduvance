@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const avatars = [
@@ -37,6 +37,14 @@ const CATEGORIES = [
 ]
 
 export function AvatarDisplay({ avatarId, size = 40, className = '' }) {
+  // Check if it's a custom uploaded image (starts with data: or /uploads/)
+  if (avatarId && (avatarId.startsWith('data:') || avatarId.startsWith('/uploads/'))) {
+    return (
+      <div className={`rounded-full overflow-hidden shrink-0 ${className}`} style={{ width: size, height: size }}>
+        <img src={avatarId} alt="Profile" className="h-full w-full object-cover" loading="lazy" />
+      </div>
+    )
+  }
   const avatar = avatars.find(a => a.id === avatarId)
   if (!avatar) {
     return (
@@ -55,7 +63,46 @@ export function AvatarDisplay({ avatarId, size = 40, className = '' }) {
 
 export function AvatarPicker({ currentAvatar, onSelect, onClose }) {
   const [activeCategory, setActiveCategory] = useState('marvel')
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef(null)
   const filtered = avatars.filter(a => a.category === activeCategory)
+
+  const isCustom = currentAvatar && (currentAvatar.startsWith('data:') || currentAvatar.startsWith('/uploads/'))
+
+  function handleFileChange(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (file.size > 2 * 1024 * 1024) {
+      alert('Image must be under 2MB')
+      return
+    }
+    setUploading(true)
+    const reader = new FileReader()
+    reader.onload = () => {
+      // Resize to max 200px to save localStorage space
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const max = 200
+        const ratio = Math.min(max / img.width, max / img.height)
+        canvas.width = Math.round(img.width * ratio)
+        canvas.height = Math.round(img.height * ratio)
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
+        const resized = canvas.toDataURL('image/webp', 0.8)
+        onSelect(resized)
+        setUploading(false)
+        onClose()
+      }
+      img.src = reader.result
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
+  function handleRemove() {
+    onSelect(null)
+    onClose()
+  }
 
   return (
     <AnimatePresence>
@@ -66,7 +113,52 @@ export function AvatarPicker({ currentAvatar, onSelect, onClose }) {
           style={{ background: 'var(--color-surface)', border: '1px solid var(--color-line-2)', boxShadow: '0 24px 64px rgba(0,0,0,0.3)' }}
           initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}>
           <h3 className="text-lg font-semibold text-ink mb-1">Choose your avatar</h3>
-          <p className="text-xs text-ink-3 mb-4">Pick a character that represents you</p>
+          <p className="text-xs text-ink-3 mb-4">Pick a character or upload your own photo</p>
+
+          {/* Upload & Remove buttons */}
+          <div className="flex gap-2 mb-4">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="flex-1 flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all"
+              style={{
+                background: 'linear-gradient(135deg, var(--color-accent), var(--color-accent-2))',
+                color: 'white',
+                opacity: uploading ? 0.6 : 1,
+              }}
+            >
+              {uploading ? (
+                <>
+                  <span className="inline-block animate-spin">⏳</span> Uploading...
+                </>
+              ) : (
+                <>📷 Upload Photo</>
+              )}
+            </button>
+            {isCustom && (
+              <button
+                onClick={handleRemove}
+                className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-3 text-sm font-medium transition-all"
+                style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}
+              >
+                🗑 Remove
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 mb-3">
+            <div className="flex-1 h-px" style={{ background: 'var(--color-line-2)' }} />
+            <span className="text-[10px] text-ink-3 font-medium">or choose a preset</span>
+            <div className="flex-1 h-px" style={{ background: 'var(--color-line-2)' }} />
+          </div>
+
           <div className="flex gap-2 mb-4">
             {CATEGORIES.map(cat => (
               <button key={cat.key} onClick={() => setActiveCategory(cat.key)}

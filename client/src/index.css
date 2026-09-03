@@ -131,29 +131,7 @@ html, body, #root {
     -moz-osx-font-smoothing: grayscale;
   }
 
-  @media (pointer: fine) and (hover: hover) {
-    html.has-edu-cursor,
-    html.has-edu-cursor * {
-      cursor: none !important;
-    }
-    html.has-edu-cursor input,
-    html.has-edu-cursor textarea,
-    html.has-edu-cursor select,
-    html.has-edu-cursor input *,
-    html.has-edu-cursor textarea * {
-      cursor: text !important;
-    }
-  }
 
-  @media (prefers-reduced-motion: reduce) {
-    html {
-      scroll-behavior: auto;
-    }
-    html.has-edu-cursor,
-    html.has-edu-cursor * {
-      cursor: auto !important;
-    }
-  }
 
   #root {
     min-height: 100vh;
