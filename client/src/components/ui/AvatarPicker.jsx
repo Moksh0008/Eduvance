@@ -79,7 +79,6 @@ export function AvatarPicker({ currentAvatar, onSelect, onClose }) {
     setUploading(true)
     const reader = new FileReader()
     reader.onload = () => {
-      // Resize to max 200px to save localStorage space
       const img = new Image()
       img.onload = () => {
         const canvas = document.createElement('canvas')
@@ -115,59 +114,32 @@ export function AvatarPicker({ currentAvatar, onSelect, onClose }) {
           <h3 className="text-lg font-semibold text-ink mb-1">Choose your avatar</h3>
           <p className="text-xs text-ink-3 mb-4">Pick a character or upload your own photo</p>
 
-          {/* Upload & Remove buttons */}
-          <div className="flex gap-2 mb-4">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="flex-1 flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition-all"
-              style={{
-                background: 'linear-gradient(135deg, var(--color-accent), var(--color-accent-2))',
-                color: 'white',
-                opacity: uploading ? 0.6 : 1,
-              }}
-            >
-              {uploading ? (
-                <>
-                  <span className="inline-block animate-spin">⏳</span> Uploading...
-                </>
-              ) : (
-                <>📷 Upload Photo</>
-              )}
-            </button>
-            {isCustom && (
-              <button
-                onClick={handleRemove}
-                className="flex items-center justify-center gap-1.5 rounded-xl px-4 py-3 text-sm font-medium transition-all"
-                style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}
-              >
-                🗑 Remove
-              </button>
-            )}
-          </div>
+          <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
 
-          <div className="flex items-center gap-2 mb-3">
-            <div className="flex-1 h-px" style={{ background: 'var(--color-line-2)' }} />
-            <span className="text-[10px] text-ink-3 font-medium">or choose a preset</span>
-            <div className="flex-1 h-px" style={{ background: 'var(--color-line-2)' }} />
-          </div>
-
+          {/* Category tabs — Marvel, Anime, Disney, Upload */}
           <div className="flex gap-2 mb-4">
-            {CATEGORIES.map(cat => (
-              <button key={cat.key} onClick={() => setActiveCategory(cat.key)}
-                className="flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-all"
-                style={{ background: activeCategory === cat.key ? cat.color + '20' : 'var(--color-surface-2)', color: activeCategory === cat.key ? cat.color : 'var(--color-ink-2)', border: `1px solid ${activeCategory === cat.key ? cat.color + '40' : 'transparent'}` }}>
-                {cat.label}
+            {[...CATEGORIES, { key: 'upload', label: '📷 Upload', color: '#10b981' }].map(cat => (
+              <button key={cat.key}
+                onClick={() => {
+                  if (cat.key === 'upload') {
+                    fileInputRef.current?.click()
+                  } else {
+                    setActiveCategory(cat.key)
+                  }
+                }}
+                className="flex-1 rounded-lg px-2 py-2 text-xs font-medium transition-all"
+                style={{
+                  background: activeCategory === cat.key ? cat.color + '20' : 'var(--color-surface-2)',
+                  color: activeCategory === cat.key ? cat.color : 'var(--color-ink-2)',
+                  border: `1px solid ${activeCategory === cat.key ? cat.color + '40' : 'transparent'}`,
+                  opacity: uploading && cat.key === 'upload' ? 0.6 : 1,
+                }}>
+                {uploading && cat.key === 'upload' ? '⏳...' : cat.label}
               </button>
             ))}
           </div>
+
+          {/* Avatar grid */}
           <div className="grid grid-cols-4 gap-3">
             {filtered.map(avatar => (
               <motion.button key={avatar.id} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
@@ -179,7 +151,19 @@ export function AvatarPicker({ currentAvatar, onSelect, onClose }) {
               </motion.button>
             ))}
           </div>
-          <button onClick={onClose} className="mt-4 w-full rounded-lg py-2 text-sm font-medium text-ink-2 hover:text-ink transition-colors" style={{ background: 'var(--color-surface-2)' }}>
+
+          {/* Remove button — only show when using a custom uploaded photo */}
+          {isCustom && (
+            <button
+              onClick={handleRemove}
+              className="mt-3 w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium transition-all"
+              style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.2)' }}
+            >
+              🗑 Remove uploaded photo
+            </button>
+          )}
+
+          <button onClick={onClose} className="mt-3 w-full rounded-lg py-2 text-sm font-medium text-ink-2 hover:text-ink transition-colors" style={{ background: 'var(--color-surface-2)' }}>
             Cancel
           </button>
         </motion.div>

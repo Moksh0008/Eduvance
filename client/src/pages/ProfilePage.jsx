@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Button } from '../components/ui/Button'
@@ -125,8 +125,7 @@ export function ProfilePage() {
   const [avatarId, setAvatarId] = useState(() => {
     try { return localStorage.getItem('edu-avatar') || null } catch { return null }
   })
-  const [uploading, setUploading] = useState(false)
-  const fileInputRef = useRef(null)
+
 
   function handleAvatarSelect(id) {
     setAvatarId(id)
@@ -162,70 +161,21 @@ export function ProfilePage() {
 
       {/* Avatar + Name header */}
       <div className="mb-8 flex items-center gap-5">
-        <div className="relative group">
-          <motion.button
-            whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}
-            onClick={() => setShowPicker(true)}
-            title="Change avatar"
-          >
-            <AvatarDisplay avatarId={avatarId} size={80} />
-          </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.08 }} whileTap={{ scale: 0.95 }}
+          onClick={() => setShowPicker(true)}
+          className="relative group"
+          title="Change avatar"
+        >
+          <AvatarDisplay avatarId={avatarId} size={80} />
           <div className="absolute inset-0 rounded-full flex items-center justify-center bg-canvas/60 opacity-0 group-hover:opacity-100 transition-opacity">
             <span className="text-lg">✏️</span>
           </div>
-          {/* Upload button */}
-          <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (!file) return
-              if (file.size > 2 * 1024 * 1024) { alert('Image must be under 2MB'); return }
-              setUploading(true)
-              const reader = new FileReader()
-              reader.onload = () => {
-                const img = new Image()
-                img.onload = () => {
-                  const canvas = document.createElement('canvas')
-                  const max = 200
-                  const ratio = Math.min(max / img.width, max / img.height)
-                  canvas.width = Math.round(img.width * ratio)
-                  canvas.height = Math.round(img.height * ratio)
-                  canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
-                  const resized = canvas.toDataURL('image/webp', 0.8)
-                  setAvatarId(resized)
-                  try { localStorage.setItem('edu-avatar', resized) } catch {}
-                  window.dispatchEvent(new Event('avatar-changed'))
-                  setUploading(false)
-                }
-                img.src = reader.result
-              }
-              reader.readAsDataURL(file)
-              e.target.value = ''
-            }}
-          />
-        </div>
+        </motion.button>
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-accent-2">Profile</p>
           <h1 className="font-serif text-3xl text-ink">{user?.name || student.name}</h1>
           <p className="mt-1 text-sm text-ink-3">{user?.email || student.email}</p>
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="text-[10px] font-medium px-2.5 py-1 rounded-lg transition-colors"
-              style={{ background: 'var(--color-accent-soft)', color: 'var(--color-accent)' }}
-            >
-              {uploading ? '⏳ Uploading...' : '📷 Upload Photo'}
-            </button>
-            {avatarId && (
-              <button
-                onClick={() => { setAvatarId(null); try { localStorage.removeItem('edu-avatar') } catch {}; window.dispatchEvent(new Event('avatar-changed')) }}
-                className="text-[10px] font-medium px-2.5 py-1 rounded-lg transition-colors"
-                style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}
-              >
-                🗑 Remove Photo
-              </button>
-            )}
-          </div>
         </div>
       </div>
 
