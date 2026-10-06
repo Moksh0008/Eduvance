@@ -88,6 +88,19 @@ function resolveConfig() {
     fallbackApiKey = process.env.FALLBACK_AI_API_KEY || process.env.GROQ_API_KEY || fallback.getFallbackKey({})
   }
 
+  // Auto-fallback: when no explicit fallback is configured but a Groq key
+  // exists, use Groq as the last resort. This way a primary provider that
+  // is out of credits or misconfigured (e.g. xAI 403) never blocks users,
+  // and no extra Render env var is required. The primary is still tried
+  // first — this only engages on a fallback-eligible failure.
+  if (!fallback && process.env.GROQ_API_KEY && primary.name !== 'Groq') {
+    const groq = PROVIDER_REGISTRY.groq
+    fallback = groq
+    fallbackModel = process.env.GROQ_MODEL || groq.defaultModel
+    fallbackApiKey = process.env.GROQ_API_KEY
+    console.log('[AI] No explicit fallback configured — Groq will be used automatically if the primary provider fails.')
+  }
+
   // Override baseUrl if PRIMARY_AI_BASE_URL is set (for openai-compatible)
   const resolvedPrimary = primaryBaseUrl
     ? { ...primary, baseUrl: primaryBaseUrl }
