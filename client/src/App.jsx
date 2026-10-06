@@ -11,12 +11,10 @@ import { PageTransition } from './components/ui/PageTransition'
 import { RequireAuth } from './components/auth/RequireAuth'
 import { EduvanceMascot } from './components/mascot/EduvanceMascot'
 import SessionTimeout from './components/ui/SessionTimeout'
-// Most-navigated pages — eagerly loaded for instant switching
-import { DashboardPage } from './pages/DashboardPage'
-import { ProgressPage } from './pages/ProgressPage'
-import { QuizPage } from './pages/QuizPage'
-
 // ── Lazily loaded (split into separate chunks) ──
+const DashboardPage = lazy(() => import('./pages/DashboardPage').then(m => ({ default: m.DashboardPage })))
+const ProgressPage = lazy(() => import('./pages/ProgressPage').then(m => ({ default: m.ProgressPage })))
+const QuizPage = lazy(() => import('./pages/QuizPage').then(m => ({ default: m.QuizPage })))
 const VerifyOTP = lazy(() => import('./pages/VerifyOTP'))
 const SetupPage = lazy(() => import('./pages/SetupPage').then(m => ({ default: m.SetupPage })))
 const PlannerPage = lazy(() => import('./pages/PlannerPage').then(m => ({ default: m.PlannerPage })))
@@ -74,6 +72,39 @@ export default function App() {
   const location = useLocation()
   // Warm backend on first load to prevent cold start delays
   useEffect(() => { warmBackend() }, [])
+
+  // Prefetch the most-navigated page chunks on FIRST USER INTERACTION.
+  // Keeps them out of the initial critical path (faster FCP/LCP) while
+  // still making navigation instant once the user engages with the page.
+  useEffect(() => {
+    let done = false
+    function prefetch() {
+      if (done) return
+      done = true
+      const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 1000))
+      idle(() => {
+        import('./pages/DashboardPage')
+        import('./pages/ProgressPage')
+        import('./pages/QuizPage')
+      })
+      remove()
+    }
+    function remove() {
+      window.removeEventListener('pointerdown', prefetch)
+      window.removeEventListener('keydown', prefetch)
+      window.removeEventListener('wheel', prefetch)
+      window.removeEventListener('touchstart', prefetch)
+      window.removeEventListener('scroll', prefetch)
+    }
+    window.addEventListener('pointerdown', prefetch, { passive: true })
+    window.addEventListener('keydown', prefetch)
+    window.addEventListener('wheel', prefetch, { passive: true })
+    window.addEventListener('touchstart', prefetch, { passive: true })
+    window.addEventListener('scroll', prefetch, { passive: true })
+    // Fallback so navigation is still warm even for passive users
+    const timer = setTimeout(prefetch, 8000)
+    return () => { remove(); clearTimeout(timer) }
+  }, [])
 
   return (
     <Suspense fallback={<PageLoader />}>
