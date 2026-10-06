@@ -540,7 +540,9 @@ Return ONLY a JSON array. No text before/after.
     try {
       const batch = await generateAndValidateQuestions(systemPrompt, userPrompt, {
         temperature: 0.4,
-        maxTokens: 2048,
+        // ~200 tokens per question — scale with batch size so larger
+        // batches are not truncated mid-JSON (finish_reason=length).
+        maxTokens: Math.max(2048, thisBatchSize * 220),
       })
 
       // Deduplicate within batch and against existing

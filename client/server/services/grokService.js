@@ -31,7 +31,9 @@ const PROVIDER_REGISTRY = {
   groq: {
     name: 'Groq',
     baseUrl: 'https://api.groq.com/openai/v1',
-    defaultModel: 'llama-3.1-8b-instant',
+    // Free-tier keys only expose openai/gpt-oss-*, qwen/* and allam-2-7b.
+    // The Llama models are Enterprise-only (404 model_not_found on free tier).
+    defaultModel: 'openai/gpt-oss-120b',
     getKey: (cfg) => cfg.primaryApiKey || process.env.GROQ_API_KEY,
     getFallbackKey: (cfg) => cfg.fallbackApiKey || null,
   },
@@ -536,7 +538,9 @@ Return ONLY a JSON array. No text before/after.
     try {
       const batch = await generateAndValidateQuestions(systemPrompt, userPrompt, {
         temperature: 0.5,
-        maxTokens: 1536,
+        // ~200 tokens per question (prompt + 4 options + explanation).
+        // A fixed budget truncates larger batches mid-JSON (finish_reason=length).
+        maxTokens: Math.max(1536, batchSize * 220),
       })
 
       for (const q of batch) {
