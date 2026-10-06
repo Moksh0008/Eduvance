@@ -104,8 +104,8 @@ export function createApp() {
   if (resolvedDist) {
     console.log(`[Frontend] Serving static files from ${resolvedDist}`)
     app.use(express.static(resolvedDist, { maxAge: '1h', index: 'index.html' }))
-    // SPA fallback: any non-API route serves index.html
-    app.get('*', (req, res, next) => {
+    // SPA fallback: any non-API route serves index.html (Express 5 syntax)
+    app.get('{*splat}', (req, res, next) => {
       if (req.path.startsWith('/api/')) return next()
       res.sendFile(join(resolvedDist, 'index.html'))
     })

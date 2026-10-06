@@ -298,7 +298,7 @@ aiRoutes.post('/generate-quiz', asyncHandler(async (req, res) => {
   const { getUsageStatus } = await import('../services/aiUsageService.js')
   const usage = await getUsageStatus(req.user.userId)
 
-  return res.json({ success: true, data: { ...result, aiUsage: usage }) })
+  return res.json({ success: true, data: { ...result, aiUsage: usage } })
 }))
 
 // ═══ EVALUATE ANSWER ═══
