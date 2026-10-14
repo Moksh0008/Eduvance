@@ -3,7 +3,3 @@ node_modules/
 *.log
 .DS_Store
 .freebuff/
-git rm --cached .freebuff/project-id
-git add .gitignore
-git commit -m "Ignore Freebuff local files"
-git push origin main
