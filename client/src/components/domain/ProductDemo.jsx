@@ -6,9 +6,9 @@ const OCTO_IMG = '/mascot/octo-140.webp'
 
 /* ═══ YOUR 3 CHARACTER IMAGES ═══ */
 const CHARS = {
-  tensed: '/characters/tensed.png',
-  confused: '/characters/confused.png',
-  happy: '/characters/happy-new.png',
+  tensed: '/characters/tensed-small.webp',
+  confused: '/characters/confused.webp',
+  happy: '/characters/happy-new.webp',
 }
 
 const SCENES = [
@@ -127,7 +127,7 @@ function Char({ src, size = 180, style = {}, anim = {} }) {
     <motion.img
       src={src}
       alt="Student"
-      style={{ width: size, height: size, objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))', ...style }}
+      style={{ width: size, height: size, objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))', ...style }}
       initial={{ opacity: 0, scale: 0.6, y: 30 }}
       animate={{ opacity: 1, scale: 1, y: 0, ...anim }}
       transition={{ type: 'spring', stiffness: 180, damping: 14 }}
@@ -447,7 +447,7 @@ export function ProductDemo() {
   const cur = SCENES[scene]
 
   return (
-    <div ref={ref} style={{ maxWidth: 900, margin: '0 auto', borderRadius: 24, overflow: 'hidden', boxShadow: isDark ? '0 20px 80px rgba(99,102,241,0.2)' : '0 20px 60px rgba(0,0,0,0.15)', background: isDark ? '#0f172a' : '#1a1a2e' }}>
+    <div ref={ref} style={{ maxWidth: 900, margin: '0 auto', borderRadius: 24, overflow: 'hidden', boxShadow: isDark ? '0 20px 80px rgba(99,102,241,0.2)' : '0 20px 60px rgba(0,0,0,0.12)', background: isDark ? '#0f172a' : '#1e1b2e' }}>
       <div style={{ background: cur.bg, minHeight: 480, position: 'relative', zIndex: 1 }}>
         <Comp />
       </div>
@@ -455,16 +455,19 @@ export function ProductDemo() {
       {/* Controls */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 24px', background: isDark ? 'rgba(15,23,42,0.95)' : 'rgba(255,255,255,0.95)' }}>
         <button onClick={() => setPaused(!paused)} aria-label={paused ? 'Play demo' : 'Pause demo'}
-          style={{ width: 32, height: 32, borderRadius: '50%', border: 'none', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', cursor: 'pointer', fontSize: 14 }}>
+          style={{ width: 48, height: 48, borderRadius: '50%', border: 'none', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           {paused ? '▶' : '⏸'}
         </button>
         <div style={{ display: 'flex', gap: 6 }} role="tablist" aria-label="Demo scenes">
           {SCENES.map((s, i) => (
             <button key={i} onClick={() => setScene(i)} role="tab" aria-selected={i === scene} aria-label={`Scene ${i + 1}: ${s.id}`}
-              style={{ width: i === scene ? 24 : 8, height: 8, borderRadius: 4, border: 'none', background: i === scene ? '#6366f1' : (isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'), cursor: 'pointer', transition: 'all 0.3s' }} />
+              style={{ width: 48, height: 48, borderRadius: 4, border: 'none', background: 'transparent', cursor: 'pointer', transition: 'all 0.3s', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+            >
+              <span style={{ display: 'block', width: i === scene ? 20 : 8, height: 8, borderRadius: 4, background: i === scene ? '#6366f1' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)') }} />
+            </button>
           ))}
         </div>
-        <span style={{ fontSize: 12, color: isDark ? '#64748b' : '#9ca3af' }}>{scene + 1}/{SCENES.length}</span>
+        <span style={{ fontSize: 12, color: isDark ? '#94a3b8' : '#4b5563' }}>{scene + 1}/{SCENES.length}</span>
       </div>
     </div>
   )

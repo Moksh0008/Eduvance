@@ -11,6 +11,7 @@ import { ReadinessPanel } from '../components/domain/ReadinessPanel'
 import { AdaptiveLoop } from '../components/domain/AdaptiveLoop'
 import { DemoBanner } from '../components/domain/ModeBanners'
 import { StudyRecommendation } from '../components/domain/StudyRecommendation'
+import { AdaptiveRecommendations } from '../components/domain/AdaptiveRecommendations'
 import { ScrollReveal, StaggerChildren, StaggerItem } from '../components/ui/ScrollReveal'
 import { StreakDisplay, StreakReminder } from '../components/ui/StreakDisplay'
 import { CountUp } from '../components/ui/CountUp'
@@ -244,23 +245,51 @@ export function DashboardPage() {
         </ScrollReveal>
       </div>
 
-      {/* ═══ WEAK TOPICS ═══ */}
-      {progress.weakTopics?.length ? (
+      {/* ═══ ADAPTIVE RECOMMENDATIONS ═══ */}
+      <ScrollReveal>
+        <div className="flex items-center gap-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-3">What to study next</p>
+          <div className="h-px flex-1" style={{ background: 'var(--color-line)' }} />
+        </div>
+        <div className="mt-4">
+          <AdaptiveRecommendations />
+          {/* Fallback: show nowStudy if recommendations are empty */}
+          {now && (
+            <div className="mt-3 rounded-2xl p-4" style={{ background: 'var(--color-card)', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full text-sm" style={{ background: 'var(--color-accent-soft)', color: 'var(--color-accent-2)' }}>
+                  →
+                </span>
+                <div>
+                  <p className="text-sm font-medium text-ink">{now.subject} → {now.topic}</p>
+                  <p className="text-[11px] text-ink-3">{now.minutes} min · Priority {now.priority}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </ScrollReveal>
+
+      {/* ═══ WEAK TOPICS (fallback if no recommendations) ═══ */}
+      {!data.isDemo && progress.weakTopics?.length ? (
         <ScrollReveal>
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-3">Topics needing attention</p>
           <StaggerChildren className="mt-4 space-y-2" staggerDelay={0.04}>
-            {progress.weakTopics.map((t) => (
-              <StaggerItem key={t.name}>
-                <div className="group flex items-center justify-between rounded-2xl p-4 transition-all duration-300 hover:translate-x-1" style={{
-                  background: 'var(--color-card)',
-                  backdropFilter: 'blur(16px)',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-                }}>
-                  <span className="text-sm text-ink">{t.subject} → {t.name}</span>
-                  <span className="tabular text-sm font-medium text-risk">{t.mastery}%</span>
-                </div>
-              </StaggerItem>
-            ))}
+            {progress.weakTopics.map((t, i) => {
+              const topicName = t.name || t.topic || 'Unknown topic'
+              return (
+                <StaggerItem key={`${t.subject}-${topicName}-${i}`}>
+                  <div className="group flex items-center justify-between rounded-2xl p-4 transition-all duration-300 hover:translate-x-1" style={{
+                    background: 'var(--color-card)',
+                    backdropFilter: 'blur(16px)',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+                  }}>
+                    <span className="text-sm text-ink">{t.subject} → {topicName}</span>
+                    <span className="tabular text-sm font-medium text-risk">{t.mastery || t.score || 0}%</span>
+                  </div>
+                </StaggerItem>
+              )
+            })}
           </StaggerChildren>
         </ScrollReveal>
       ) : null}

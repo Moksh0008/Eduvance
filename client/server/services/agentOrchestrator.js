@@ -6,6 +6,8 @@
 import { callGrokJSON, callGrok, generateAndValidateQuestions, generateQuizQuestions } from './grokService.js'
 import { retrieveRelevantChunks, buildContextString } from './ragService.js'
 import { TopicMastery, QuizAttempt, Question, Quiz, Insight } from '../models/index.js'
+import { getQuestionsFromBank, saveQuestionsToBank } from './questionBankService.js'
+import { checkAiLimit, incrementAiUsage } from './aiUsageService.js'
 import {
   calculateTopicPriority,
   rankTopicsForUser,
@@ -37,43 +39,18 @@ export async function generateQuiz({ userId, subject, topic, difficulty, count, 
   // 1. Get adaptive difficulty
   const adaptiveDiff = await getAdaptiveDifficulty(userId, subject, topic)
   const finalDifficulty = difficulty || adaptiveDiff
+  const requestedCount = Math.min(count, 15)
 
-  // 2. Retrieve relevant study material via RAG
-  const chunks = await retrieveRelevantChunks(userId, subject, topic, 3)
-  const context = buildContextString(chunks)
+  // 2. ─── QUESTION BANK CACHE CHECK ───
+  console.log(`[QuizGen] subject=${subject}, topic=${topic}, difficulty=${finalDifficulty}, requested=${requestedCount}`)
+  const bankResult = await getQuestionsFromBank(subject, topic, finalDifficulty, requestedCount)
 
-  // 3. Get previous questions to avoid repeats
-  const previousQuestions = await Question.find({ userId, subject, topic })
-    .sort({ createdAt: -1 })
-    .limit(20)
-    .select('prompt')
+  // 3. If cache has enough → use cached questions directly
+  if (bankResult.needGenerate === 0) {
+    console.log(`[QuizGen] Cache hit — using ${bankResult.cachedCount} cached questions`)
 
-  // 4. Get mastery data
-  const mastery = await TopicMastery.findOne({ userId, subject, topic })
-
-  // 5. Generate questions via Grok
-  console.log(`[QuizGen] subject=${subject}, topic=${topic}, difficulty=${finalDifficulty}, hasContext=${context.length > 0}, prevQuestions=${previousQuestions.length}`)
-  
-  let questions
-  try {
-    questions = await generateQuizQuestions({
-      subject,
-      topic,
-      difficulty: finalDifficulty,
-      count: Math.min(count, 8),
-      context,
-      previousQuestions: previousQuestions.map(q => q.prompt),
-    })
-    console.log(`[QuizGen] Generated ${questions.length} validated questions`)
-  } catch (err) {
-    console.error('[QuizGen] Question generation failed:', err.message)
-    throw new Error(`AI question generation failed: ${err.message}`)
-  }
-
-  // 6. Store questions in DB
-  const storedQuestions = []
-  for (const q of questions) {
-    const stored = await Question.create({
+    // Store per-user copies for QuizAttempt tracking (batch insert)
+    const questionDocs = bankResult.cached.map(q => ({
       userId,
       subject,
       topic,
@@ -82,13 +59,117 @@ export async function generateQuiz({ userId, subject, topic, difficulty, count, 
       correctAnswer: q.correctAnswer,
       explanation: q.explanation,
       difficulty: q.difficulty || finalDifficulty,
-      sourceMaterialId: chunks[0]?.chunkId || null,
-      sourceContext: q.sourceContext || '',
+    }))
+    const storedQuestions = await Question.insertMany(questionDocs)
+
+    const quiz = await Quiz.create({
+      userId,
+      subject,
+      topic,
+      difficulty: finalDifficulty,
+      questions: storedQuestions.map(q => q._id),
+      totalQuestions: storedQuestions.length,
     })
-    storedQuestions.push(stored)
+
+    return {
+      quizId: quiz._id,
+      subject,
+      topic,
+      difficulty: finalDifficulty,
+      questions: storedQuestions.map(q => ({
+        id: q._id,
+        prompt: q.prompt,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation || '',
+        difficulty: q.difficulty,
+      })),
+      fromMaterial: false,
+      fromCache: true,
+    }
   }
 
-  // 7. Create quiz session
+  // 4. ─── CHECK AI USAGE LIMIT ───
+  const aiLimit = await checkAiLimit(userId)
+  console.log(`[QuizGen] AI limit: ${aiLimit.used}/${aiLimit.limit} used, ${aiLimit.remaining} remaining`)
+
+  if (!aiLimit.allowed) {
+    // At daily limit — cannot call AI
+    if (bankResult.cached.length > 0) {
+      console.log(`[QuizGen] At daily AI limit — using ${bankResult.cached.length} cached questions`)
+      // Fall through to use cached questions below
+    } else {
+      throw new Error(
+        `You have reached today's AI generation limit (${aiLimit.limit}/${aiLimit.limit}). ` +
+        `You can still practice topics with available questions. Your limit will reset tomorrow.`
+      )
+    }
+  }
+
+  // 5. ─── CACHE MISS — generate missing questions via AI (if allowed) ───
+  let newQuestions = []
+  let chunks = []
+
+  if (aiLimit.allowed && bankResult.needGenerate > 0) {
+    const excludePrompts = bankResult.cached.map(q => q.prompt)
+
+    console.log(`[QuizGen] Generating ${bankResult.needGenerate} questions via AI`)
+
+    try {
+      newQuestions = await generateQuizQuestions({
+        subject,
+        topic,
+        difficulty: finalDifficulty,
+        count: bankResult.needGenerate,
+        context: '',
+        previousQuestions: excludePrompts,
+      })
+      console.log(`[QuizGen] AI generated ${newQuestions.length} validated questions`)
+
+      // ─── INCREMENT USAGE ONLY AFTER SUCCESSFUL GENERATION ───
+      await incrementAiUsage(userId)
+    } catch (err) {
+      console.error('[QuizGen] AI generation failed:', err.message)
+      // Do NOT increment usage for failed requests
+      if (bankResult.cached.length > 0) {
+        console.log(`[QuizGen] Falling back to ${bankResult.cached.length} cached questions`)
+      } else {
+        throw new Error(`AI question generation failed: ${err.message}`)
+      }
+    }
+  }
+
+  // 6. Save newly generated questions to the shared QuestionBank cache
+  if (newQuestions.length > 0) {
+    await saveQuestionsToBank(subject, topic, finalDifficulty, newQuestions, 'ai-generated')
+  }
+
+  // 7. Combine cached + new questions
+  const allQuestions = [
+    ...bankResult.cached,
+    ...newQuestions.slice(0, requestedCount - bankResult.cachedCount),
+  ]
+
+  if (allQuestions.length === 0) {
+    throw new Error('Failed to generate any valid questions')
+  }
+
+  // 7. Store per-user copies for QuizAttempt tracking (batch insert)
+  const questionDocs = allQuestions.map(q => ({
+    userId,
+    subject,
+    topic,
+    prompt: q.prompt,
+    options: q.options,
+    correctAnswer: q.correctAnswer,
+    explanation: q.explanation,
+    difficulty: q.difficulty || finalDifficulty,
+    sourceMaterialId: chunks[0]?.chunkId || null,
+    sourceContext: q.sourceContext || '',
+  }))
+  const storedQuestions = await Question.insertMany(questionDocs)
+
+  // 8. Create quiz session
   const quiz = await Quiz.create({
     userId,
     subject,
@@ -112,6 +193,7 @@ export async function generateQuiz({ userId, subject, topic, difficulty, count, 
       difficulty: q.difficulty,
     })),
     fromMaterial: chunks.length > 0,
+    fromCache: bankResult.cachedCount > 0 && newQuestions.length === 0,
   }
 }
 

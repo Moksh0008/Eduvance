@@ -8,7 +8,7 @@
       "destination": "https://eduvance-cbqy.onrender.com/api/:path*"
     },
     {
-      "source": "/((?!api/).*)",
+      "source": "/((?!api/|robots\\.txt|llms\\.txt|sitemap\\.xml|favicon\\.svg|favicon-.*\\.png|apple-touch-icon\\.png|manifest\\.json|og-image\\.png).*)",
       "destination": "/index.html"
     }
   ],

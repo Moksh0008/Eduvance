@@ -32,6 +32,13 @@ function getGoogleRedirectUri() {
   return 'http://localhost:5000/api/auth/google/callback'
 }
 
+// Get the correct frontend URL for redirects after auth
+function getFrontendUrl() {
+  if (process.env.CLIENT_URL) return process.env.CLIENT_URL
+  if (process.env.RENDER_EXTERNAL_URL) return process.env.RENDER_EXTERNAL_URL
+  return 'http://localhost:5173'
+}
+
 // Google OAuth — redirects to Google login
 authRoutes.get('/google', (req, res) => {
   const clientId = process.env.GOOGLE_CLIENT_ID
@@ -49,15 +56,13 @@ authRoutes.get('/google', (req, res) => {
 authRoutes.get('/google/callback', asyncHandler(async (req, res) => {
   const { code } = req.query
   if (!code) {
-    const frontendUrl = process.env.CLIENT_URL || 'http://localhost:5173'
-    return res.redirect(`${frontendUrl}/login?error=no_code`)
+    return res.redirect(`${getFrontendUrl()}/login?error=no_code`)
   }
 
   const clientId = process.env.GOOGLE_CLIENT_ID
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET
   if (!clientId || !clientSecret) {
-    const frontendUrl = process.env.CLIENT_URL || 'http://localhost:5173'
-    return res.redirect(`${frontendUrl}/login?error=not_configured`)
+    return res.redirect(`${getFrontendUrl()}/login?error=not_configured`)
   }
 
   const redirectUri = getGoogleRedirectUri()
@@ -86,7 +91,7 @@ authRoutes.get('/google/callback', asyncHandler(async (req, res) => {
   })
   const googleUser = await userRes.json()
   if (!googleUser.email) {
-    return res.redirect('/login?error=no_email')
+    return res.redirect(`${getFrontendUrl()}/login?error=no_email`)
   }
 
   // Find or create user
@@ -106,8 +111,7 @@ authRoutes.get('/google/callback', asyncHandler(async (req, res) => {
   }
 
   const token = signToken(user._id)
-  const frontendUrl = process.env.CLIENT_URL || 'http://localhost:5173'
-  res.redirect(`${frontendUrl}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({ id: String(user._id), name: user.name, email: user.email }))}`)
+  res.redirect(`${getFrontendUrl()}/auth/callback?token=${token}&user=${encodeURIComponent(JSON.stringify({ id: String(user._id), name: user.name, email: user.email }))}`)
 }))
 
 // Forgot password — send reset email (placeholder)

@@ -3,10 +3,12 @@ import multer from 'multer'
 import { authMiddleware } from '../middleware/authMiddleware.js'
 import { asyncHandler } from '../utils/asyncHandler.js'
 import { Preparation } from '../models/Preparation.js'
-import { callGrokJSON } from '../services/grokService.js'
+import { callGrokJSON, generateAndValidateQuestions } from '../services/grokService.js'
 import * as ragService from '../services/ragService.js'
 import * as agent from '../services/agentOrchestrator.js'
 import * as decisionEngine from '../services/decisionEngine.js'
+import { getQuestionsFromBank, saveQuestionsToBank } from '../services/questionBankService.js'
+import { checkAiLimit, incrementAiUsage } from '../services/aiUsageService.js'
 
 export const aiRoutes = Router()
 aiRoutes.use(authMiddleware)
@@ -123,7 +125,7 @@ aiRoutes.post('/analyze-file', upload.single('file'), asyncHandler(async (req, r
 
   const grokPromise = agent.analyzeSyllabus(req.user.userId, text, {
     analyzeSyllabus: async (t) => callGrokJSON(
-      `You are an academic syllabus analyzer. Extract structured topics from this document.
+      `You are an academic syllabus analyzer. Extract structured topics from this document. All output MUST be in English.
 Return JSON: { "subjects": [{ "name": "string", "examDate": "YYYY-MM-DD or empty", "units": [{ "name": "string", "topics": [{ "name": "string", "difficulty": "easy|medium|hard", "importance": "high|medium|low", "estimatedMinutes": 60 }] }] }] }
 Extract ALL subjects, units, topics from the document. If exam dates are mentioned, include them. Return ONLY valid JSON.`,
       `Subject context: ${subject}\n\nDocument content:\n${t.slice(0, 8000)}`
@@ -164,7 +166,7 @@ aiRoutes.post('/analyze-timetable', upload.single('file'), asyncHandler(async (r
   }
 
   const result = await callGrokJSON(
-    `You are a timetable parser. Extract exam/subject information from this timetable document.
+    `You are a timetable parser. Extract exam/subject information from this timetable document. All output MUST be in English.
 Return JSON: { "exams": [{ "name": "subject name", "date": "YYYY-MM-DD", "time": "HH:MM", "marks": 100 }] }
 Extract ALL exams with their dates, times, and marks. If a field is not found, use reasonable defaults. Return ONLY valid JSON.`,
     `Timetable content:\n${text.slice(0, 6000)}`
@@ -190,7 +192,7 @@ aiRoutes.post('/analyze-syllabus', asyncHandler(async (req, res) => {
   try {
     result = await agent.analyzeSyllabus(req.user.userId, trimmedText, {
       analyzeSyllabus: async (text) => callGrokJSON(
-        `Extract topics from this syllabus text. Return JSON:\n{"subjects":[{"name":"...","units":[{"name":"...","topics":[{"name":"...","difficulty":"easy|medium|hard","importance":"high|medium|low"}]}]}]}\nReturn ONLY valid JSON.`,
+        `Extract topics from this syllabus text. All output MUST be in English.\nReturn JSON:\n{"subjects":[{"name":"...","units":[{"name":"...","topics":[{"name":"...","difficulty":"easy|medium|hard","importance":"high|medium|low"}]}]}]}\nReturn ONLY valid JSON.`,
         `Syllabus:\n${text}`,
         { temperature: 0.2, timeoutMs: 30000 }
       ),
@@ -278,16 +280,25 @@ aiRoutes.post('/generate-quiz', asyncHandler(async (req, res) => {
 
   const preparation = await Preparation.findOne({ userId: req.user.userId })
 
+  // Enforce plan-based question limit
+  const { getPlanFeatures } = await import('../services/featureGateService.js')
+  const planFeatures = await getPlanFeatures(req.user.userId)
+  const maxQuestions = planFeatures.features.maxQuizQuestions || 15
+
   const result = await agent.generateQuiz({
     userId: req.user.userId,
     subject,
     topic,
     difficulty,
-    count: Math.min(count, 5),
+    count: Math.min(count, maxQuestions),
     preparation,
   })
 
-  return res.json({ success: true, data: result })
+  // Include AI usage status in response
+  const { getUsageStatus } = await import('../services/aiUsageService.js')
+  const usage = await getUsageStatus(req.user.userId)
+
+  return res.json({ success: true, data: { ...result, aiUsage: usage } })
 }))
 
 // ═══ EVALUATE ANSWER ═══
@@ -438,53 +449,164 @@ aiRoutes.post('/replan', asyncHandler(async (req, res) => {
   return res.json({ success: true, data: { schedule, rankings: rankings.slice(0, 10) } })
 }))
 
-// ═══ BATCH GENERATE QUIZ (100 questions in batches) ═══
+// ═══ BATCH GENERATE QUIZ — cache-first, save-per-batch ═══
 aiRoutes.post('/generate-quiz-batch', asyncHandler(async (req, res) => {
-  const { subject, topic, difficulty, totalQuestions = 100, batchSize = 10 } = req.body
+  const { subject, topic, difficulty, totalQuestions = 10, batchSize = 10 } = req.body
   if (!subject || !topic) {
     return res.status(400).json({ success: false, message: 'subject and topic are required' })
   }
 
-  const preparation = await Preparation.findOne({ userId: req.user.userId })
-  const batchesNeeded = Math.ceil(totalQuestions / batchSize)
-  const allQuestions = []
+  const finalDiff = (difficulty || 'medium').toLowerCase().trim()
+  const requested = Math.min(Math.max(totalQuestions, 1), 100) // clamp 1–100
+  const aiBatchSize = Math.min(Math.max(batchSize, 5), 20) // clamp 5–20
+
+  console.log(`[BatchGen] subject=${subject}, topic=${topic}, difficulty=${finalDiff}, requested=${requested}, aiBatchSize=${aiBatchSize}`)
+
+  // ─── 1. CACHE CHECK: how many do we already have? ───
+  const bankResult = await getQuestionsFromBank(subject, topic, finalDiff, requested)
+  const allQuestions = [...bankResult.cached]
+  const needGenerate = bankResult.needGenerate
+
+  if (needGenerate === 0) {
+    console.log(`[BatchGen] Full cache hit — ${allQuestions.length} questions from bank, no AI needed`)
+    return res.json({
+      success: true,
+      data: {
+        totalGenerated: allQuestions.length,
+        totalRequested: requested,
+        questions: allQuestions,
+        fromCache: true,
+        quiz: { id: `batch_${Date.now()}`, subject, topic, difficulty: finalDiff, totalQuestions: allQuestions.length },
+      },
+    })
+  }
+
+  // ─── 2. CHECK AI USAGE LIMIT ───
+  const aiLimit = await checkAiLimit(req.user.userId)
+  console.log(`[BatchGen] AI limit: ${aiLimit.used}/${aiLimit.limit} used, ${aiLimit.remaining} remaining`)
+
+  if (!aiLimit.allowed) {
+    // At daily limit — cannot call AI, return what cache has
+    if (allQuestions.length > 0) {
+      console.log(`[BatchGen] At daily AI limit — returning ${allQuestions.length} cached questions`)
+      return res.json({
+        success: true,
+        data: {
+          totalGenerated: allQuestions.length,
+          totalRequested: requested,
+          questions: allQuestions,
+          fromCache: true,
+          aiLimitReached: true,
+          aiLimitMessage: `You have reached today's AI generation limit (${aiLimit.limit}/${aiLimit.limit}). You can still practice topics with available questions. Your limit will reset tomorrow.`,
+          quiz: allQuestions.length > 0 ? { id: `batch_${Date.now()}`, subject, topic, difficulty: finalDiff, totalQuestions: allQuestions.length } : null,
+        },
+      })
+    }
+    return res.status(429).json({
+      success: false,
+      message: `You have reached today's AI generation limit (${aiLimit.limit}/${aiLimit.limit}). You can still practice topics with available questions. Your limit will reset tomorrow.`,
+      aiLimitReached: true,
+      remaining: 0,
+      limit: aiLimit.limit,
+    })
+  }
+
+  // ─── 3. GENERATE MISSING in batches of aiBatchSize ───
+  const batchesNeeded = Math.ceil(needGenerate / aiBatchSize)
+  const seenPrompts = new Set(allQuestions.map(q => q.prompt.toLowerCase().slice(0, 50)))
   const errors = []
+  let consecutiveFailures = 0
+  let aiRequestsMade = 0
 
   for (let batch = 0; batch < batchesNeeded; batch++) {
-    try {
-      const result = await agent.generateQuiz({
-        userId: req.user.userId,
-        subject,
-        topic,
-        difficulty,
-        count: batchSize,
-        preparation,
-      })
-      if (result?.questions?.length) {
-        allQuestions.push(...result.questions)
-      }
-    } catch (err) {
-      errors.push({ batch: batch + 1, error: err.message })
-      // Continue with next batch even if one fails
+    const remaining = requested - allQuestions.length
+    if (remaining <= 0) break
+    const thisBatchSize = Math.min(aiBatchSize, remaining)
+
+    // Check remaining AI limit before each batch
+    const currentLimit = await checkAiLimit(req.user.userId)
+    if (!currentLimit.allowed) {
+      console.log(`[BatchGen] AI limit reached mid-generation — stopping after ${allQuestions.length}/${requested} questions`)
+      break
     }
-    // Small delay between batches to avoid rate limits
-    if (batch < batchesNeeded - 1) {
+
+    const systemPrompt = `Generate ${thisBatchSize} MCQ questions about ${topic} (${subject}). Difficulty: ${finalDiff}. All text in English.
+Return ONLY a JSON array. No text before/after.
+[{"prompt":"?","options":["A","B","C","D"],"correctAnswer":0,"explanation":"why"}]`
+
+    const prevPrompts = allQuestions.slice(-2).map(q => q.prompt.slice(0, 30)).join('; ')
+    const userPrompt = `${thisBatchSize} ${finalDiff} MCQs on "${topic}" in ${subject}${prevPrompts ? ` avoid: ${prevPrompts}` : ''}`
+
+    try {
+      const batch = await generateAndValidateQuestions(systemPrompt, userPrompt, {
+        temperature: 0.4,
+        // ~200 tokens per question — scale with batch size so larger
+        // batches are not truncated mid-JSON (finish_reason=length).
+        maxTokens: Math.max(2048, thisBatchSize * 220),
+      })
+
+      // Deduplicate within batch and against existing
+      const newBatch = []
+      for (const q of batch) {
+        const key = q.prompt.toLowerCase().slice(0, 50)
+        if (!seenPrompts.has(key)) {
+          seenPrompts.add(key)
+          newBatch.push({ ...q, difficulty: finalDiff })
+          allQuestions.push({ ...q, difficulty: finalDiff, fromCache: false })
+        }
+      }
+
+      // ─── 4. SAVE this batch immediately + increment usage ───
+      if (newBatch.length > 0) {
+        await saveQuestionsToBank(subject, topic, finalDiff, newBatch, 'ai-generated')
+        // Only increment AFTER successful generation and save
+        await incrementAiUsage(req.user.userId)
+        aiRequestsMade++
+        console.log(`[BatchGen] Batch ${batch + 1}/${batchesNeeded}: generated ${newBatch.length}, saved to bank, total ${allQuestions.length}/${requested}`)
+      }
+
+      consecutiveFailures = 0
+    } catch (err) {
+      consecutiveFailures++
+      console.error(`[BatchGen] Batch ${batch + 1}/${batchesNeeded} failed (${consecutiveFailures} consecutive):`, err.message)
+      errors.push({ batch: batch + 1, error: err.message })
+      // Do NOT increment usage for failed requests
+      if (consecutiveFailures >= 3) {
+        console.warn(`[BatchGen] 3 consecutive failures — stopping generation`)
+        break
+      }
+    }
+
+    // Delay between batches for rate limiting
+    if (batch < batchesNeeded - 1 && allQuestions.length < requested) {
       await new Promise(r => setTimeout(r, 1000))
     }
   }
+
+  // ─── 4. RETURN whatever we have ───
+  if (allQuestions.length === 0) {
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to generate any questions. AI may be unavailable.',
+      errors,
+    })
+  }
+
+  console.log(`[BatchGen] Complete — ${allQuestions.length}/${requested} questions (${allQuestions.filter(q => q.fromCache).length} from cache, ${allQuestions.filter(q => !q.fromCache).length} from AI)`)
 
   return res.json({
     success: true,
     data: {
       totalGenerated: allQuestions.length,
-      totalRequested: totalQuestions,
+      totalRequested: requested,
       questions: allQuestions,
+      fromCache: bankResult.cachedCount > 0 && allQuestions.every(q => q.fromCache),
       errors: errors.length ? errors : undefined,
       quiz: allQuestions.length > 0 ? {
         id: `batch_${Date.now()}`,
         subject,
         topic,
-        difficulty,
+        difficulty: finalDiff,
         totalQuestions: allQuestions.length,
       } : null,
     },
@@ -536,7 +658,7 @@ aiRoutes.post('/generate-topics', asyncHandler(async (req, res) => {
 
   try {
     const result = await callGrokJSON(
-      `You are a CS exam topic generator. Generate a list of standard academic topics for the subject: ${subject}.\n\nReturn JSON:\n{\n  "topics": [\n    { "name": "Topic Name", "difficulty": "easy|medium|hard", "importance": "high|medium|low" }\n  ]\n}\n\nGenerate 8-15 topics that a typical university course on ${subject} would cover. Return ONLY valid JSON.`,
+      `You are a CS exam topic generator. Generate a list of standard academic topics for the subject: ${subject}. All output MUST be in English.\n\nReturn JSON:\n{\n  "topics": [\n    { "name": "Topic Name", "difficulty": "easy|medium|hard", "importance": "high|medium|low" }\n  ]\n}\n\nGenerate 8-15 topics that a typical university course on ${subject} would cover. Return ONLY valid JSON.`,
       `Generate standard exam topics for ${subject}.`,
       { temperature: 0.4 }
     )
@@ -555,4 +677,42 @@ aiRoutes.post('/generate-topics', asyncHandler(async (req, res) => {
     console.error('[GenerateTopics] AI error:', err.message)
     return res.status(500).json({ success: false, message: 'AI topic generation failed. The AI service may be starting up.' })
   }
+}))
+
+// ═══ GET AI USAGE STATUS ═══
+aiRoutes.get('/usage', asyncHandler(async (req, res) => {
+  const { getUsageStatus } = await import('../services/aiUsageService.js')
+  const status = await getUsageStatus(req.user.userId)
+  return res.json({ success: true, data: status })
+}))
+
+// ═══ GET SUBSCRIPTION / PLAN STATUS ═══
+aiRoutes.get('/subscription', asyncHandler(async (req, res) => {
+  const { getPlanFeatures, getPlanConfig } = await import('../services/featureGateService.js')
+  const features = await getPlanFeatures(req.user.userId)
+  const plans = getPlanConfig()
+  return res.json({ success: true, data: { ...features, plans } })
+}))
+
+// ═══ GET ADAPTIVE RECOMMENDATIONS ═══
+aiRoutes.get('/recommendations', asyncHandler(async (req, res) => {
+  const { getRecommendations, getTopicSummary } = await import('../services/adaptiveLearningService.js')
+  const limit = Math.min(parseInt(req.query.limit, 10) || 5, 10)
+
+  const [recommendations, summary] = await Promise.all([
+    getRecommendations(req.user.userId, limit),
+    getTopicSummary(req.user.userId),
+  ])
+
+  return res.json({
+    success: true,
+    data: {
+      recommendations,
+      summary,
+      config: {
+        weakThreshold: parseInt(process.env.ADAPTIVE_WEAK_THRESHOLD, 10) || 50,
+        strongThreshold: parseInt(process.env.ADAPTIVE_STRONG_THRESHOLD, 10) || 75,
+      },
+    },
+  })
 }))

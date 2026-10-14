@@ -145,7 +145,8 @@ export function AppStateProvider({ children }) {
   const recordQuiz = useCallback(
     async (result) => {
       const next = apply({ type: PrepAction.RECORD_QUIZ, payload: result }, { persist: false })
-      if (session?.token) await pushPreparation(next)
+      // Fire-and-forget: save locally immediately, sync to backend in background
+      if (session?.token) pushPreparation(next).catch(err => console.error('[Sync] Quiz push failed:', err.message))
       return next
     },
     [apply, session?.token],

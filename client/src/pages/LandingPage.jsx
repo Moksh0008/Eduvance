@@ -17,18 +17,18 @@ export function LandingPage() {
       {/* Background image */}
       <div className="fixed inset-0 z-0" style={{ background: 'var(--color-canvas)' }}>
         <img
-          src={isDark ? '/dark-theme-bg.png' : '/light-theme-bg.png'}
+          src={isDark ? '/dark-theme-bg.webp' : '/light-theme-bg.webp'}
           alt=""
           className="h-full w-full object-cover object-center"
           style={{
-            opacity: isDark ? 0.18 : 0.2,
-            filter: isDark ? 'none' : 'saturate(0.6) brightness(1.1)',
+            opacity: isDark ? 0.15 : 0.45,
+            filter: isDark ? 'none' : 'saturate(0.6) brightness(1.05)',
           }}
         />
       </div>
 
       {/* Hero */}
-      <section className="relative px-4 pt-20 pb-16 sm:pt-28 sm:pb-24 text-center">
+      <section className="relative z-10 min-h-screen flex items-center justify-center px-4 text-center">
         <motion.div
           className="mx-auto max-w-3xl"
           initial="hidden"
@@ -47,7 +47,7 @@ export function LandingPage() {
           </motion.p>
           <motion.div variants={fadeUp} className="mt-8 flex justify-center gap-3">
             <Link to={isAuthenticated ? '/dashboard' : '/register?intent=prepare'}>
-              <button className="px-6 py-3 rounded-xl font-medium text-sm text-white transition-all hover:shadow-lg hover:shadow-accent/25" style={{ background: 'var(--color-accent)' }}>
+              <button className="px-6 py-3 rounded-xl font-medium text-sm text-white transition-all hover:shadow-lg hover:shadow-accent/25" style={{ background: 'var(--color-accent)' }} aria-label="Start preparing with Eduvance">
                 Start Preparing
               </button>
             </Link>
@@ -61,7 +61,7 @@ export function LandingPage() {
       </section>
 
       {/* Roadmap / How It Works — Alternating Timeline */}
-      <section className="px-4 py-16">
+      <section className="relative z-10 px-4 py-16">
         <div className="mx-auto max-w-4xl">
           <div className="text-center mb-12">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-2 mb-2">Your journey with Eduvance</p>
@@ -126,7 +126,7 @@ export function LandingPage() {
       </section>
 
       {/* Product Demo */}
-      <section className="px-4 py-16">
+      <section className="relative z-10 px-4 py-16">
         <div className="mx-auto max-w-4xl text-center">
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-accent-2 mb-2">See Eduvance in action</p>
           <h2 className="font-serif text-3xl sm:text-4xl text-ink">
@@ -140,11 +140,12 @@ export function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-line-2" style={{ borderColor: 'rgba(0,0,0,0.06)' }}>
+      <footer className="relative z-10" style={{ background: 'var(--color-surface)', borderTop: '1px solid var(--color-line)' }}>
         {/* Back to top */}
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="w-full bg-surface/50 py-3 text-center text-xs text-ink-2 cursor-pointer hover:text-accent transition-colors"
+          aria-label="Scroll back to top of page"
         >
           Back to top
         </button>
@@ -154,45 +155,45 @@ export function LandingPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {/* Get to Know Us */}
             <div>
-              <h4 className="text-xs font-bold text-ink mb-3">Get to Know Us</h4>
+              <h3 className="text-xs font-bold text-ink mb-3">Get to Know Us</h3>
               <ul className="space-y-2 text-xs text-ink-2">
-                <li><span className="hover:text-accent transition-colors cursor-pointer">About Eduvance</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Careers</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Press Releases</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Eduvance Science</span></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">About Eduvance</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Careers</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Press Releases</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Eduvance Science</button></li>
               </ul>
             </div>
 
             {/* Connect with Us */}
             <div>
-              <h4 className="text-xs font-bold text-ink mb-3">Connect with Us</h4>
+              <h3 className="text-xs font-bold text-ink mb-3">Connect with Us</h3>
               <ul className="space-y-2 text-xs text-ink-2">
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Facebook</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Twitter</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Instagram</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">LinkedIn</span></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Facebook</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Twitter</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Instagram</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">LinkedIn</button></li>
               </ul>
             </div>
 
-            {/* Make Money with Us */}
+            {/* For Students */}
             <div>
-              <h4 className="text-xs font-bold text-ink mb-3">For Students</h4>
+              <h3 className="text-xs font-bold text-ink mb-3">For Students</h3>
               <ul className="space-y-2 text-xs text-ink-2">
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Sell on Eduvance</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Become an Affiliate</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Advertise Your Courses</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Eduvance Pay</span></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Adaptive Quizzes</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Study Planner</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">AI-Powered Insights</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Performance Analytics</button></li>
               </ul>
             </div>
 
             {/* Let Us Help You */}
             <div>
-              <h4 className="text-xs font-bold text-ink mb-3">Let Us Help You</h4>
+              <h3 className="text-xs font-bold text-ink mb-3">Let Us Help You</h3>
               <ul className="space-y-2 text-xs text-ink-2">
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Your Account</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Returns Centre</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">100% Purchase Protection</span></li>
-                <li><span className="hover:text-accent transition-colors cursor-pointer">Help</span></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Your Account</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Help Centre</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Privacy Policy</button></li>
+                <li><button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Terms of Service</button></li>
               </ul>
             </div>
           </div>
@@ -206,17 +207,15 @@ export function LandingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Logo */}
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg flex items-center justify-center text-xs font-bold text-white" style={{ background: 'var(--color-accent)' }}>
-                Ev
-              </div>
+              <img src="/logo.webp" alt="Eduvance logo" className="h-8 w-8 rounded-lg object-contain shadow-md" />
               <span className="font-serif text-lg font-semibold text-ink">Eduvance</span>
             </div>
 
             {/* Links */}
             <div className="flex flex-wrap justify-center gap-4 text-[11px] text-ink-3">
-              <span className="hover:text-accent transition-colors cursor-pointer">Conditions of Use & Sale</span>
-              <span className="hover:text-accent transition-colors cursor-pointer">Privacy Notice</span>
-              <span className="hover:text-accent transition-colors cursor-pointer">Interest-Based Ads</span>
+              <button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Conditions of Use & Sale</button>
+              <button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Privacy Notice</button>
+              <button className="bg-transparent border-0 p-0 font-normal hover:text-accent transition-colors cursor-pointer text-left" type="button">Interest-Based Ads</button>
             </div>
 
             {/* Language selector */}

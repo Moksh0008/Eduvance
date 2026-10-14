@@ -51,13 +51,13 @@ export function AppShell() {
       {/* Fixed background image — same as landing page */}
       <div className="fixed inset-0 z-0">
             <img
-              src={isDark ? '/dark-theme-bg.png' : '/light-theme-bg.png'}
+              src={isDark ? '/dark-theme-bg.webp' : '/light-theme-bg.webp'}
               alt=""
               className="h-full w-full object-cover object-center"
               loading="lazy"
               width="1920"
               height="1080"
-              style={{ opacity: isDark ? 0.15 : 0.18, filter: isDark ? 'none' : 'saturate(0.6) brightness(1.1)' }}
+              style={{ opacity: isDark ? 0.15 : 0.55, filter: isDark ? 'none' : 'blur(4px) saturate(0.65) brightness(1.05)' }}
             />
       </div>
 
@@ -108,9 +108,9 @@ export function AppShell() {
 
       <div className="relative z-10 flex min-h-screen">
         {/* Desktop sidebar — borderless, floating feel */}
-        <aside className="sticky top-0 hidden h-screen w-[15.5rem] shrink-0 bg-surface/60 backdrop-blur-lg lg:block" style={{ borderRight: isDark ? '1px solid rgba(148,163,184,0.06)' : '1px solid rgba(0,0,0,0.06)' }}>
+        <aside className="sticky top-0 hidden h-screen w-[15.5rem] shrink-0 backdrop-blur-xl lg:block" style={{ background: isDark ? 'rgba(10,14,28,0.92)' : 'rgba(255,255,255,0.6)', borderRight: isDark ? '1px solid rgba(148,163,184,0.1)' : '1px solid rgba(0,0,0,0.05)', boxShadow: isDark ? 'none' : '1px 0 12px rgba(0,0,0,0.03)' }}>
           <div className="flex h-14 items-center px-4">
-            <Logo to="/dashboard" />
+            <Logo to="/" />
           </div>
           <Sidebar />
         </aside>
@@ -125,16 +125,16 @@ export function AppShell() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setOpen(false)}
-              />
-              <motion.aside
-                className="relative h-full w-64 bg-surface backdrop-blur-xl"
+              />                <motion.aside
+                className="relative h-full w-64 backdrop-blur-xl"
+                style={{ background: isDark ? 'rgba(10,14,28,0.95)' : 'rgba(255,255,255,0.75)' }}
                 initial={{ x: -280 }}
                 animate={{ x: 0 }}
                 exit={{ x: -280 }}
                 transition={{ type: 'spring', stiffness: 350, damping: 30 }}
               >
                 <div className="flex h-14 items-center px-4">
-                  <Logo to="/dashboard" />
+                  <Logo to="/" />
                 </div>
                 <Sidebar onNavigate={() => setOpen(false)} />
               </motion.aside>
